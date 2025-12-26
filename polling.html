@@ -2,78 +2,180 @@
 <html lang="bn">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Polling List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>পোলিং অফিসার প্যানেল </title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+    
     body { 
-      font-family: kalpurush, system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans Bengali', 'Noto Sans', Arial, sans-serif; 
+      font-family: 'kalpurush', Tahoma, Geneva, Verdana, sans-serif; 
       margin: 0; 
-      padding: 24px; 
-      background: #ffffff; 
+      padding: 16px;
+      background: linear-gradient(135deg, #f7b8e2 0%, #764ba2 100%);
+      min-height: 100vh;
     }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 24px;
+      min-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+    }
+    
     h1 { 
-      font-size: 24px; 
-      margin-bottom: 20px; 
+      font-size: 28px; 
+      margin: 0 0 24px 0;
       color: #1f2937;
+      text-align: center;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
+    
     .search-box {
       margin-bottom: 20px;
       display: flex;
-      gap: 8px;
-      align-items: center;
+      gap: 10px;
+      align-items: stretch;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
     }
+    
     .search-box input {
       flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
       font-size: 15px;
       font-family: inherit;
+      transition: all 0.2s;
+      background: white;
     }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
     .search-box button {
-      padding: 10px 20px;
-      background: #3b82f6;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      border-radius: 6px;
-      font-weight: 500;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      white-space: nowrap;
     }
+    
     .search-box button:hover {
-      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
     }
+    
+    .search-box button:active {
+      transform: translateY(0);
+    }
+    
     .loading {
-      padding: 20px;
+      padding: 40px 20px;
       text-align: center;
-      color: #6b7280;
+      color: #64748b;
+      font-size: 16px;
     }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      flex: 1;
+      margin-bottom: 20px;
+    }
+    
     table { 
       width: 100%; 
-      border-collapse: collapse; 
-      margin-top: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-collapse: collapse;
+      background: white;
+      font-size: 14px;
     }
+    
     th, td { 
-      border: 1px solid #e5e7eb; 
-      padding: 12px; 
-      text-align: left; 
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
     }
+    
+    th:nth-child(1), td:nth-child(1) {
+      width: 100px;
+      text-align: center;
+    }
+    
+    th:nth-child(2), td:nth-child(2) {
+      min-width: 200px;
+    }
+    
+    th:nth-child(3), td:nth-child(3) {
+      width: 150px;
+    }
+    
+    th:nth-child(4), td:nth-child(4) {
+      width: 100px;
+      text-align: center;
+    }
+    
     th { 
-      background: #f3f4f6; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       font-weight: 600;
-      color: #374151;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
     }
+    
+    tbody tr {
+      transition: all 0.2s;
+    }
+    
     tbody tr:hover {
-      background: #f9fafb;
+      background: #f8fafc;
+      transform: scale(1.01);
     }
+    
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
     .name-link {
-      color: #3b82f6;
+      color: #667eea;
       cursor: pointer;
-      text-decoration: underline;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-block;
     }
+    
     .name-link:hover {
-      color: #2563eb;
+      color: #764ba2;
+      text-decoration: underline;
+      transform: translateX(3px);
     }
     .modal {
       display: none;
@@ -82,191 +184,277 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
       z-index: 1000;
       align-items: center;
       justify-content: center;
+      padding: 20px;
     }
+    
     .modal.show {
       display: flex;
+      animation: fadeIn 0.3s ease;
     }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
     .modal-content {
       background: white;
-      padding: 24px;
-      border-radius: 12px;
+      padding: 28px;
+      border-radius: 16px;
       max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
+      width: 100%;
+      max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease;
     }
+    
+    @keyframes slideUp {
+      from { 
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to { 
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
     }
+    
     .modal-header h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
       color: #1f2937;
+      font-weight: 700;
     }
+    
     .modal-close {
       background: #ef4444;
       color: white;
       border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
     }
+    
     .modal-close:hover {
       background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     }
+    
     .detail-row {
       display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #f3f4f6;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
     }
+    
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    
     .detail-label {
-      font-weight: 600;
-      color: #374151;
+      font-weight: 700;
+      color: #64748b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+    
     .detail-value {
       color: #1f2937;
+      font-size: 15px;
+      font-weight: 500;
+      word-break: break-word;
     }
+    
     .actions a.call { 
       display: inline-block; 
-      padding: 8px 16px; 
-      border-radius: 6px; 
-      background: #22c55e; 
+      padding: 8px 20px; 
+      border-radius: 8px; 
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #fff; 
       text-decoration: none;
-      font-weight: 500;
-      transition: background 0.2s;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      font-size: 13px;
     }
+    
     .actions a.call:hover { 
-      background: #16a34a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
     }
+    
     .error { 
-      margin-top: 20px; 
-      padding: 16px;
+      margin: 20px 0;
+      padding: 16px 20px;
       background: #fee2e2;
       color: #991b1b; 
-      border-radius: 8px;
+      border-radius: 12px;
       border-left: 4px solid #dc2626;
+      font-weight: 500;
     }
+    
     .empty { 
-      margin-top: 20px; 
-      padding: 16px;
-      color: #6b7280;
+      margin: 40px 0;
+      padding: 40px 20px;
+      color: #94a3b8;
       text-align: center;
+      font-size: 16px;
+      font-weight: 500;
     }
+    
     .pagination {
-      margin-top: 24px;
+      margin-top: auto;
+      padding-top: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
+    
     .pagination button {
-      padding: 10px 20px;
-      background: #3b82f6;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #eab166 0%, #fdcce3 100%);
       color: white;
       border: none;
-      border-radius: 6px;
-      font-weight: 500;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      font-size: 14px;
     }
+    
     .pagination button:hover:not(:disabled) {
-      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
     }
+    
+    .pagination button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
     .pagination button:disabled {
-      background: #d1d5db;
+      background: #cbd5e1;
       cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
+    
     .pagination .page-info {
       font-size: 15px;
-      color: #374151;
-      font-weight: 500;
+      color: #475569;
+      font-weight: 600;
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border-radius: 8px;
     }
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       body {
-        padding: 12px;
+        padding: 8px;
+      }
+      
+      .container {
+        padding: 16px;
+        border-radius: 12px;
       }
       
       h1 {
-        font-size: 20px;
-        margin-bottom: 16px;
+        font-size: 22px;
+        margin-bottom: 20px;
       }
       
       .search-box {
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
+        padding: 16px;
       }
       
       .search-box input {
         width: 100%;
+        font-size: 16px;
       }
       
       .search-box button {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
+        font-size: 16px;
       }
       
-      /* Make table scrollable horizontally */
       .table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin: 0 -12px;
-        padding: 0 12px;
+        margin: 0 -16px;
+        padding: 0 16px;
+        border-radius: 0;
       }
       
       table {
-        min-width: 600px;
-        font-size: 14px;
+        font-size: 13px;
       }
       
       th, td {
-        padding: 8px 6px;
-        white-space: nowrap;
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+      
+      th {
+        font-size: 11px;
       }
       
       .actions a.call {
         padding: 6px 12px;
-        font-size: 14px;
+        font-size: 12px;
       }
       
       .pagination {
-        flex-wrap: wrap;
-        gap: 8px;
+        gap: 10px;
+        padding-top: 16px;
       }
       
       .pagination button {
-        padding: 10px 16px;
-        font-size: 14px;
-        min-width: 80px;
+        padding: 10px 20px;
+        font-size: 13px;
+        flex: 1;
+        min-width: 90px;
       }
       
       .pagination .page-info {
         font-size: 14px;
         width: 100%;
-        text-align: center;
         order: -1;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+      }
+      
+      .modal {
+        padding: 12px;
       }
       
       .modal-content {
-        width: 95%;
-        padding: 16px;
-        max-height: 85vh;
+        width: 100%;
+        padding: 20px;
+        max-height: 90vh;
       }
       
       .modal-header h2 {
@@ -274,48 +462,52 @@
       }
       
       .modal-close {
-        padding: 6px 10px;
-        font-size: 14px;
+        padding: 6px 12px;
+        font-size: 13px;
       }
       
       .detail-row {
         grid-template-columns: 1fr;
-        gap: 4px;
-        padding: 12px 0;
+        gap: 6px;
+        padding: 14px 0;
       }
       
       .detail-label {
-        font-size: 13px;
-        color: #6b7280;
+        font-size: 12px;
       }
       
       .detail-value {
-        font-size: 15px;
-        font-weight: 500;
+        font-size: 14px;
       }
     }
     
     @media (max-width: 480px) {
-      body {
-        padding: 8px;
+      .container {
+        padding: 12px;
       }
       
       h1 {
-        font-size: 18px;
+        font-size: 20px;
       }
       
       table {
-        font-size: 13px;
+        font-size: 12px;
       }
       
       th, td {
-        padding: 6px 4px;
+        padding: 8px 6px;
+      }
+      
+      .pagination button {
+        padding: 10px 16px;
+        font-size: 12px;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Polling List</h1>
+  <div class="container">
+    <h1>পোলিং অফিসার প্যানেল </h1>
   
   <div class="search-box">
     <input type="text" id="search-input" placeholder="Search by name or mobile number...">
@@ -330,7 +522,7 @@
     <table id="polling-table" style="display: none;">
       <thead>
         <tr>
-          <th>polling_iid</th>
+          <th>SL</th>
           <th>polling_name</th>
           <th>mobile_number</th>
           <th>Call</th>
@@ -341,9 +533,10 @@
   </div>
 
   <div class="pagination" id="pagination" style="display: none;">
-    <button id="prev-btn" onclick="prevPage()">Previous</button>
+    <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
     <span class="page-info" id="page-info">Page 1</span>
-    <button id="next-btn" onclick="nextPage()">Next</button>
+    <button id="next-btn" onclick="nextPage()">Next ➡</button>
+  </div>
   </div>
 
   <!-- Modal for details -->
