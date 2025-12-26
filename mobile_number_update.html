@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Mobile Number Update</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'kalpurush', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 0;
+      background: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      width: 100%;
+      margin: 0;
+      background: white;
+      padding: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    h1 { 
+      font-size: 28px; 
+      margin: 0 0 20px 0;
+      color: #1f2937;
+      text-align: center;
+      font-weight: 700;
+    }
+    
+    .update-btn {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      font-size: 15px;
+      margin-bottom: 20px;
+      align-self: flex-start;
+    }
+    
+    .update-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+    }
+    
+    .update-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse;
+      background: white;
+      font-size: 14px;
+      margin-top: 12px;
+      table-layout: auto;
+    }
+    
+    th, td { 
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    
+    th { 
+      background: #f4f4f4;
+      font-weight: 600;
+      color: #333;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      font-size: 14px;
+    }
+    
+    tbody tr:nth-child(odd) {
+      background: #ffffff;
+    }
+    
+    tbody tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+    
+    tbody tr:hover {
+      background: #e8f4f8 !important;
+    }
+    
+    .loading {
+      padding: 40px 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 16px;
+    }
+    
+    .error { 
+      margin: 20px 0;
+      padding: 16px 20px;
+      background: #fee2e2;
+      color: #991b1b; 
+      border-radius: 12px;
+      border-left: 4px solid #dc2626;
+      font-weight: 500;
+    }
+    
+    .success { 
+      margin: 20px 0;
+      padding: 16px 20px;
+      background: #d1fae5;
+      color: #065f46; 
+      border-radius: 12px;
+      border-left: 4px solid #10b981;
+      font-weight: 500;
+    }
+    
+    .highlight {
+      background: #fef3c7 !important;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    
+    .pagination button {
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    
+    .pagination button:hover:not(:disabled) {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+    
+    .pagination button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .page-info {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mobile Number Update</h1>
+    
+    <button class="update-btn" id="update-btn" onclick="updateAllMobileNumbers()">🔄 Update All Mobile Numbers</button>
+    
+    <div id="loading" class="loading">Loading data...</div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="success" class="success" style="display: none;"></div>
+    
+    <div class="pagination">
+      <button id="prev-btn" onclick="previousPage()" disabled>← Previous</button>
+      <span class="page-info" id="page-info">Page 1</span>
+      <button id="next-btn" onclick="nextPage()">Next →</button>
+    </div>
+    
+    <div class="table-wrapper">
+      <table id="data-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>presiding_iid</th>
+            <th>presiding_name</th>
+            <th>Extracted Mobile</th>
+            <th>Current mobile_number</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+    // Initialize Supabase client
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allData = [];
+    let currentPage = 1;
+    const recordsPerPage = 500;
+    let totalRecords = 0;
+
+    // Bengali to English digit mapping
+    const bengaliToEnglish = {
+      '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+      '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+    };
+
+    // Convert Bengali digits to English
+    function convertBengaliToEnglish(text) {
+      if (!text) return '';
+      return text.replace(/[০-৯]/g, (match) => bengaliToEnglish[match] || match);
+    }
+
+    // Extract mobile number from text
+    function extractMobileNumber(text) {
+      if (!text) return null;
+      
+      // Convert Bengali to English first
+      text = convertBengaliToEnglish(text);
+      
+      // Remove all hyphens
+      text = text.replace(/-/g, '');
+      
+      // Match 11-digit mobile numbers starting with 01
+      const regex = /\b(01[3-9]\d{8})\b/g;
+      const matches = text.match(regex);
+      
+      if (matches && matches.length > 0) {
+        // Take the last match (usually at the end)
+        const mobileNumber = matches[matches.length - 1];
+        return '+88' + mobileNumber;
+      }
+      
+      return null;
+    }
+
+    // Load data from database
+    async function loadData() {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      const tableEl = document.getElementById('data-table');
+      const tbody = tableEl.querySelector('tbody');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const pageInfo = document.getElementById('page-info');
+
+      try {
+        loadingEl.style.display = 'block';
+        errorEl.style.display = 'none';
+
+        // Get total count
+        const { count } = await supabaseClient
+          .from('presiding_list')
+          .select('*', { count: 'exact', head: true });
+        
+        totalRecords = count || 0;
+
+        // Calculate range
+        const start = (currentPage - 1) * recordsPerPage;
+        const end = start + recordsPerPage - 1;
+
+        const { data, error } = await supabaseClient
+          .from('presiding_list')
+          .select('presiding_iid, presiding_name, mobile_number')
+          .order('presiding_iid', { ascending: true })
+          .range(start, end);
+
+        if (error) throw error;
+
+        allData = data || [];
+        loadingEl.style.display = 'none';
+
+        if (allData.length === 0) {
+          errorEl.textContent = 'No data found.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        // Render table
+        tbody.innerHTML = '';
+        allData.forEach(row => {
+          const tr = document.createElement('tr');
+          
+          const extractedMobile = extractMobileNumber(row.presiding_name);
+          
+          // Highlight rows where extracted mobile differs from current
+          if (extractedMobile && extractedMobile !== row.mobile_number) {
+            tr.classList.add('highlight');
+          }
+          
+          tr.innerHTML = `
+            <td>${row.presiding_iid}</td>
+            <td>${row.presiding_name || ''}</td>
+            <td style="font-weight: 600; color: ${extractedMobile ? '#059669' : '#991b1b'};">
+              ${extractedMobile || 'Not found'}
+            </td>
+            <td>${row.mobile_number || ''}</td>
+          `;
+          
+          tbody.appendChild(tr);
+        });
+
+        tableEl.style.display = 'table';
+
+        // Update pagination controls
+        const totalPages = Math.ceil(totalRecords / recordsPerPage);
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages} (Total: ${totalRecords} records)`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage >= totalPages;
+
+      } catch (err) {
+        console.error('Error loading data:', err);
+        loadingEl.style.display = 'none';
+        errorEl.textContent = 'Error loading data: ' + err.message;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    // Update all mobile numbers
+    async function updateAllMobileNumbers() {
+      const updateBtn = document.getElementById('update-btn');
+      const errorEl = document.getElementById('error');
+      const successEl = document.getElementById('success');
+      
+      if (!confirm('Update all mobile numbers? This will overwrite existing mobile_number values.')) {
+        return;
+      }
+
+      updateBtn.disabled = true;
+      updateBtn.textContent = '⏳ Updating...';
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      try {
+        const updates = [];
+        let updatedCount = 0;
+
+        for (const row of allData) {
+          const extractedMobile = extractMobileNumber(row.presiding_name);
+          
+          // Only update if we found a mobile number and it's different
+          if (extractedMobile && extractedMobile !== row.mobile_number) {
+            updates.push(
+              supabaseClient
+                .from('presiding_list')
+                .update({ mobile_number: extractedMobile })
+                .eq('presiding_iid', row.presiding_iid)
+            );
+            updatedCount++;
+          }
+        }
+
+        if (updates.length === 0) {
+          successEl.textContent = 'No updates needed. All mobile numbers are already correct.';
+          successEl.style.display = 'block';
+          return;
+        }
+
+        const results = await Promise.all(updates);
+        
+        // Check for errors and show detailed error messages
+        const errors = results.filter(r => r.error);
+        if (errors.length > 0) {
+          const errorDetails = errors.map(e => e.error.message || e.error.hint || JSON.stringify(e.error)).join('; ');
+          console.error('Update errors:', errors);
+          throw new Error(`Failed to update ${errors.length} record(s): ${errorDetails}`);
+        }
+
+        successEl.textContent = `✅ Successfully updated ${updatedCount} mobile number(s)!`;
+        successEl.style.display = 'block';
+        
+        // Reload data
+        await loadData();
+
+      } catch (err) {
+        console.error('Error updating:', err);
+        errorEl.textContent = '❌ Error updating: ' + err.message;
+        errorEl.style.display = 'block';
+      } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = '🔄 Update All Mobile Numbers';
+      }
+    }
+
+    // Navigation functions
+    function previousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadData();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(totalRecords / recordsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadData();
+      }
+    }
+
+    // Load data on page load
+    loadData();
+  </script>
+</body>
+</html>

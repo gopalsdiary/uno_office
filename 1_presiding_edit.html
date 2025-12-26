@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>পোলিং অফিসার প্যানেল </title>
+  <title>প্রিজাইডিং অফিসার প্যানেল </title>
   <style>
     * {
       box-sizing: border-box;
@@ -805,10 +805,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>পোলিং অফিসার প্যানেল - Edit Table</h1>
+    <h1>প্রিজাইডিং অফিসার প্যানেল - Edit Table</h1>
   
   <div class="action-buttons">
-    <button class="add-new-btn" onclick="window.location.href='3_polling.html'">⬅️ Back</button>
+    <button class="add-new-btn" onclick="window.location.href='1_presiding.html'">⬅️ Back</button>
     <div class="filter-checkbox">
       <input type="checkbox" id="show-gender-only" onchange="toggleGenderFilter()">
       <label for="show-gender-only">✓ Show only Gender</label>
@@ -897,7 +897,7 @@
       try {
         // Get total count first
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*', { count: 'exact', head: true });
 
         if (countError) throw countError;
@@ -908,9 +908,9 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .order('polling_iid', { ascending: true })
+          .order('presiding_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
@@ -978,7 +978,7 @@
       try {
         // Get total count
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*', { count: 'exact', head: true });
         
         if (countError) throw countError;
@@ -989,9 +989,9 @@
         const to = from + PAGE_SIZE - 1;
         
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .order('polling_iid', { ascending: true })
+          .order('presiding_iid', { ascending: true })
           .range(from, to);
         
         if (error) throw error;
@@ -1020,8 +1020,8 @@
       
       // Get column names from first row
       const allColumns = [
-        'polling_iid',
-        'polling_name',
+        'presiding_iid',
+        'presiding_name',
         'gender',
         'mobile_number',
         'sallery_scale',
@@ -1036,7 +1036,7 @@
       
       // Filter columns based on showGenderOnly flag
       const columns = showGenderOnly 
-        ? ['polling_iid', 'polling_name', 'gender']
+        ? ['presiding_iid', 'presiding_name', 'gender']
         : allColumns;
       
       // Render header
@@ -1051,7 +1051,7 @@
         columns.forEach(col => {
           const td = document.createElement('td');
 
-          if (col === 'polling_iid') {
+          if (col === 'presiding_iid') {
             // Read-only for ID
             td.textContent = row[col] || '';
             td.style.fontWeight = '700';
@@ -1090,7 +1090,7 @@
               
               select.addEventListener('change', onCellChange);
               td.appendChild(select);
-            } else if (col === 'polling_name' || col === 'address') {
+            } else if (col === 'presiding_name' || col === 'address') {
               // use textarea for long text fields
               const textarea = document.createElement('textarea');
               textarea.rows = 2;
@@ -1184,14 +1184,14 @@
         
         modifiedRows.forEach((changes, rowIndex) => {
           const row = allTableData[rowIndex];
-          const polling_iid = row.polling_iid;
+          const presiding_iid = row.presiding_iid;
           
-          if (polling_iid) {
+          if (presiding_iid) {
             updates.push(
               supabaseClient
-                .from('polling_list')
+                .from('presiding_list')
                 .update(changes)
-                .eq('polling_iid', polling_iid)
+                .eq('presiding_iid', presiding_iid)
             );
           }
         });
@@ -1240,9 +1240,9 @@
       try {
         // Get total count for search results
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*', { count: 'exact', head: true })
-          .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+          .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
 
         if (countError) throw countError;
         totalRecords = count || 0;
@@ -1252,10 +1252,10 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
-          .order('polling_iid', { ascending: true })
+          .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
+          .order('presiding_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
@@ -1298,12 +1298,12 @@
         const tr = document.createElement('tr');
         
         const tdId = document.createElement('td');
-        tdId.textContent = row.polling_iid || '';
+        tdId.textContent = row.presiding_iid || '';
         
         const tdName = document.createElement('td');
         const nameLink = document.createElement('span');
         nameLink.className = 'name-link';
-        nameLink.textContent = row.polling_name || '';
+        nameLink.textContent = row.presiding_name || '';
         nameLink.onclick = () => showDetails(row);
         tdName.appendChild(nameLink);
         
@@ -1318,7 +1318,7 @@
         const telNumber = (row.mobile_number || '').replace(/[^+\d]/g, '');
         callLink.href = telNumber ? 'tel:' + telNumber : '#';
         callLink.textContent = 'Call';
-        callLink.setAttribute('aria-label', 'Call ' + (row.polling_name || row.mobile_number || ''));
+        callLink.setAttribute('aria-label', 'Call ' + (row.presiding_name || row.mobile_number || ''));
         
         if (!telNumber) {
           callLink.style.opacity = '0.5';
@@ -1351,8 +1351,8 @@
     function addNew() {
       isAddMode = true;
       selectedRow = {
-        polling_iid: '',
-        polling_name: '',
+        presiding_iid: '',
+        presiding_name: '',
         mobile_number: '',
         sallery_scale: '',
         current_grade_sallery: '',
@@ -1382,8 +1382,8 @@
     function renderModalContent(row, isEdit) {
       const modalBody = document.getElementById('modal-body');
       const fields = [
-        { key: 'polling_iid', label: 'polling_iid' },
-        { key: 'polling_name', label: 'polling_name' },
+        { key: 'presiding_iid', label: 'presiding_iid' },
+        { key: 'presiding_name', label: 'presiding_name' },
         { key: 'mobile_number', label: 'mobile_number' },
         { key: 'sallery_scale', label: 'sallery_scale' },
         { key: 'current_grade_sallery', label: 'current_grade_sallery' },
@@ -1416,9 +1416,9 @@
         <div class="detail-row">
           <div class="detail-label">${field.label}:</div>
           <div class="detail-value">
-            ${field.key === 'polling_iid' && !isAddMode
+            ${field.key === 'presiding_iid' && !isAddMode
               ? `<div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(row[field.key] ?? '')}</div>`
-              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'polling_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
+              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'presiding_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
           </div>
         </div>
       `).join('');
@@ -1452,9 +1452,9 @@
 
       const payload = {};
       formData.forEach((value, key) => {
-        if (key === 'polling_iid' && !isAddMode) return; // do not update primary id in edit mode
+        if (key === 'presiding_iid' && !isAddMode) return; // do not update primary id in edit mode
         const trimmedValue = value.trim();
-        if (trimmedValue || key === 'polling_iid') {
+        if (trimmedValue || key === 'presiding_iid') {
           payload[key] = trimmedValue;
         }
       });
@@ -1468,11 +1468,11 @@
         if (isAddMode) {
           // Insert new record
           const insertPayload = { ...payload };
-          if (!insertPayload.polling_iid) {
-            delete insertPayload.polling_iid; // let database auto-generate
+          if (!insertPayload.presiding_iid) {
+            delete insertPayload.presiding_iid; // let database auto-generate
           }
           const result = await supabaseClient
-            .from('polling_list')
+            .from('presiding_list')
             .insert([insertPayload])
             .select()
             .single();
@@ -1481,9 +1481,9 @@
         } else {
           // Update existing record
           const result = await supabaseClient
-            .from('polling_list')
+            .from('presiding_list')
             .update(payload)
-            .eq('polling_iid', selectedRow.polling_iid)
+            .eq('presiding_iid', selectedRow.presiding_iid)
             .select()
             .single();
           data = result.data;

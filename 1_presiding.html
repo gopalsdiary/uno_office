@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>পোলিং অফিসার প্যানেল </title>
+  <title>প্রিজাইডিং অফিসার প্যানেল </title>
   <style>
     * {
       box-sizing: border-box;
@@ -116,31 +116,6 @@
       flex-wrap: wrap;
     }
     
-    .filter-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #f8fafc;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      cursor: pointer;
-      user-select: none;
-    }
-    
-    .filter-checkbox input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-    
-    .filter-checkbox label {
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      color: #334155;
-    }
-    
     .edit-table-btn {
       padding: 12px 28px;
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -206,10 +181,11 @@
     .editable-table-wrapper {
       display: none;
       overflow-x: auto;
-      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 0;
-      flex: 1;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      margin-bottom: 20px;
+      max-height: 600px;
     }
     
     .editable-table-wrapper.active {
@@ -222,16 +198,15 @@
       background: white;
       font-size: 13px;
       margin-top: 12px;
+      table-layout: auto;
     }
     
     .editable-table th,
     .editable-table td {
-      padding: 12px 8px;
+      padding: 8px;
       text-align: left;
       border: 1px solid #ddd;
-      vertical-align: top;
-      height: auto;
-      position: relative;
+      vertical-align: middle;
     }
     
     .editable-table th {
@@ -250,12 +225,8 @@
       background: #ffffff;
     }
     
-    .editable-table th:nth-child(2),
-    .editable-table td:nth-child(2) {
-      width: 200px;
-      max-width: 200px;
-      word-wrap: break-word;
-      white-space: normal;
+    .editable-table tbody tr:nth-child(even) {
+      background: #f5f5f5;
     }
     
     .editable-table input {
@@ -266,41 +237,6 @@
       font-size: 13px;
       font-family: inherit;
       background: white;
-      min-height: 32px;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-
-    .editable-table textarea {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 2px;
-      font-size: 13px;
-      font-family: inherit;
-      background: white;
-      min-height: 32px;
-      resize: vertical;
-      overflow: hidden;
-    }
-
-    .editable-table select {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 2px;
-      font-size: 13px;
-      font-family: inherit;
-      background: white;
-      cursor: pointer;
-      height: auto;
-      min-height: 32px;
-    }
-    
-    .editable-table select:focus {
-      outline: none;
-      border-color: #0b74de;
-      box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
     }
     
     .editable-table input:focus {
@@ -309,14 +245,7 @@
       box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
     }
     
-    .editable-table textarea:focus {
-      outline: none;
-      border-color: #0b74de;
-      box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
-    }
-    
-    .editable-table input.modified,
-    .editable-table textarea.modified {
+    .editable-table input.modified {
       background: #fef3c7;
       border-color: #fbbf24;
     }
@@ -805,18 +734,20 @@
 </head>
 <body>
   <div class="container">
-    <h1>পোলিং অফিসার প্যানেল - Edit Table</h1>
+    <h1>প্রিজাইডিং অফিসার প্যানেল </h1>
+  
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="Search by name or mobile number...">
+    <button onclick="searchPolling()">Search</button>
+  </div>
   
   <div class="action-buttons">
-    <button class="add-new-btn" onclick="window.location.href='3_polling.html'">⬅️ Back</button>
-    <div class="filter-checkbox">
-      <input type="checkbox" id="show-gender-only" onchange="toggleGenderFilter()">
-      <label for="show-gender-only">✓ Show only Gender</label>
-    </div>
+    <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
+    <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
     <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
   </div>
   
-  <div class="editable-table-wrapper active" id="editable-table-wrapper">
+  <div class="editable-table-wrapper" id="editable-table-wrapper">
     <table class="editable-table" id="editable-table">
       <thead id="editable-thead"></thead>
       <tbody id="editable-tbody"></tbody>
@@ -827,12 +758,12 @@
   <div id="error" class="error" style="display: none;"></div>
   <div id="empty" class="empty" style="display: none;">No data found.</div>
   
-  <div class="table-wrapper" style="display: none;">
+  <div class="table-wrapper">
     <table id="polling-table" style="display: none;">
       <thead>
         <tr>
           <th>SL</th>
-          <th>পোলিং অফিসার নাম</th>
+          <th>প্রিজাইডিং অফিসার নাম</th>
           <th>মোবাইল নম্বর</th>
           <th>কল</th>
         </tr>
@@ -841,7 +772,7 @@
     </table>
   </div>
 
-  <div class="pagination" id="pagination">
+  <div class="pagination" id="pagination" style="display: none;">
     <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
     <span class="page-info" id="page-info">Page 1</span>
     <button id="next-btn" onclick="nextPage()">Next ➡</button>
@@ -869,7 +800,7 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Pagination variables
-    const PAGE_SIZE = 500;
+    const PAGE_SIZE = 200;
     let currentPage = 1;
     let totalRecords = 0;
     let isSearchMode = false;
@@ -879,13 +810,6 @@
     let allTableData = [];
     let modifiedRows = new Map();
     let isEditTableMode = false;
-    let showGenderOnly = false;
-    
-    // Toggle gender filter
-    function toggleGenderFilter() {
-      showGenderOnly = document.getElementById('show-gender-only').checked;
-      renderEditableTable();
-    }
 
     async function loadPollingData(page = 1) {
       const loadingEl = document.getElementById('loading');
@@ -897,7 +821,7 @@
       try {
         // Get total count first
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*', { count: 'exact', head: true });
 
         if (countError) throw countError;
@@ -908,9 +832,9 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .order('polling_iid', { ascending: true })
+          .order('presiding_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
@@ -944,62 +868,29 @@
       }
     }
 
-    // Load data when page loads - directly load editable table
-    loadAllTableData();
+    // Load data when page loads
+    loadPollingData();
     
-    // Toggle edit table mode
-    async function toggleEditTable() {
-      isEditTableMode = !isEditTableMode;
-      const wrapper = document.getElementById('editable-table-wrapper');
-      const tableWrapper = document.querySelector('.table-wrapper');
-      const pagination = document.getElementById('pagination');
-      
-      if (isEditTableMode) {
-        wrapper.classList.add('active');
-        tableWrapper.style.display = 'none';
-        pagination.style.display = 'none';
-        await loadAllTableData();
-      } else {
-        wrapper.classList.remove('active');
-        tableWrapper.style.display = 'block';
-        if (totalRecords > PAGE_SIZE) {
-          pagination.style.display = 'flex';
-        }
-        modifiedRows.clear();
-        updateUpdateButton();
-      }
+    // Toggle edit table mode - navigate to separate edit page
+    function toggleEditTable() {
+      window.location.href = '1_presiding_edit.html';
     }
     
-    // Load all table data for editing with pagination
-    async function loadAllTableData(page = 1) {
+    // Load all table data for editing
+    async function loadAllTableData() {
       const loadingEl = document.getElementById('loading');
       loadingEl.style.display = 'block';
       
       try {
-        // Get total count
-        const { count, error: countError } = await supabaseClient
-          .from('polling_list')
-          .select('*', { count: 'exact', head: true });
-        
-        if (countError) throw countError;
-        totalRecords = count || 0;
-        
-        // Fetch paginated data
-        const from = (page - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
-        
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .order('polling_iid', { ascending: true })
-          .range(from, to);
+          .order('presiding_iid', { ascending: true });
         
         if (error) throw error;
         
         allTableData = data || [];
-        currentPage = page;
         renderEditableTable();
-        updatePagination();
         loadingEl.style.display = 'none';
       } catch (err) {
         console.error('Error loading all data:', err);
@@ -1014,15 +905,14 @@
       const tbody = document.getElementById('editable-tbody');
       
       if (allTableData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:40px;">No data available</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">No data available</td></tr>';
         return;
       }
       
       // Get column names from first row
-      const allColumns = [
-        'polling_iid',
-        'polling_name',
-        'gender',
+      const columns = [
+        'presiding_iid',
+        'presiding_name',
         'mobile_number',
         'sallery_scale',
         'current_grade_sallery',
@@ -1033,11 +923,6 @@
         'previous_election',
         'comment'
       ];
-      
-      // Filter columns based on showGenderOnly flag
-      const columns = showGenderOnly 
-        ? ['polling_iid', 'polling_name', 'gender']
-        : allColumns;
       
       // Render header
       thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
@@ -1050,78 +935,23 @@
         
         columns.forEach(col => {
           const td = document.createElement('td');
-
-          if (col === 'polling_iid') {
+          
+          if (col === 'presiding_iid') {
             // Read-only for ID
             td.textContent = row[col] || '';
             td.style.fontWeight = '700';
             td.style.color = '#111827';
           } else {
-            // use select for gender
-            if (col === 'gender') {
-              const select = document.createElement('select');
-              select.dataset.column = col;
-              select.dataset.rowIndex = index;
-              select.dataset.originalValue = row[col] || '';
-              
-              // Add blank option
-              const blankOpt = document.createElement('option');
-              blankOpt.value = '';
-              blankOpt.textContent = '-- Select --';
-              select.appendChild(blankOpt);
-              
-              // Add Male option
-              const maleOpt = document.createElement('option');
-              maleOpt.value = 'Male';
-              maleOpt.textContent = 'Male';
-              select.appendChild(maleOpt);
-              
-              // Add Female option
-              const femaleOpt = document.createElement('option');
-              femaleOpt.value = 'Female';
-              femaleOpt.textContent = 'Female';
-              select.appendChild(femaleOpt);
-              
-              // Set selected value
-              const currentVal = (row[col] || '').trim();
-              if (currentVal) {
-                select.value = currentVal;
-              }
-              
-              select.addEventListener('change', onCellChange);
-              td.appendChild(select);
-            } else if (col === 'polling_name' || col === 'address') {
-              // use textarea for long text fields
-              const textarea = document.createElement('textarea');
-              textarea.rows = 2;
-              textarea.value = row[col] || '';
-              textarea.dataset.column = col;
-              textarea.dataset.rowIndex = index;
-              textarea.dataset.originalValue = row[col] || '';
-              textarea.addEventListener('input', onCellChange);
-              // auto-resize textarea
-              textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = this.scrollHeight + 'px';
-              });
-              // initial resize
-              setTimeout(() => {
-                textarea.style.height = 'auto';
-                textarea.style.height = textarea.scrollHeight + 'px';
-              }, 0);
-              td.appendChild(textarea);
-            } else {
-              const input = document.createElement('input');
-              input.type = 'text';
-              input.value = row[col] || '';
-              input.dataset.column = col;
-              input.dataset.rowIndex = index;
-              input.dataset.originalValue = row[col] || '';
-              input.addEventListener('input', onCellChange);
-              td.appendChild(input);
-            }
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = row[col] || '';
+            input.dataset.column = col;
+            input.dataset.rowIndex = index;
+            input.dataset.originalValue = row[col] || '';
+            input.addEventListener('input', onCellChange);
+            td.appendChild(input);
           }
-
+          
           tr.appendChild(td);
         });
         
@@ -1184,14 +1014,14 @@
         
         modifiedRows.forEach((changes, rowIndex) => {
           const row = allTableData[rowIndex];
-          const polling_iid = row.polling_iid;
+          const presiding_iid = row.presiding_iid;
           
-          if (polling_iid) {
+          if (presiding_iid) {
             updates.push(
               supabaseClient
-                .from('polling_list')
+                .from('presiding_list')
                 .update(changes)
-                .eq('polling_iid', polling_iid)
+                .eq('presiding_iid', presiding_iid)
             );
           }
         });
@@ -1206,10 +1036,17 @@
         
         alert(`✅ Successfully updated ${modifiedRows.size} row(s)!`);
         
-        // Reload editable data
+        // Reload data
         modifiedRows.clear();
         await loadAllTableData();
         updateUpdateButton();
+        
+        // Refresh main table if in normal mode
+        if (isSearchMode) {
+          searchPolling(currentPage);
+        } else {
+          loadPollingData(currentPage);
+        }
         
       } catch (err) {
         console.error('Error saving changes:', err);
@@ -1240,9 +1077,9 @@
       try {
         // Get total count for search results
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*', { count: 'exact', head: true })
-          .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+          .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
 
         if (countError) throw countError;
         totalRecords = count || 0;
@@ -1252,10 +1089,10 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('presiding_list')
           .select('*')
-          .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
-          .order('polling_iid', { ascending: true })
+          .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
+          .order('presiding_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
@@ -1298,12 +1135,12 @@
         const tr = document.createElement('tr');
         
         const tdId = document.createElement('td');
-        tdId.textContent = row.polling_iid || '';
+        tdId.textContent = row.presiding_iid || '';
         
         const tdName = document.createElement('td');
         const nameLink = document.createElement('span');
         nameLink.className = 'name-link';
-        nameLink.textContent = row.polling_name || '';
+        nameLink.textContent = row.presiding_name || '';
         nameLink.onclick = () => showDetails(row);
         tdName.appendChild(nameLink);
         
@@ -1318,7 +1155,7 @@
         const telNumber = (row.mobile_number || '').replace(/[^+\d]/g, '');
         callLink.href = telNumber ? 'tel:' + telNumber : '#';
         callLink.textContent = 'Call';
-        callLink.setAttribute('aria-label', 'Call ' + (row.polling_name || row.mobile_number || ''));
+        callLink.setAttribute('aria-label', 'Call ' + (row.presiding_name || row.mobile_number || ''));
         
         if (!telNumber) {
           callLink.style.opacity = '0.5';
@@ -1351,8 +1188,8 @@
     function addNew() {
       isAddMode = true;
       selectedRow = {
-        polling_iid: '',
-        polling_name: '',
+        presiding_iid: '',
+        presiding_name: '',
         mobile_number: '',
         sallery_scale: '',
         current_grade_sallery: '',
@@ -1382,8 +1219,8 @@
     function renderModalContent(row, isEdit) {
       const modalBody = document.getElementById('modal-body');
       const fields = [
-        { key: 'polling_iid', label: 'polling_iid' },
-        { key: 'polling_name', label: 'polling_name' },
+        { key: 'presiding_iid', label: 'presiding_iid' },
+        { key: 'presiding_name', label: 'presiding_name' },
         { key: 'mobile_number', label: 'mobile_number' },
         { key: 'sallery_scale', label: 'sallery_scale' },
         { key: 'current_grade_sallery', label: 'current_grade_sallery' },
@@ -1416,9 +1253,9 @@
         <div class="detail-row">
           <div class="detail-label">${field.label}:</div>
           <div class="detail-value">
-            ${field.key === 'polling_iid' && !isAddMode
+            ${field.key === 'presiding_iid' && !isAddMode
               ? `<div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(row[field.key] ?? '')}</div>`
-              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'polling_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
+              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'presiding_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
           </div>
         </div>
       `).join('');
@@ -1452,9 +1289,9 @@
 
       const payload = {};
       formData.forEach((value, key) => {
-        if (key === 'polling_iid' && !isAddMode) return; // do not update primary id in edit mode
+        if (key === 'presiding_iid' && !isAddMode) return; // do not update primary id in edit mode
         const trimmedValue = value.trim();
-        if (trimmedValue || key === 'polling_iid') {
+        if (trimmedValue || key === 'presiding_iid') {
           payload[key] = trimmedValue;
         }
       });
@@ -1468,11 +1305,11 @@
         if (isAddMode) {
           // Insert new record
           const insertPayload = { ...payload };
-          if (!insertPayload.polling_iid) {
-            delete insertPayload.polling_iid; // let database auto-generate
+          if (!insertPayload.presiding_iid) {
+            delete insertPayload.presiding_iid; // let database auto-generate
           }
           const result = await supabaseClient
-            .from('polling_list')
+            .from('presiding_list')
             .insert([insertPayload])
             .select()
             .single();
@@ -1481,9 +1318,9 @@
         } else {
           // Update existing record
           const result = await supabaseClient
-            .from('polling_list')
+            .from('presiding_list')
             .update(payload)
-            .eq('polling_iid', selectedRow.polling_iid)
+            .eq('presiding_iid', selectedRow.presiding_iid)
             .select()
             .single();
           data = result.data;
@@ -1552,29 +1389,21 @@
     function nextPage() {
       const totalPages = Math.ceil(totalRecords / PAGE_SIZE);
       if (currentPage < totalPages) {
-        if (modifiedRows.size > 0) {
-          if (!confirm('You have unsaved changes. Continue without saving?')) {
-            return;
-          }
+        if (isSearchMode) {
+          searchPolling(currentPage + 1);
+        } else {
+          loadPollingData(currentPage + 1);
         }
-        modifiedRows.clear();
-        updateUpdateButton();
-        loadAllTableData(currentPage + 1);
-        window.scrollTo(0, 0);
       }
     }
 
     function prevPage() {
       if (currentPage > 1) {
-        if (modifiedRows.size > 0) {
-          if (!confirm('You have unsaved changes. Continue without saving?')) {
-            return;
-          }
+        if (isSearchMode) {
+          searchPolling(currentPage - 1);
+        } else {
+          loadPollingData(currentPage - 1);
         }
-        modifiedRows.clear();
-        updateUpdateButton();
-        loadAllTableData(currentPage - 1);
-        window.scrollTo(0, 0);
       }
     }
   </script>
