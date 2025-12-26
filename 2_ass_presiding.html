@@ -1,0 +1,1526 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>সহ-প্রিজাইডিং অফিসার প্যানেল </title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'kalpurush', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 0;
+      background: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      width: 100%;
+      margin: 0;
+      background: white;
+      padding: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    h1 { 
+      font-size: 28px; 
+      margin: 0 0 20px 0;
+      color: #1f2937;
+      text-align: center;
+      font-weight: 700;
+    }
+    
+    .search-box {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    }
+    
+    .search-box input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.2s;
+      background: white;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-box button {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      white-space: nowrap;
+    }
+    
+    .search-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    }
+    
+    .search-box button:active {
+      transform: translateY(0);
+    }
+    
+    .add-new-btn {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      white-space: nowrap;
+      font-size: 15px;
+    }
+    
+    .add-new-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+    }
+    
+    .add-new-btn:active {
+      transform: translateY(0);
+    }
+    
+    .action-buttons {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .edit-table-btn {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      white-space: nowrap;
+      font-size: 15px;
+    }
+    
+    .edit-table-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+    }
+    
+    .edit-table-btn:active {
+      transform: translateY(0);
+    }
+    
+    .update-btn {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      white-space: nowrap;
+      font-size: 15px;
+      margin-left: auto;
+    }
+    
+    .update-btn.pending {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    }
+    
+    .update-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+    }
+    
+    .update-btn.pending:hover {
+      box-shadow: 0 6px 16px rgba(251, 191, 36, 0.5);
+    }
+    
+    .update-btn:active {
+      transform: translateY(0);
+    }
+    
+    .update-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .editable-table-wrapper {
+      display: none;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      margin-bottom: 20px;
+      max-height: 600px;
+    }
+    
+    .editable-table-wrapper.active {
+      display: block;
+    }
+    
+    .editable-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 13px;
+      margin-top: 12px;
+      table-layout: auto;
+    }
+    
+    .editable-table th,
+    .editable-table td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+      vertical-align: middle;
+    }
+    
+    .editable-table th {
+      background: #f4f4f4;
+      color: #333;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      font-size: 13px;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    
+    .editable-table tbody tr:nth-child(odd) {
+      background: #ffffff;
+    }
+    
+    .editable-table tbody tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+    
+    .editable-table input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+    
+    .editable-table input:focus {
+      outline: none;
+      border-color: #0b74de;
+      box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
+    }
+    
+    .editable-table input.modified {
+      background: #fef3c7;
+      border-color: #fbbf24;
+    }
+    
+    .editable-table tr:hover {
+      background: #e8f4f8 !important;
+    }
+    
+    .loading {
+      padding: 40px 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 16px;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse;
+      background: white;
+      font-size: 14px;
+      margin-top: 12px;
+      table-layout: auto;
+    }
+    
+    th, td { 
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    
+    th:nth-child(1), td:nth-child(1) {
+      width: 56px;
+      max-width: 56px;
+      padding: 4px;
+      text-align: center;
+    }
+    
+    th:nth-child(2), td:nth-child(2) {
+      min-width: 200px;
+    }
+    
+    th:nth-child(3), td:nth-child(3) {
+      width: 150px;
+    }
+    
+    th:nth-child(4), td:nth-child(4) {
+      width: 100px;
+      text-align: center;
+    }
+    
+    th { 
+      background: #f4f4f4;
+      font-weight: 600;
+      color: #333;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      text-transform: none;
+      font-size: 14px;
+      letter-spacing: normal;
+    }
+    
+    tbody tr:nth-child(odd) {
+      background: #ffffff;
+    }
+    
+    tbody tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+    
+    tbody tr {
+      transition: background 0.15s;
+    }
+    
+    tbody tr:hover {
+      background: #e8f4f8 !important;
+    }
+    
+    tbody tr:last-child td {
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .name-link {
+      color: #0b74de;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+      display: inline-block;
+    }
+    
+    .name-link:hover {
+      color: #064a99;
+      text-decoration: underline;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from { 
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to { 
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      color: white;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #1f2937;
+      font-weight: 700;
+    }
+    
+    .modal-close {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .modal-close:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .detail-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    .detail-label {
+      font-weight: 700;
+      color: #64748b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .detail-value {
+      color: #1f2937;
+      font-size: 15px;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .detail-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .detail-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    
+    .actions a.call { 
+      display: inline-block; 
+      padding: 6px 10px; 
+      border-radius: 4px; 
+      background: #0b74de;
+      color: #fff; 
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.15s;
+      font-size: 13px;
+      border: none;
+    }
+    
+    .actions a.call:hover { 
+      background: #064a99;
+    }
+    
+    .error { 
+      margin: 20px 0;
+      padding: 16px 20px;
+      background: #fee2e2;
+      color: #991b1b; 
+      border-radius: 12px;
+      border-left: 4px solid #dc2626;
+      font-weight: 500;
+    }
+    
+    .empty { 
+      margin: 40px 0;
+      padding: 40px 20px;
+      color: #94a3b8;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .pagination {
+      margin-top: auto;
+      padding-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .pagination button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #eab166 0%, #fdcce3 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      font-size: 14px;
+    }
+    
+    .pagination button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    
+    .pagination button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    .pagination button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .pagination .page-info {
+      font-size: 15px;
+      color: #475569;
+      font-weight: 600;
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      body {
+        padding: 0;
+      }
+      
+      .container {
+        padding: 8px;
+        border-radius: 0;
+      }
+      
+      h1 {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+      
+      .search-box {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        margin: 0 -4px 12px;
+      }
+      
+      .search-box input {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px;
+      }
+      
+      .search-box button {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      
+      .add-new-btn,
+      .edit-table-btn,
+      .update-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+        margin-left: 0 !important;
+      }
+      
+      .table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+        border-radius: 0;
+      }
+      
+      table {
+        font-size: 12px;
+        display: block;
+      }
+      
+      thead {
+        display: none;
+      }
+      
+      tbody {
+        display: block;
+      }
+      
+      tr {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px;
+        background: white;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        gap: 8px;
+      }
+      
+      tr:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.12) !important;
+        background: white !important;
+      }
+      
+      td {
+        display: block;
+        text-align: left !important;
+        padding: 0;
+        border: none;
+        white-space: normal;
+      }
+      
+      td:nth-child(1) {
+        flex: 0 0 30px;
+        font-weight: 700;
+        font-size: 15px;
+        color: #1f2937;
+        text-align: center !important;
+      }
+      
+      td:nth-child(2),
+      td:nth-child(3) {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      
+      td:nth-child(2):before {
+        content: 'নাম: ';
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 10px;
+      }
+      
+      td:nth-child(3) {
+        font-weight: 600;
+        color: #059669;
+        font-size: 13px;
+      }
+      
+      td:nth-child(3):before {
+        content: 'মোবাইল: ';
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 10px;
+      }
+      
+      td:nth-child(4) {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+      }
+      
+      .actions a.call {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 60px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      
+      .pagination {
+        gap: 6px;
+        padding-top: 12px;
+        flex-wrap: wrap;
+      }
+      
+      .pagination button {
+        padding: 10px 16px;
+        font-size: 13px;
+        flex: 1;
+        min-width: 90px;
+      }
+      
+      .pagination .page-info {
+        font-size: 12px;
+        width: 100%;
+        order: -1;
+        margin-bottom: 8px;
+        text-align: center;
+      }
+      
+      .modal {
+        padding: 0;
+      }
+      
+      .modal-content {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        padding: 12px;
+        border-radius: 0;
+      }
+      
+      .modal-header h2 {
+        font-size: 16px;
+      }
+      
+      .modal-close,
+      .modal-edit {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      .detail-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 10px 0;
+      }
+      
+      .detail-label {
+        font-size: 12px;
+        font-weight: 700;
+      }
+      
+      .detail-value {
+        font-size: 14px;
+        padding-left: 0;
+      }
+      
+      .editable-table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+        max-height: 400px;
+      }
+      
+      .editable-table {
+        font-size: 11px;
+      }
+      
+      .editable-table th,
+      .editable-table td {
+        padding: 4px 3px;
+        font-size: 10px;
+      }
+      
+      .editable-table input {
+        font-size: 11px;
+        padding: 6px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 12px;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      table {
+        font-size: 12px;
+      }
+      
+      th, td {
+        padding: 8px 6px;
+      }
+      
+      .pagination button {
+        padding: 10px 16px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>সহ-প্রিজাইডিং অফিসার প্যানেল </h1>
+  
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="Search by name or mobile number...">
+    <button onclick="searchPolling()">Search</button>
+  </div>
+  
+  <div class="action-buttons">
+    <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
+    <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
+    <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
+  </div>
+  
+  <div class="editable-table-wrapper" id="editable-table-wrapper">
+    <table class="editable-table" id="editable-table">
+      <thead id="editable-thead"></thead>
+      <tbody id="editable-tbody"></tbody>
+    </table>
+  </div>
+  
+  <div id="loading" class="loading">Loading data...</div>
+  <div id="error" class="error" style="display: none;"></div>
+  <div id="empty" class="empty" style="display: none;">No data found.</div>
+  
+  <div class="table-wrapper">
+    <table id="polling-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>SL</th>
+          <th>প্রিজাইডিং অফিসার নাম</th>
+          <th>মোবাইল নম্বর</th>
+          <th>কল</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination" style="display: none;">
+    <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
+    <span class="page-info" id="page-info">Page 1</span>
+    <button id="next-btn" onclick="nextPage()">Next ➡</button>
+  </div>
+  </div>
+
+  <!-- Modal for details -->
+  <div id="details-modal" class="modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Detailed Information</h2>
+        <button class="modal-close" onclick="closeModal()">Close</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+    // Initialize Supabase client
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Pagination variables
+    const PAGE_SIZE = 200;
+    let currentPage = 1;
+    let totalRecords = 0;
+    let isSearchMode = false;
+    let searchTerm = '';
+    
+    // Table editing variables
+    let allTableData = [];
+    let modifiedRows = new Map();
+    let isEditTableMode = false;
+
+    async function loadPollingData(page = 1) {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      const emptyEl = document.getElementById('empty');
+      const tableEl = document.getElementById('polling-table');
+      const tbody = tableEl.querySelector('tbody');
+
+      try {
+        // Get total count first
+        const { count, error: countError } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('*', { count: 'exact', head: true });
+
+        if (countError) throw countError;
+        totalRecords = count || 0;
+
+        // Fetch paginated data
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        const { data, error } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('*')
+          .order('ass_presiding_iid', { ascending: true })
+          .range(from, to);
+
+        loadingEl.style.display = 'none';
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data || data.length === 0) {
+          emptyEl.style.display = 'block';
+          tableEl.style.display = 'none';
+          document.getElementById('pagination').style.display = 'none';
+          return;
+        }
+
+        // Populate table
+        tbody.innerHTML = '';
+        renderTableRows(data, tbody);
+        tableEl.style.display = 'table';
+        emptyEl.style.display = 'none';
+        
+        // Update pagination
+        currentPage = page;
+        updatePagination();
+
+      } catch (err) {
+        console.error('Error loading polling data:', err);
+        loadingEl.style.display = 'none';
+        errorEl.textContent = 'Error loading data: ' + err.message;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    // Load data when page loads
+    loadPollingData();
+    
+    // Toggle edit table mode - navigate to separate edit page
+    function toggleEditTable() {
+      window.location.href = '2_ass_presiding_edit.html';
+    }
+    
+    // Load all table data for editing
+    async function loadAllTableData() {
+      const loadingEl = document.getElementById('loading');
+      loadingEl.style.display = 'block';
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('*')
+          .order('ass_presiding_iid', { ascending: true });
+        
+        if (error) throw error;
+        
+        allTableData = data || [];
+        renderEditableTable();
+        loadingEl.style.display = 'none';
+      } catch (err) {
+        console.error('Error loading all data:', err);
+        alert('Error loading table data: ' + err.message);
+        loadingEl.style.display = 'none';
+      }
+    }
+    
+    // Render editable table
+    function renderEditableTable() {
+      const thead = document.getElementById('editable-thead');
+      const tbody = document.getElementById('editable-tbody');
+      
+      if (allTableData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">No data available</td></tr>';
+        return;
+      }
+      
+      // Get column names from first row
+      const columns = [
+        'ass_presiding_iid',
+        'ass_presiding_name',
+        'mobile_number',
+        'sallery_scale',
+        'current_grade_sallery',
+        'date_of_birth',
+        'own_discrict',
+        'address',
+        'Nid_number',
+        'previous_election',
+        'comment'
+      ];
+      
+      // Render header
+      thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
+      
+      // Render rows
+      tbody.innerHTML = '';
+      allTableData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.dataset.rowIndex = index;
+        
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          
+          if (col === 'ass_presiding_iid') {
+            // Read-only for ID
+            td.textContent = row[col] || '';
+            td.style.fontWeight = '700';
+            td.style.color = '#111827';
+          } else {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = row[col] || '';
+            input.dataset.column = col;
+            input.dataset.rowIndex = index;
+            input.dataset.originalValue = row[col] || '';
+            input.addEventListener('input', onCellChange);
+            td.appendChild(input);
+          }
+          
+          tr.appendChild(td);
+        });
+        
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // Handle cell change
+    function onCellChange(event) {
+      const input = event.target;
+      const rowIndex = parseInt(input.dataset.rowIndex);
+      const column = input.dataset.column;
+      const originalValue = input.dataset.originalValue;
+      const newValue = input.value.trim();
+      
+      if (newValue !== originalValue) {
+        input.classList.add('modified');
+        
+        if (!modifiedRows.has(rowIndex)) {
+          modifiedRows.set(rowIndex, {});
+        }
+        modifiedRows.get(rowIndex)[column] = newValue;
+      } else {
+        input.classList.remove('modified');
+        
+        if (modifiedRows.has(rowIndex)) {
+          delete modifiedRows.get(rowIndex)[column];
+          if (Object.keys(modifiedRows.get(rowIndex)).length === 0) {
+            modifiedRows.delete(rowIndex);
+          }
+        }
+      }
+      
+      updateUpdateButton();
+    }
+    
+    // Update the Update button state
+    function updateUpdateButton() {
+      const updateBtn = document.getElementById('update-btn');
+      
+      if (modifiedRows.size > 0) {
+        updateBtn.disabled = false;
+        updateBtn.classList.add('pending');
+      } else {
+        updateBtn.disabled = true;
+        updateBtn.classList.remove('pending');
+      }
+    }
+    
+    // Save all changes
+    async function saveAllChanges() {
+      if (modifiedRows.size === 0) return;
+      
+      const updateBtn = document.getElementById('update-btn');
+      updateBtn.disabled = true;
+      updateBtn.textContent = '⏳ Updating...';
+      
+      try {
+        const updates = [];
+        
+        modifiedRows.forEach((changes, rowIndex) => {
+          const row = allTableData[rowIndex];
+          const ass_presiding_iid = row.ass_presiding_iid;
+          
+          if (ass_presiding_iid) {
+            updates.push(
+              supabaseClient
+                .from('ass_presiding_list')
+                .update(changes)
+                .eq('ass_presiding_iid', ass_presiding_iid)
+            );
+          }
+        });
+        
+        const results = await Promise.all(updates);
+        
+        // Check for errors
+        const errors = results.filter(r => r.error);
+        if (errors.length > 0) {
+          throw new Error(`Failed to update ${errors.length} row(s)`);
+        }
+        
+        alert(`✅ Successfully updated ${modifiedRows.size} row(s)!`);
+        
+        // Reload data
+        modifiedRows.clear();
+        await loadAllTableData();
+        updateUpdateButton();
+        
+        // Refresh main table if in normal mode
+        if (isSearchMode) {
+          searchPolling(currentPage);
+        } else {
+          loadPollingData(currentPage);
+        }
+        
+      } catch (err) {
+        console.error('Error saving changes:', err);
+        alert('❌ Error saving changes: ' + err.message);
+      } finally {
+        updateBtn.textContent = '💾 Update';
+        updateUpdateButton();
+      }
+    }
+
+    // Search functionality
+    async function searchPolling(page = 1) {
+      searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+      const tbody = document.getElementById('polling-table').querySelector('tbody');
+      const emptyEl = document.getElementById('empty');
+      const tableEl = document.getElementById('polling-table');
+      const loadingEl = document.getElementById('loading');
+
+      if (!searchTerm) {
+        isSearchMode = false;
+        loadPollingData(1);
+        return;
+      }
+
+      isSearchMode = true;
+      loadingEl.style.display = 'block';
+
+      try {
+        // Get total count for search results
+        const { count, error: countError } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('*', { count: 'exact', head: true })
+          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+
+        if (countError) throw countError;
+        totalRecords = count || 0;
+
+        // Fetch paginated search results
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        const { data, error } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('*')
+          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
+          .order('ass_presiding_iid', { ascending: true })
+          .range(from, to);
+
+        loadingEl.style.display = 'none';
+
+        if (error) throw error;
+
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          tableEl.style.display = 'none';
+          emptyEl.textContent = 'No matches found.';
+          emptyEl.style.display = 'block';
+          document.getElementById('pagination').style.display = 'none';
+          return;
+        }
+
+        emptyEl.style.display = 'none';
+        renderTableRows(data, tbody);
+        tableEl.style.display = 'table';
+        
+        // Update pagination
+        currentPage = page;
+        updatePagination();
+
+      } catch (err) {
+        console.error('Search error:', err);
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // Enable search on Enter key
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchPolling();
+    });
+
+    // Render table rows (reusable)
+    function renderTableRows(data, tbody) {
+      const fragment = document.createDocumentFragment();
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        const tdId = document.createElement('td');
+        tdId.textContent = row.ass_presiding_iid || '';
+        
+        const tdName = document.createElement('td');
+        const nameLink = document.createElement('span');
+        nameLink.className = 'name-link';
+        nameLink.textContent = row.ass_presiding_name || '';
+        nameLink.onclick = () => showDetails(row);
+        tdName.appendChild(nameLink);
+        
+        const tdMobile = document.createElement('td');
+        tdMobile.textContent = row.mobile_number || '';
+        
+        const tdAction = document.createElement('td');
+        tdAction.className = 'actions';
+        
+        const callLink = document.createElement('a');
+        callLink.className = 'call';
+        const telNumber = (row.mobile_number || '').replace(/[^+\d]/g, '');
+        callLink.href = telNumber ? 'tel:' + telNumber : '#';
+        callLink.textContent = 'Call';
+        callLink.setAttribute('aria-label', 'Call ' + (row.ass_presiding_name || row.mobile_number || ''));
+        
+        if (!telNumber) {
+          callLink.style.opacity = '0.5';
+          callLink.style.pointerEvents = 'none';
+        }
+        
+        tdAction.appendChild(callLink);
+        tr.append(tdId, tdName, tdMobile, tdAction);
+        fragment.appendChild(tr);
+      });
+      tbody.appendChild(fragment);
+    }
+
+    // State for editing
+    let selectedRow = null;
+    let isAddMode = false;
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text).replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[ch]);
+    }
+
+    // Add new record
+    function addNew() {
+      isAddMode = true;
+      selectedRow = {
+        ass_presiding_iid: '',
+        ass_presiding_name: '',
+        mobile_number: '',
+        sallery_scale: '',
+        current_grade_sallery: '',
+        date_of_birth: '',
+        own_discrict: '',
+        address: '',
+        Nid_number: '',
+        previous_election: '',
+        comment: ''
+      };
+      const modal = document.getElementById('details-modal');
+      document.querySelector('.modal-header h2').textContent = 'Add New Record';
+      renderModalContent(selectedRow, true);
+      modal.classList.add('show');
+    }
+
+    // Show details modal
+    function showDetails(row) {
+      isAddMode = false;
+      selectedRow = { ...row };
+      const modal = document.getElementById('details-modal');
+      document.querySelector('.modal-header h2').textContent = 'Detailed Information';
+      renderModalContent(selectedRow, false);
+      modal.classList.add('show');
+    }
+
+    function renderModalContent(row, isEdit) {
+      const modalBody = document.getElementById('modal-body');
+      const fields = [
+        { key: 'ass_presiding_iid', label: 'ass_presiding_iid' },
+        { key: 'ass_presiding_name', label: 'ass_presiding_name' },
+        { key: 'mobile_number', label: 'mobile_number' },
+        { key: 'sallery_scale', label: 'sallery_scale' },
+        { key: 'current_grade_sallery', label: 'current_grade_sallery' },
+        { key: 'date_of_birth', label: 'date_of_birth' },
+        { key: 'own_discrict', label: 'own_discrict' },
+        { key: 'address', label: 'address' },
+        { key: 'Nid_number', label: 'Nid_number' },
+        { key: 'previous_election', label: 'previous_election' },
+        { key: 'gender', label: 'gender' },
+
+        { key: 'comment', label: 'comment' }
+      ];
+
+      if (!isEdit) {
+        const html = fields.map(field => `
+          <div class="detail-row">
+            <div class="detail-label">${field.label}:</div>
+            <div class="detail-value">${escapeHtml(row[field.key] ?? 'N/A')}</div>
+          </div>
+        `).join('');
+
+        modalBody.innerHTML = `${html}
+          <div class="modal-actions">
+            <button class="btn btn-edit" onclick="enableEdit()">✏️ Edit</button>
+          </div>`;
+        return;
+      }
+
+      const html = fields.map(field => `
+        <div class="detail-row">
+          <div class="detail-label">${field.label}:</div>
+          <div class="detail-value">
+            ${field.key === 'ass_presiding_iid' && !isAddMode
+              ? `<div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(row[field.key] ?? '')}</div>`
+              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'ass_presiding_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
+          </div>
+        </div>
+      `).join('');
+
+      modalBody.innerHTML = `
+        <form id="edit-form" onsubmit="event.preventDefault(); saveEdit();">
+          ${html}
+          <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+            <button type="submit" class="btn btn-save" id="save-btn">💾 Save</button>
+          </div>
+        </form>
+      `;
+    }
+
+    function enableEdit() {
+      if (!selectedRow) return;
+      renderModalContent(selectedRow, true);
+    }
+
+    function cancelEdit() {
+      if (!selectedRow) return;
+      renderModalContent(selectedRow, false);
+    }
+
+    async function saveEdit() {
+      if (!selectedRow) return;
+      const form = document.getElementById('edit-form');
+      const saveBtn = document.getElementById('save-btn');
+      const formData = new FormData(form);
+
+      const payload = {};
+      formData.forEach((value, key) => {
+        if (key === 'ass_presiding_iid' && !isAddMode) return; // do not update primary id in edit mode
+        const trimmedValue = value.trim();
+        if (trimmedValue || key === 'ass_presiding_iid') {
+          payload[key] = trimmedValue;
+        }
+      });
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        let data, error;
+        
+        if (isAddMode) {
+          // Insert new record
+          const insertPayload = { ...payload };
+          if (!insertPayload.ass_presiding_iid) {
+            delete insertPayload.ass_presiding_iid; // let database auto-generate
+          }
+          const result = await supabaseClient
+            .from('ass_presiding_list')
+            .insert([insertPayload])
+            .select()
+            .single();
+          data = result.data;
+          error = result.error;
+        } else {
+          // Update existing record
+          const result = await supabaseClient
+            .from('ass_presiding_list')
+            .update(payload)
+            .eq('ass_presiding_iid', selectedRow.ass_presiding_iid)
+            .select()
+            .single();
+          data = result.data;
+          error = result.error;
+        }
+
+        if (error) throw error;
+
+        selectedRow = { ...selectedRow, ...data };
+        // Refresh current table view to reflect changes
+        if (isSearchMode) {
+          searchPolling(currentPage);
+        } else {
+          loadPollingData(currentPage);
+        }
+
+        if (isAddMode) {
+          closeModal();
+          alert('✅ New record added successfully!');
+        } else {
+          renderModalContent(selectedRow, false);
+        }
+      } catch (err) {
+        alert('Save failed: ' + err.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save';
+        return;
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Save';
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('details-modal').classList.remove('show');
+    }
+
+    // Close modal on backdrop click
+    function closeModalOnBackdrop(event) {
+      if (event.target.id === 'details-modal') {
+        closeModal();
+      }
+    }
+
+    // Pagination functions
+    function updatePagination() {
+      const totalPages = Math.ceil(totalRecords / PAGE_SIZE);
+      const paginationEl = document.getElementById('pagination');
+      const pageInfo = document.getElementById('page-info');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+
+      if (totalPages <= 1) {
+        paginationEl.style.display = 'none';
+        return;
+      }
+
+      paginationEl.style.display = 'flex';
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(totalRecords / PAGE_SIZE);
+      if (currentPage < totalPages) {
+        if (isSearchMode) {
+          searchPolling(currentPage + 1);
+        } else {
+          loadPollingData(currentPage + 1);
+        }
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        if (isSearchMode) {
+          searchPolling(currentPage - 1);
+        } else {
+          loadPollingData(currentPage - 1);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
