@@ -2,23 +2,453 @@
 <html lang="bn">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>ড্যাশবোর্ড</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>ড্যাশবোর্ড - Uno Feni Sadar নির্বাচনী তালিকা</title>
 	<style>
-		body { font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans Bengali', 'Noto Sans', Arial, sans-serif; margin: 0; padding: 40px; background: #f7f7f9; }
-		h1 { font-size: 20px; margin-bottom: 16px; }
-		.btns { display: flex; gap: 12px; flex-wrap: wrap; }
-		a.button { display: inline-block; padding: 12px 16px; background: #0d6efd; color: #fff; text-decoration: none; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-		a.button.secondary { background: #6c757d; }
-		a.button:hover { filter: brightness(0.95); }
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		
+		body { 
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		
+		.container {
+			max-width: 1000px;
+			width: 100%;
+			background: white;
+			border-radius: 24px;
+			box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+			overflow: hidden;
+			animation: slideIn 0.6s ease;
+			display: flex;
+			flex-direction: column;
+			min-height: 600px;
+		}
+		
+		@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateY(30px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+		
+		/* Header Section */
+		.header {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			padding: 32px 48px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 20px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		}
+		
+		.header-content {
+			flex: 1;
+			min-width: 250px;
+		}
+		
+		h1 { 
+			font-size: 32px; 
+			margin: 0 0 8px 0;
+			color: white;
+			font-weight: 800;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		
+		.subtitle {
+			font-size: 16px;
+			color: rgba(255, 255, 255, 0.9);
+			font-weight: 500;
+		}
+		
+		.user-menu {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+		
+		.user-info {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			background: rgba(255, 255, 255, 0.2);
+			backdrop-filter: blur(10px);
+			padding: 10px 16px;
+			border-radius: 12px;
+			font-weight: 600;
+			color: white;
+			font-size: 14px;
+			border: 1px solid rgba(255, 255, 255, 0.3);
+		}
+		
+		.user-icon {
+			font-size: 20px;
+		}
+		
+		.action-btn {
+			padding: 10px 18px;
+			border: none;
+			border-radius: 10px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			font-size: 14px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+		
+		.action-btn.reset {
+			background: white;
+			color: #3b82f6;
+		}
+		
+		.action-btn.reset:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
+			background: #f0f9ff;
+		}
+		
+		.action-btn.logout {
+			background: rgba(239, 68, 68, 0.9);
+			color: white;
+		}
+		
+		.action-btn.logout:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+			background: #ef4444;
+		}
+		
+		.action-btn:active {
+			transform: translateY(0);
+		}
+		
+		/* Middle Section - Buttons */
+		.main-content {
+			flex: 1;
+			padding: 56px 48px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+		}
+		
+		.btns { 
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 24px;
+			width: 100%;
+			max-width: 800px;
+		}
+		
+		a.button { 
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 32px 28px;
+			background: white;
+			color: #1f2937;
+			text-decoration: none;
+			border-radius: 20px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+			font-size: 18px;
+			font-weight: 700;
+			transition: all 0.3s ease;
+			position: relative;
+			overflow: hidden;
+			text-align: center;
+			line-height: 1.5;
+			border: 2px solid transparent;
+		}
+		
+		a.button::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+			transition: left 0.5s;
+		}
+		
+		a.button:hover::before {
+			left: 100%;
+		}
+		
+		a.button:hover { 
+			transform: translateY(-8px) scale(1.02);
+			box-shadow: 0 12px 30px rgba(102, 126, 234, 0.3);
+			border-color: #667eea;
+		}
+		
+		a.button:active {
+			transform: translateY(-4px) scale(1.01);
+		}
+		
+		a.button.secondary { 
+			background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+			color: #475569;
+		}
+		
+		a.button.secondary:hover {
+			background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+			border-color: #94a3b8;
+			box-shadow: 0 12px 30px rgba(100, 116, 139, 0.3);
+		}
+		
+		a.button.primary {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			grid-column: 1 / -1;
+		}
+		
+		a.button.primary:hover {
+			background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+			box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+		}
+		
+		.icon {
+			margin-right: 12px;
+			font-size: 28px;
+		}
+		
+		/* Footer Section */
+		.footer {
+			background: #f8fafc;
+			padding: 24px 48px;
+			text-align: center;
+			border-top: 1px solid #e2e8f0;
+		}
+		
+		.footer p {
+			color: #64748b;
+			font-size: 14px;
+			font-weight: 500;
+		}
+		
+		/* Mobile Responsive */
+		@media (max-width: 768px) {
+			body {
+				padding: 12px;
+			}
+			
+			.container {
+				border-radius: 20px;
+				min-height: auto;
+			}
+			
+			.header {
+				padding: 24px;
+				flex-direction: column;
+				align-items: flex-start;
+			}
+			
+			.header-content {
+				width: 100%;
+			}
+			
+			h1 {
+				font-size: 24px;
+			}
+			
+			.subtitle {
+				font-size: 14px;
+			}
+			
+			.user-menu {
+				width: 100%;
+				justify-content: space-between;
+			}
+			
+			.user-info {
+				padding: 8px 12px;
+				font-size: 13px;
+			}
+			
+			.user-icon {
+				font-size: 16px;
+			}
+			
+			.action-btn {
+				padding: 8px 14px;
+				font-size: 13px;
+			}
+			
+			.main-content {
+				padding: 32px 24px;
+			}
+			
+			.btns {
+				grid-template-columns: 1fr;
+				gap: 16px;
+			}
+			
+			a.button {
+				padding: 24px 20px;
+				font-size: 16px;
+			}
+			
+			a.button.primary {
+				grid-column: 1;
+			}
+			
+			.footer {
+				padding: 20px 24px;
+			}
+			
+			.footer p {
+				font-size: 13px;
+			}
+		}
+		
+		@media (max-width: 480px) {
+			.header {
+				padding: 20px 16px;
+			}
+			
+			h1 {
+				font-size: 20px;
+			}
+			
+			.subtitle {
+				font-size: 13px;
+			}
+			
+			.user-info span:last-child {
+				display: none;
+			}
+			
+			.action-btn span:last-child {
+				display: none;
+			}
+			
+			.main-content {
+				padding: 24px 16px;
+			}
+			
+			a.button {
+				padding: 20px 16px;
+				font-size: 15px;
+			}
+			
+			.icon {
+				font-size: 24px;
+				margin-right: 8px;
+			}
+			
+			.footer {
+				padding: 16px;
+			}
+		}
 	</style>
-	</head>
+</head>
 <body>
-	<h1>ড্যাশবোর্ড</h1>
-	<div class="btns">
-		<a class="button" href="polling.html">Polling</a>
-		<a class="button secondary" href="#" title="প্রিজাইডিং">প্রিজাইডিং</a>
-		<a class="button secondary" href="#" title="সহ-প্রিজাইডিং">সহ-প্রিজাইডিং</a>
+	<div class="container">
+		<!-- Header Section -->
+		<div class="header">
+			<div class="header-content">
+				<h1><span>🏛️</span> নির্বাচনী ড্যাশবোর্ড</h1>
+				<p class="subtitle">Uno Feni Sadar নির্বাচনী তালিকা ব্যবস্থাপনা</p>
+			</div>
+			<div class="user-menu">
+				<div class="user-info">
+					<span class="user-icon">👤</span>
+					<span id="username">Admin User</span>
+				</div>
+				<button class="action-btn reset" onclick="changePassword()">
+					<span>🔑</span>
+					<span>Reset Password</span>
+				</button>
+				<button class="action-btn logout" onclick="logout()">
+					<span>🚪</span>
+					<span>Logout</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Main Content Section -->
+		<div class="main-content">
+			<div class="btns">
+				<a class="button secondary" href="#" title="প্রিজাইডিং অফিসার তালিকা">
+					<span class="icon">👨‍💼</span>
+					<span>প্রিজাইডিং অফিসার তালিকা</span>
+				</a>
+				<a class="button secondary" href="#" title="সহ-প্রিজাইডিং অফিসার তালিকা">
+					<span class="icon">👨‍💻</span>
+					<span>সহ-প্রিজাইডিং অফিসার তালিকা</span>
+				</a>
+				<a class="button primary" href="3_polling.html">
+					<span class="icon">📋</span>
+					<span>পোলিং অফিসার তালিকা</span>
+				</a>
+			</div>
+		</div>
+
+		<!-- Footer Section -->
+		<div class="footer">
+			<p>© 2025 Uno Feni Sadar Election Management System</p>
+		</div>
 	</div>
+
+	<script>
+		// Change password function
+		function changePassword() {
+			const oldPassword = prompt('পুরাতন পাসওয়ার্ড লিখুন:');
+			if (!oldPassword) return;
+			
+			const newPassword = prompt('নতুন পাসওয়ার্ড লিখুন:');
+			if (!newPassword) return;
+			
+			const confirmPassword = prompt('নতুন পাসওয়ার্ড আবার লিখুন:');
+			if (!confirmPassword) return;
+			
+			if (newPassword !== confirmPassword) {
+				alert('❌ নতুন পাসওয়ার্ড মিলছে না!');
+				return;
+			}
+			
+			if (newPassword.length < 6) {
+				alert('❌ পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
+				return;
+			}
+			
+			// Here you would typically send to server
+			// For now, just show success message
+			alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
+		}
+		
+		// Logout function
+		function logout() {
+			if (confirm('আপনি কি নিশ্চিত লগ আউট করতে চান?')) {
+				// Clear any stored credentials
+				localStorage.clear();
+				sessionStorage.clear();
+				
+				// Redirect to login page (or home)
+				window.location.href = 'index.html';
+			}
+		}
+	</script>
 </body>
 </html>

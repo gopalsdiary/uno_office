@@ -233,6 +233,45 @@
       padding-bottom: 16px;
       border-bottom: 2px solid #e2e8f0;
     }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      color: white;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
     
     .modal-header h2 {
       margin: 0;
@@ -284,6 +323,22 @@
       font-size: 15px;
       font-weight: 500;
       word-break: break-word;
+    }
+
+    .detail-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .detail-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
     
     .actions a.call { 
@@ -523,9 +578,9 @@
       <thead>
         <tr>
           <th>SL</th>
-          <th>polling_name</th>
-          <th>mobile_number</th>
-          <th>Call</th>
+          <th>পোলিং অফিসার নাম</th>
+          <th>মোবাইল নম্বর</th>
+          <th>কল</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -738,37 +793,134 @@
       tbody.appendChild(fragment);
     }
 
+    // State for editing
+    let selectedRow = null;
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text).replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[ch]);
+    }
+
     // Show details modal
     function showDetails(row) {
+      selectedRow = { ...row };
       const modal = document.getElementById('details-modal');
+      renderModalContent(selectedRow, false);
+      modal.classList.add('show');
+    }
+
+    function renderModalContent(row, isEdit) {
       const modalBody = document.getElementById('modal-body');
-      
       const fields = [
-        { label: 'polling_iid', value: row.polling_iid },
-        { label: 'polling_name', value: row.polling_name },
-        { label: 'mobile_number', value: row.mobile_number },
-        { label: 'sallery_scale', value: row.sallery_scale },
-        { label: 'current_grade_sallery', value: row.current_grade_sallery },
-        { label: 'date_of_birth', value: row.date_of_birth },
-        { label: 'own_discrict', value: row.own_discrict },
-        { label: 'address', value: row.address },
-        { label: 'Nid_number', value: row.Nid_number },
-        { label: 'previous_election', value: row.previous_election },
-        { label: 'comment', value: row.comment }
+        { key: 'polling_iid', label: 'polling_iid' },
+        { key: 'polling_name', label: 'polling_name' },
+        { key: 'mobile_number', label: 'mobile_number' },
+        { key: 'sallery_scale', label: 'sallery_scale' },
+        { key: 'current_grade_sallery', label: 'current_grade_sallery' },
+        { key: 'date_of_birth', label: 'date_of_birth' },
+        { key: 'own_discrict', label: 'own_discrict' },
+        { key: 'address', label: 'address' },
+        { key: 'Nid_number', label: 'Nid_number' },
+        { key: 'previous_election', label: 'previous_election' },
+        { key: 'comment', label: 'comment' }
       ];
 
-      let html = '';
-      fields.forEach(field => {
-        html += `
+      if (!isEdit) {
+        const html = fields.map(field => `
           <div class="detail-row">
             <div class="detail-label">${field.label}:</div>
-            <div class="detail-value">${field.value || 'N/A'}</div>
+            <div class="detail-value">${escapeHtml(row[field.key] ?? 'N/A')}</div>
           </div>
-        `;
+        `).join('');
+
+        modalBody.innerHTML = `${html}
+          <div class="modal-actions">
+            <button class="btn btn-edit" onclick="enableEdit()">✏️ Edit</button>
+          </div>`;
+        return;
+      }
+
+      const html = fields.map(field => `
+        <div class="detail-row">
+          <div class="detail-label">${field.label}:</div>
+          <div class="detail-value">
+            ${field.key === 'polling_iid'
+              ? `<div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(row[field.key] ?? '')}</div>`
+              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" />`}
+          </div>
+        </div>
+      `).join('');
+
+      modalBody.innerHTML = `
+        <form id="edit-form" onsubmit="event.preventDefault(); saveEdit();">
+          ${html}
+          <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+            <button type="submit" class="btn btn-save" id="save-btn">💾 Save</button>
+          </div>
+        </form>
+      `;
+    }
+
+    function enableEdit() {
+      if (!selectedRow) return;
+      renderModalContent(selectedRow, true);
+    }
+
+    function cancelEdit() {
+      if (!selectedRow) return;
+      renderModalContent(selectedRow, false);
+    }
+
+    async function saveEdit() {
+      if (!selectedRow) return;
+      const form = document.getElementById('edit-form');
+      const saveBtn = document.getElementById('save-btn');
+      const formData = new FormData(form);
+
+      const payload = {};
+      formData.forEach((value, key) => {
+        if (key === 'polling_iid') return; // do not update primary id
+        payload[key] = value.trim();
       });
 
-      modalBody.innerHTML = html;
-      modal.classList.add('show');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('polling_list')
+          .update(payload)
+          .eq('polling_iid', selectedRow.polling_iid)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        selectedRow = { ...selectedRow, ...data };
+        // Refresh current table view to reflect changes
+        if (isSearchMode) {
+          searchPolling(currentPage);
+        } else {
+          loadPollingData(currentPage);
+        }
+
+        renderModalContent(selectedRow, false);
+      } catch (err) {
+        alert('Save failed: ' + err.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save';
+        return;
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Save';
     }
 
     // Close modal
