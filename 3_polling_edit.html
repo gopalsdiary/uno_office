@@ -181,11 +181,10 @@
     .editable-table-wrapper {
       display: none;
       overflow-x: auto;
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-      margin-bottom: 20px;
-      max-height: 600px;
+      margin-bottom: 0;
+      flex: 1;
     }
     
     .editable-table-wrapper.active {
@@ -198,15 +197,16 @@
       background: white;
       font-size: 13px;
       margin-top: 12px;
-      table-layout: auto;
     }
     
     .editable-table th,
     .editable-table td {
-      padding: 8px;
+      padding: 12px 8px;
       text-align: left;
       border: 1px solid #ddd;
-      vertical-align: middle;
+      vertical-align: top;
+      height: auto;
+      position: relative;
     }
     
     .editable-table th {
@@ -225,8 +225,12 @@
       background: #ffffff;
     }
     
-    .editable-table tbody tr:nth-child(even) {
-      background: #f5f5f5;
+    .editable-table th:nth-child(2),
+    .editable-table td:nth-child(2) {
+      width: 200px;
+      max-width: 200px;
+      word-wrap: break-word;
+      white-space: normal;
     }
     
     .editable-table input {
@@ -237,6 +241,41 @@
       font-size: 13px;
       font-family: inherit;
       background: white;
+      min-height: 32px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .editable-table textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      min-height: 32px;
+      resize: vertical;
+      overflow: hidden;
+    }
+
+    .editable-table select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      height: auto;
+      min-height: 32px;
+    }
+    
+    .editable-table select:focus {
+      outline: none;
+      border-color: #0b74de;
+      box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
     }
     
     .editable-table input:focus {
@@ -245,7 +284,14 @@
       box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
     }
     
-    .editable-table input.modified {
+    .editable-table textarea:focus {
+      outline: none;
+      border-color: #0b74de;
+      box-shadow: 0 0 0 1px rgba(11, 116, 222, 0.2);
+    }
+    
+    .editable-table input.modified,
+    .editable-table textarea.modified {
       background: #fef3c7;
       border-color: #fbbf24;
     }
@@ -734,20 +780,14 @@
 </head>
 <body>
   <div class="container">
-    <h1>পোলিং অফিসার প্যানেল </h1>
-  
-  <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search by name or mobile number...">
-    <button onclick="searchPolling()">Search</button>
-  </div>
+    <h1>পোলিং অফিসার প্যানেল - Edit Table</h1>
   
   <div class="action-buttons">
-    <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
-    <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
+    <button class="add-new-btn" onclick="window.location.href='3_polling.html'">⬅️ Back</button>
     <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
   </div>
   
-  <div class="editable-table-wrapper" id="editable-table-wrapper">
+  <div class="editable-table-wrapper active" id="editable-table-wrapper">
     <table class="editable-table" id="editable-table">
       <thead id="editable-thead"></thead>
       <tbody id="editable-tbody"></tbody>
@@ -758,7 +798,7 @@
   <div id="error" class="error" style="display: none;"></div>
   <div id="empty" class="empty" style="display: none;">No data found.</div>
   
-  <div class="table-wrapper">
+  <div class="table-wrapper" style="display: none;">
     <table id="polling-table" style="display: none;">
       <thead>
         <tr>
@@ -772,7 +812,7 @@
     </table>
   </div>
 
-  <div class="pagination" id="pagination" style="display: none;">
+  <div class="pagination" id="pagination">
     <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
     <span class="page-info" id="page-info">Page 1</span>
     <button id="next-btn" onclick="nextPage()">Next ➡</button>
@@ -800,7 +840,7 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Pagination variables
-    const PAGE_SIZE = 200;
+    const PAGE_SIZE = 500;
     let currentPage = 1;
     let totalRecords = 0;
     let isSearchMode = false;
@@ -868,29 +908,62 @@
       }
     }
 
-    // Load data when page loads
-    loadPollingData();
+    // Load data when page loads - directly load editable table
+    loadAllTableData();
     
-    // Toggle edit table mode - navigate to separate edit page
-    function toggleEditTable() {
-      window.location.href = '3_polling_edit.html';
+    // Toggle edit table mode
+    async function toggleEditTable() {
+      isEditTableMode = !isEditTableMode;
+      const wrapper = document.getElementById('editable-table-wrapper');
+      const tableWrapper = document.querySelector('.table-wrapper');
+      const pagination = document.getElementById('pagination');
+      
+      if (isEditTableMode) {
+        wrapper.classList.add('active');
+        tableWrapper.style.display = 'none';
+        pagination.style.display = 'none';
+        await loadAllTableData();
+      } else {
+        wrapper.classList.remove('active');
+        tableWrapper.style.display = 'block';
+        if (totalRecords > PAGE_SIZE) {
+          pagination.style.display = 'flex';
+        }
+        modifiedRows.clear();
+        updateUpdateButton();
+      }
     }
     
-    // Load all table data for editing
-    async function loadAllTableData() {
+    // Load all table data for editing with pagination
+    async function loadAllTableData(page = 1) {
       const loadingEl = document.getElementById('loading');
       loadingEl.style.display = 'block';
       
       try {
+        // Get total count
+        const { count, error: countError } = await supabaseClient
+          .from('polling_list')
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) throw countError;
+        totalRecords = count || 0;
+        
+        // Fetch paginated data
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+        
         const { data, error } = await supabaseClient
           .from('polling_list')
           .select('*')
-          .order('polling_iid', { ascending: true });
+          .order('polling_iid', { ascending: true })
+          .range(from, to);
         
         if (error) throw error;
         
         allTableData = data || [];
+        currentPage = page;
         renderEditableTable();
+        updatePagination();
         loadingEl.style.display = 'none';
       } catch (err) {
         console.error('Error loading all data:', err);
@@ -905,7 +978,7 @@
       const tbody = document.getElementById('editable-tbody');
       
       if (allTableData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">No data available</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:40px;">No data available</td></tr>';
         return;
       }
       
@@ -913,6 +986,7 @@
       const columns = [
         'polling_iid',
         'polling_name',
+        'gender',
         'mobile_number',
         'sallery_scale',
         'current_grade_sallery',
@@ -935,23 +1009,78 @@
         
         columns.forEach(col => {
           const td = document.createElement('td');
-          
+
           if (col === 'polling_iid') {
             // Read-only for ID
             td.textContent = row[col] || '';
             td.style.fontWeight = '700';
             td.style.color = '#111827';
           } else {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = row[col] || '';
-            input.dataset.column = col;
-            input.dataset.rowIndex = index;
-            input.dataset.originalValue = row[col] || '';
-            input.addEventListener('input', onCellChange);
-            td.appendChild(input);
+            // use select for gender
+            if (col === 'gender') {
+              const select = document.createElement('select');
+              select.dataset.column = col;
+              select.dataset.rowIndex = index;
+              select.dataset.originalValue = row[col] || '';
+              
+              // Add blank option
+              const blankOpt = document.createElement('option');
+              blankOpt.value = '';
+              blankOpt.textContent = '-- Select --';
+              select.appendChild(blankOpt);
+              
+              // Add Male option
+              const maleOpt = document.createElement('option');
+              maleOpt.value = 'Male';
+              maleOpt.textContent = 'Male';
+              select.appendChild(maleOpt);
+              
+              // Add Female option
+              const femaleOpt = document.createElement('option');
+              femaleOpt.value = 'Female';
+              femaleOpt.textContent = 'Female';
+              select.appendChild(femaleOpt);
+              
+              // Set selected value
+              const currentVal = (row[col] || '').trim();
+              if (currentVal) {
+                select.value = currentVal;
+              }
+              
+              select.addEventListener('change', onCellChange);
+              td.appendChild(select);
+            } else if (col === 'polling_name' || col === 'address') {
+              // use textarea for long text fields
+              const textarea = document.createElement('textarea');
+              textarea.rows = 2;
+              textarea.value = row[col] || '';
+              textarea.dataset.column = col;
+              textarea.dataset.rowIndex = index;
+              textarea.dataset.originalValue = row[col] || '';
+              textarea.addEventListener('input', onCellChange);
+              // auto-resize textarea
+              textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+              });
+              // initial resize
+              setTimeout(() => {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+              }, 0);
+              td.appendChild(textarea);
+            } else {
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.value = row[col] || '';
+              input.dataset.column = col;
+              input.dataset.rowIndex = index;
+              input.dataset.originalValue = row[col] || '';
+              input.addEventListener('input', onCellChange);
+              td.appendChild(input);
+            }
           }
-          
+
           tr.appendChild(td);
         });
         
@@ -1036,17 +1165,10 @@
         
         alert(`✅ Successfully updated ${modifiedRows.size} row(s)!`);
         
-        // Reload data
+        // Reload editable data
         modifiedRows.clear();
         await loadAllTableData();
         updateUpdateButton();
-        
-        // Refresh main table if in normal mode
-        if (isSearchMode) {
-          searchPolling(currentPage);
-        } else {
-          loadPollingData(currentPage);
-        }
         
       } catch (err) {
         console.error('Error saving changes:', err);
@@ -1389,21 +1511,29 @@
     function nextPage() {
       const totalPages = Math.ceil(totalRecords / PAGE_SIZE);
       if (currentPage < totalPages) {
-        if (isSearchMode) {
-          searchPolling(currentPage + 1);
-        } else {
-          loadPollingData(currentPage + 1);
+        if (modifiedRows.size > 0) {
+          if (!confirm('You have unsaved changes. Continue without saving?')) {
+            return;
+          }
         }
+        modifiedRows.clear();
+        updateUpdateButton();
+        loadAllTableData(currentPage + 1);
+        window.scrollTo(0, 0);
       }
     }
 
     function prevPage() {
       if (currentPage > 1) {
-        if (isSearchMode) {
-          searchPolling(currentPage - 1);
-        } else {
-          loadPollingData(currentPage - 1);
+        if (modifiedRows.size > 0) {
+          if (!confirm('You have unsaved changes. Continue without saving?')) {
+            return;
+          }
         }
+        modifiedRows.clear();
+        updateUpdateButton();
+        loadAllTableData(currentPage - 1);
+        window.scrollTo(0, 0);
       }
     }
   </script>
