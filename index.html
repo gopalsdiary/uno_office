@@ -119,23 +119,6 @@
             font-size: 14px;
             display: none;
         }
-
-        .signup-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .signup-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -161,10 +144,6 @@
 
             <button type="submit" id="loginBtn" class="login-btn">Sign In</button>
         </form>
-
-        <div class="signup-link">
-            Don't have an account? <a href="#" id="signupLink">Sign up</a>
-        </div>
     </div>
 
     <script>
@@ -182,7 +161,6 @@
         const successMessage = document.getElementById('successMessage');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
-        const signupLink = document.getElementById('signupLink');
 
         // Check if user is already logged in
         checkUser();
@@ -235,49 +213,6 @@
             } catch (error) {
                 console.error('Login error:', error);
                 showError(error.message || 'Login failed. Please try again.');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Sign In';
-            }
-        });
-
-        // Handle signup link click
-        signupLink.addEventListener('click', async (e) => {
-            e.preventDefault();
-            
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
-
-            if (!email || !password) {
-                showError('Please enter email and password to sign up');
-                return;
-            }
-
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters long');
-                return;
-            }
-
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Creating account...';
-            hideMessages();
-
-            try {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                });
-
-                if (error) {
-                    throw error;
-                }
-
-                showSuccess('Account created! You can now sign in.');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Sign In';
-
-            } catch (error) {
-                console.error('Signup error:', error);
-                showError(error.message || 'Signup failed. Please try again.');
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Sign In';
             }
