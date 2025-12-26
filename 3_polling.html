@@ -601,110 +601,225 @@
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       body {
-        padding: 8px;
+        padding: 0;
       }
       
       .container {
-        padding: 16px;
-        border-radius: 12px;
+        padding: 8px;
+        border-radius: 0;
       }
       
       h1 {
-        font-size: 22px;
-        margin-bottom: 20px;
+        font-size: 18px;
+        margin-bottom: 12px;
       }
       
       .search-box {
         flex-direction: column;
-        gap: 12px;
-        padding: 16px;
+        gap: 8px;
+        padding: 10px;
+        margin: 0 -4px 12px;
       }
       
       .search-box input {
         width: 100%;
         font-size: 16px;
+        padding: 12px;
       }
       
       .search-box button {
         width: 100%;
-        padding: 14px;
-        font-size: 16px;
+        padding: 12px;
+        font-size: 15px;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      
+      .add-new-btn,
+      .edit-table-btn,
+      .update-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+        margin-left: 0 !important;
       }
       
       .table-wrapper {
-        margin: 0 -16px;
-        padding: 0 16px;
+        margin: 0 -8px;
+        padding: 0 8px;
         border-radius: 0;
       }
       
       table {
+        font-size: 12px;
+        display: block;
+      }
+      
+      thead {
+        display: none;
+      }
+      
+      tbody {
+        display: block;
+      }
+      
+      tr {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px;
+        background: white;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        gap: 8px;
+      }
+      
+      tr:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.12) !important;
+        background: white !important;
+      }
+      
+      td {
+        display: block;
+        text-align: left !important;
+        padding: 0;
+        border: none;
+        white-space: normal;
+      }
+      
+      td:nth-child(1) {
+        flex: 0 0 30px;
+        font-weight: 700;
+        font-size: 15px;
+        color: #1f2937;
+        text-align: center !important;
+      }
+      
+      td:nth-child(2),
+      td:nth-child(3) {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      
+      td:nth-child(2):before {
+        content: 'নাম: ';
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 10px;
+      }
+      
+      td:nth-child(3) {
+        font-weight: 600;
+        color: #059669;
         font-size: 13px;
       }
       
-      th, td {
-        padding: 10px 8px;
-        font-size: 12px;
+      td:nth-child(3):before {
+        content: 'মোবাইল: ';
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 10px;
       }
       
-      th {
-        font-size: 11px;
+      td:nth-child(4) {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
       }
       
       .actions a.call {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 60px;
+        text-align: center;
+        white-space: nowrap;
       }
       
       .pagination {
-        gap: 10px;
-        padding-top: 16px;
+        gap: 6px;
+        padding-top: 12px;
+        flex-wrap: wrap;
       }
       
       .pagination button {
-        padding: 10px 20px;
+        padding: 10px 16px;
         font-size: 13px;
         flex: 1;
         min-width: 90px;
       }
       
       .pagination .page-info {
-        font-size: 14px;
+        font-size: 12px;
         width: 100%;
         order: -1;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        text-align: center;
       }
       
       .modal {
-        padding: 12px;
+        padding: 0;
       }
       
       .modal-content {
         width: 100%;
-        padding: 20px;
-        max-height: 90vh;
+        height: 100vh;
+        max-height: 100vh;
+        padding: 12px;
+        border-radius: 0;
       }
       
       .modal-header h2 {
-        font-size: 18px;
+        font-size: 16px;
       }
       
-      .modal-close {
+      .modal-close,
+      .modal-edit {
         padding: 6px 12px;
         font-size: 13px;
       }
       
       .detail-row {
         grid-template-columns: 1fr;
-        gap: 6px;
-        padding: 14px 0;
+        gap: 4px;
+        padding: 10px 0;
       }
       
       .detail-label {
         font-size: 12px;
+        font-weight: 700;
       }
       
       .detail-value {
         font-size: 14px;
+        padding-left: 0;
+      }
+      
+      .editable-table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+        max-height: 400px;
+      }
+      
+      .editable-table {
+        font-size: 11px;
+      }
+      
+      .editable-table th,
+      .editable-table td {
+        padding: 4px 3px;
+        font-size: 10px;
+      }
+      
+      .editable-table input {
+        font-size: 11px;
+        padding: 6px;
       }
     }
     
