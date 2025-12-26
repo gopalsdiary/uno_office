@@ -700,12 +700,11 @@
         text-align: center !important;
       }
       
-      td:nth-child(2),
-      td:nth-child(3) {
+      td:nth-child(2) {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       
       td:nth-child(2):before {
@@ -716,16 +715,15 @@
       }
       
       td:nth-child(3) {
+        display: none !important;
+      }
+      
+      td:nth-child(2):after {
+        content: attr(data-mobile);
         font-weight: 600;
         color: #059669;
         font-size: 13px;
-      }
-      
-      td:nth-child(3):before {
-        content: 'মোবাইল: ';
-        font-weight: 600;
-        color: #6b7280;
-        font-size: 10px;
+        margin-top: 2px;
       }
       
       td:nth-child(4) {
@@ -1253,6 +1251,7 @@
         tdId.textContent = row.presiding_iid || '';
         
         const tdName = document.createElement('td');
+        tdName.setAttribute('data-mobile', row.mobile_number || '');
         const nameLink = document.createElement('span');
         nameLink.className = 'name-link';
         nameLink.textContent = row.presiding_name || '';
