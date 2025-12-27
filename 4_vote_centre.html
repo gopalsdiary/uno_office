@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>পোলিং অফিসার প্যানেল </title>
+  <title>ভোট কেন্দ্র </title>
   <style>
     * {
       box-sizing: border-box;
@@ -600,164 +600,86 @@
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
-      body {
-        padding: 0;
-      }
-      
-      .container {
-        padding: 8px;
-        border-radius: 0;
-      }
-      
-      h1 {
-        font-size: 18px;
-        margin-bottom: 12px;
-      }
-      
-      .search-box {
-        flex-direction: column;
-        gap: 8px;
-        padding: 10px;
-        margin: 0 -4px 12px;
-      }
-      
-      .search-box input {
-        width: 100%;
-        font-size: 16px;
-        padding: 12px;
-      }
-      
-      .search-box button {
-        width: 100%;
-        padding: 12px;
-        font-size: 15px;
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 12px;
-      }
-      
-      .add-new-btn,
-      .edit-table-btn,
-      .update-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 15px;
-        margin-left: 0 !important;
-      }
-      
-      .table-wrapper {
-        margin: 0 -8px;
-        padding: 0 8px;
-        border-radius: 0;
-      }
-      
-      table {
-        font-size: 12px;
-        display: block;
-      }
-      
-      thead {
-        display: none;
-      }
-      
-      tbody {
-        display: block;
-      }
-      
+      body { padding: 0; }
+
+      .container { padding: 10px; }
+
+      h1 { font-size: 18px; margin-bottom: 12px; }
+
+      .search-box { flex-direction: column; gap: 10px; padding: 10px 6px; margin: 0 -6px 12px; }
+      .search-box input { width: 100%; font-size: 15px; padding: 12px; }
+      .search-box button { width: 100%; padding: 12px; font-size: 15px; }
+
+      .action-buttons { flex-direction: column; gap: 10px; margin-bottom: 12px; }
+      .add-new-btn, .edit-table-btn, .update-btn { width: 100%; padding: 12px; font-size: 15px; }
+
+      .table-wrapper { margin: 0 -10px; padding: 0 10px; }
+
+      /* Card-style rows */
+      table { display: block; width: 100%; }
+      thead { display: none; }
+      tbody { display: block; }
+
       tr {
         display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 8px;
-        background: white;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-        gap: 8px;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        padding: 14px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #eef2f7;
+        box-shadow: 0 6px 18px rgba(15,23,42,0.04);
       }
-      
-      tr:hover {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.12) !important;
-        background: white !important;
-      }
-      
+
       td {
         display: block;
-        text-align: left !important;
         padding: 0;
         border: none;
         white-space: normal;
       }
-      
+
+      /* Code (small label) */
       td:nth-child(1) {
-        flex: 0 0 30px;
-        font-weight: 700;
-        font-size: 15px;
-        color: #1f2937;
-        text-align: center !important;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 6px;
       }
-      
+
+      td:nth-child(1):before { content: 'কোড: '; font-weight:600; color:#6b7280; font-size:12px; margin-right:4px; }
+
+      /* Name (main) */
       td:nth-child(2) {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+        flex: 1 1 auto;
+        min-width: 0;
       }
-      
-      td:nth-child(2):before {
-        content: 'নাম: ';
-        font-weight: 600;
+
+      td:nth-child(2) .name-link {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0b74de;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      /* Location & area placed under name */
+      td:nth-child(3), td:nth-child(4) {
+        display: block;
+        font-size: 13px;
         color: #6b7280;
-        font-size: 10px;
+        margin-top: 4px;
       }
-      
-      td:nth-child(3) {
-        display: none !important;
-      }
-      
-      td:nth-child(2):after {
-        content: attr(data-mobile);
-        font-weight: 600;
-        color: #059669;
-        font-size: 13px;
-        margin-top: 2px;
-      }
-      
-      td:nth-child(4) {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-      }
-      
-      .actions a.call {
-        padding: 8px 12px;
-        font-size: 13px;
-        min-width: 60px;
-        text-align: center;
-        white-space: nowrap;
-      }
-      
-      .pagination {
-        gap: 6px;
-        padding-top: 12px;
-        flex-wrap: wrap;
-      }
-      
-      .pagination button {
-        padding: 10px 16px;
-        font-size: 13px;
-        flex: 1;
-        min-width: 90px;
-      }
-      
-      .pagination .page-info {
-        font-size: 12px;
-        width: 100%;
-        order: -1;
-        margin-bottom: 8px;
+
+      td:nth-child(3):before { content: 'অবস্থান: '; font-weight:600; color:#6b7280; font-size:11px; }
+      td:nth-child(4):before { content: 'এলাকা: '; font-weight:600; color:#6b7280; font-size:11px; }
+
+      .pagination { gap: 8px; padding-top: 12px; flex-wrap: wrap; }
+      .pagination button { padding: 10px 16px; font-size: 13px; flex: 1; min-width: 90px; }
+      .pagination .page-info { font-size: 13px; width: 100%; order: -1; margin-bottom: 8px; }
+
+      /* small tweaks on hover */
+      tr:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(15,23,42,0.06); }
+    }
         text-align: center;
       }
       
@@ -847,24 +769,17 @@
 </head>
 <body>
   <div class="container">
-    <h1>পোলিং অফিসার প্যানেল </h1>
+    <h1>ভোট কেন্দ্র </h1>
   
-  <div class="gender-report">
-    <div class="gender-stats">
-      Male: <span class="male" id="male-count">0</span>, 
-      Female: <span class="female" id="female-count">0</span>, 
-      Unknown: <span class="unknown" id="unknown-count">0</span>, 
-      Total: <span class="total" id="total-count">0</span>
-    </div>
-  </div>
   
   <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search by name, id or mobile number...">
+    <input type="text" id="search-input" placeholder="Search by name, code, location or area...">
     <button onclick="searchPolling()">Search</button>
     <button onclick="clearSearch()" style="background:#ef4444">Clear</button>
   </div>
 
   <script>
+    // Debounce helper for better UX
     function debounce(fn, wait) {
       let t;
       return function(...args) {
@@ -873,9 +788,11 @@
       };
     }
 
+    // Trigger search on input with debounce
     document.getElementById('search-input').addEventListener('input', debounce(() => {
       const val = document.getElementById('search-input').value.trim();
       if (!val) {
+        // if empty, revert to full list
         isSearchMode = false;
         document.getElementById('error').style.display = 'none';
         loadPollingData(1);
@@ -884,6 +801,7 @@
       searchPolling();
     }, 300));
 
+    // Clear search helper
     function clearSearch() {
       document.getElementById('search-input').value = '';
       document.getElementById('error').style.display = 'none';
@@ -912,10 +830,10 @@
     <table id="polling-table" style="display: none;">
       <thead>
         <tr>
-          <th>SL</th>
-          <th>পোলিং অফিসার নাম</th>
-          <th>মোবাইল নম্বর</th>
-          <th>কল</th>
+          <th>কেন্দ্র কোড</th>
+          <th>ভোট কেন্দ্র নাম</th>
+          <th>অবস্থান</th>
+          <th>এলাকা</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -971,7 +889,7 @@
       try {
         // Get total count first
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('vote_centre')
           .select('*', { count: 'exact', head: true });
 
         if (countError) throw countError;
@@ -982,9 +900,9 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('vote_centre')
           .select('*')
-          .order('polling_iid', { ascending: true })
+          .order('vote_centre_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
@@ -1022,38 +940,34 @@
     loadPollingData();
     loadGenderStats();
     
-    // Load gender statistics
+    // Load basic voter statistics (sums) from vote_centre
     async function loadGenderStats() {
       try {
-        // Fetch ALL records by using a large range
         const { data, error } = await supabaseClient
-          .from('polling_list')
-          .select('gender')
+          .from('vote_centre')
+          .select('male_voter, female_voter, hizra_voter, total_voter')
           .range(0, 999999);
-        
         if (error) throw error;
-        
         let maleCount = 0;
         let femaleCount = 0;
         let unknownCount = 0;
-        
+        let totalCount = 0;
         if (data) {
           data.forEach(row => {
-            const gender = (row.gender || '').toLowerCase().trim();
-            if (gender === 'male' || gender === 'পুরুষ') {
-              maleCount++;
-            } else if (gender === 'female' || gender === 'মহিলা') {
-              femaleCount++;
-            } else {
-              unknownCount++;
-            }
+            const mv = parseInt(row.male_voter) || 0;
+            const fv = parseInt(row.female_voter) || 0;
+            const hv = parseInt(row.hizra_voter) || 0;
+            const tv = parseInt(row.total_voter) || (mv + fv + hv);
+            maleCount += mv;
+            femaleCount += fv;
+            unknownCount += Math.max(0, tv - (mv + fv + hv));
+            totalCount += tv;
           });
         }
-        
         document.getElementById('male-count').textContent = maleCount;
         document.getElementById('female-count').textContent = femaleCount;
         document.getElementById('unknown-count').textContent = unknownCount;
-        document.getElementById('total-count').textContent = data ? data.length : 0;
+        document.getElementById('total-count').textContent = totalCount;
       } catch (err) {
         console.error('Error loading gender stats:', err);
       }
@@ -1061,7 +975,7 @@
     
     // Toggle edit table mode - navigate to separate edit page
     function toggleEditTable() {
-      window.location.href = '3_polling_edit.html';
+      window.location.href = '4_vote_centre_edit.html';
     }
     
     // Load all table data for editing
@@ -1071,9 +985,9 @@
       
       try {
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('vote_centre')
           .select('*')
-          .order('polling_iid', { ascending: true });
+          .order('vote_centre_iid', { ascending: true });
         
         if (error) throw error;
         
@@ -1097,21 +1011,23 @@
         return;
       }
       
-      // Get column names from first row
+      // Define columns as per vote_centre table
       const columns = [
-        'polling_iid',
-        'polling_name',
-        'mobile_number',
-        'sallery_scale',
-        'current_grade_sallery',
-        'date_of_birth',
-        'own_discrict',
-        'address',
-        'Nid_number',
-        'previous_election',
+        'vote_centre_iid',
+        'vote_centre_code',
+        'vote_centre_name',
+        'voter_both_total',
+        'voter_both_male',
+        'voter_both_female',
+        'vote_centre_location',
+        'vote_centre_area',
+        'male_voter',
+        'female_voter',
+        'hizra_voter',
+        'total_voter',
+        'vote_centre_quality',
         'comment'
       ];
-      
       // Render header
       thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
       
@@ -1202,14 +1118,14 @@
         
         modifiedRows.forEach((changes, rowIndex) => {
           const row = allTableData[rowIndex];
-          const polling_iid = row.polling_iid;
+          const vote_centre_iid = row.vote_centre_iid;
           
-          if (polling_iid) {
+          if (vote_centre_iid) {
             updates.push(
               supabaseClient
-                .from('polling_list')
+                .from('vote_centre')
                 .update(changes)
-                .eq('polling_iid', polling_iid)
+                .eq('vote_centre_iid', vote_centre_iid)
             );
           }
         });
@@ -1263,21 +1179,26 @@
       loadingEl.style.display = 'block';
 
       try {
-          const terms = searchTerm.split(/\s+/).filter(Boolean);
+            // Build conditions to support multi-term search and code search
+        const terms = searchTerm.split(/\s+/).filter(Boolean);
         const orConditions = [];
+
         terms.forEach(term => {
           const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
-          orConditions.push(`polling_name.ilike.%${t}%`);
-          orConditions.push(`mobile_number.ilike.%${t}%`);
+          orConditions.push(`vote_centre_name.ilike.%${t}%`);
+          orConditions.push(`vote_centre_location.ilike.%${t}%`);
+          orConditions.push(`vote_centre_area.ilike.%${t}%`);
+          // if term is numeric, search code by exact match
           if (/^\d+$/.test(t)) {
-            orConditions.push(`polling_iid.eq.${t}`);
+            orConditions.push(`vote_centre_code.eq.${t}`);
           }
         });
+
         const orQuery = orConditions.join(',');
 
         // Get total count for search results
         const { count, error: countError } = await supabaseClient
-          .from('polling_list')
+          .from('vote_centre')
           .select('*', { count: 'exact', head: true })
           .or(orQuery);
 
@@ -1289,15 +1210,18 @@
         const to = from + PAGE_SIZE - 1;
 
         const { data, error } = await supabaseClient
-          .from('polling_list')
+          .from('vote_centre')
           .select('*')
           .or(orQuery)
-          .order('polling_iid', { ascending: true })
+          .order('vote_centre_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
 
+        // Pass the search term to renderer so it can highlight matches
         const effectiveQuery = terms.join(' ');
+
+        console.debug('Search terms:', terms, 'OR query:', orQuery);
 
         if (error) throw error;
 
@@ -1323,7 +1247,7 @@
         console.error('Search error:', err);
         loadingEl.style.display = 'none';
         const errorEl = document.getElementById('error');
-        errorEl.textContent = 'Search failed: ' + (err.message || err);
+        errorEl.textContent = 'Search failed: ' + (err.message || err); 
         errorEl.style.display = 'block';
       }
     }
@@ -1338,9 +1262,10 @@
       const fragment = document.createDocumentFragment();
       const terms = q ? q.toString().trim().split(/\s+/).filter(Boolean) : [];
 
+      // helper to escape html
       function escapeHtml(text) {
         if (text === null || text === undefined) return '';
-        return String(text).replace(/[&<>"']+/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'' :'&#39;'}[ch] || ch));
+        return String(text).replace(/[&<>"]+/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch] || ch));
       }
 
       function highlight(text) {
@@ -1348,46 +1273,32 @@
         let escaped = escapeHtml(text);
         if (terms.length === 0) return escaped;
         terms.forEach(term => {
-          const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'ig');
+          const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
           escaped = escaped.replace(re, '<mark>$1</mark>');
         });
         return escaped;
       }
 
-      data.forEach(row => {
+      data.forEach((row) => {
         const tr = document.createElement('tr');
 
-        const tdId = document.createElement('td');
-        tdId.innerHTML = highlight(row.polling_iid != null ? String(row.polling_iid) : '');
+        const tdCode = document.createElement('td');
+        tdCode.innerHTML = highlight(row.vote_centre_code != null ? String(row.vote_centre_code) : '');
 
         const tdName = document.createElement('td');
-        tdName.setAttribute('data-mobile', row.mobile_number || '');
         const nameLink = document.createElement('span');
         nameLink.className = 'name-link';
-        nameLink.innerHTML = highlight(row.polling_name ?? '');
+        nameLink.innerHTML = highlight(row.vote_centre_name ?? '');
         nameLink.onclick = () => showDetails(row);
         tdName.appendChild(nameLink);
 
-        const tdMobile = document.createElement('td');
-        tdMobile.innerHTML = highlight(row.mobile_number ?? '');
+        const tdLocation = document.createElement('td');
+        tdLocation.innerHTML = highlight(row.vote_centre_location ?? '');
 
-        const tdAction = document.createElement('td');
-        tdAction.className = 'actions';
+        const tdArea = document.createElement('td');
+        tdArea.innerHTML = highlight(row.vote_centre_area ?? '');
 
-        const callLink = document.createElement('a');
-        callLink.className = 'call';
-        const telNumber = (row.mobile_number || '').replace(/[^+\d]/g, '');
-        callLink.href = telNumber ? 'tel:' + telNumber : '#';
-        callLink.textContent = 'Call';
-        callLink.setAttribute('aria-label', 'Call ' + (row.polling_name || row.mobile_number || ''));
-
-        if (!telNumber) {
-          callLink.style.opacity = '0.5';
-          callLink.style.pointerEvents = 'none';
-        }
-
-        tdAction.appendChild(callLink);
-        tr.append(tdId, tdName, tdMobile, tdAction);
+        tr.append(tdCode, tdName, tdLocation, tdArea);
         fragment.appendChild(tr);
       });
       tbody.appendChild(fragment);
@@ -1412,16 +1323,19 @@
     function addNew() {
       isAddMode = true;
       selectedRow = {
-        polling_iid: '',
-        polling_name: '',
-        mobile_number: '',
-        sallery_scale: '',
-        current_grade_sallery: '',
-        date_of_birth: '',
-        own_discrict: '',
-        address: '',
-        Nid_number: '',
-        previous_election: '',
+        vote_centre_iid: '',
+        vote_centre_code: '',
+        vote_centre_name: '',
+        voter_both_total: '',
+        voter_both_male: '',
+        voter_both_female: '',
+        vote_centre_location: '',
+        vote_centre_area: '',
+        male_voter: '',
+        female_voter: '',
+        hizra_voter: '',
+        total_voter: '',
+        vote_centre_quality: '',
         comment: ''
       };
       const modal = document.getElementById('details-modal');
@@ -1443,18 +1357,19 @@
     function renderModalContent(row, isEdit) {
       const modalBody = document.getElementById('modal-body');
       const fields = [
-        { key: 'polling_iid', label: 'polling_iid' },
-        { key: 'polling_name', label: 'polling_name' },
-        { key: 'mobile_number', label: 'mobile_number' },
-        { key: 'sallery_scale', label: 'sallery_scale' },
-        { key: 'current_grade_sallery', label: 'current_grade_sallery' },
-        { key: 'date_of_birth', label: 'date_of_birth' },
-        { key: 'own_discrict', label: 'own_discrict' },
-        { key: 'address', label: 'address' },
-        { key: 'Nid_number', label: 'Nid_number' },
-        { key: 'previous_election', label: 'previous_election' },
-        { key: 'gender', label: 'gender' },
-
+        { key: 'vote_centre_iid', label: 'vote_centre_iid' },
+        { key: 'vote_centre_code', label: 'vote_centre_code' },
+        { key: 'vote_centre_name', label: 'vote_centre_name' },
+        { key: 'vote_centre_location', label: 'vote_centre_location' },
+        { key: 'vote_centre_area', label: 'vote_centre_area' },
+        { key: 'voter_both_total', label: 'voter_both_total' },
+        { key: 'voter_both_male', label: 'voter_both_male' },
+        { key: 'voter_both_female', label: 'voter_both_female' },
+        { key: 'male_voter', label: 'male_voter' },
+        { key: 'female_voter', label: 'female_voter' },
+        { key: 'hizra_voter', label: 'hizra_voter' },
+        { key: 'total_voter', label: 'total_voter' },
+        { key: 'vote_centre_quality', label: 'vote_centre_quality' },
         { key: 'comment', label: 'comment' }
       ];
 
@@ -1513,9 +1428,9 @@
 
       const payload = {};
       formData.forEach((value, key) => {
-        if (key === 'polling_iid' && !isAddMode) return; // do not update primary id in edit mode
+        if (key === 'vote_centre_iid' && !isAddMode) return; // do not update primary id in edit mode
         const trimmedValue = value.trim();
-        if (trimmedValue || key === 'polling_iid') {
+        if (trimmedValue || key === 'vote_centre_iid') {
           payload[key] = trimmedValue;
         }
       });
@@ -1529,11 +1444,11 @@
         if (isAddMode) {
           // Insert new record
           const insertPayload = { ...payload };
-          if (!insertPayload.polling_iid) {
-            delete insertPayload.polling_iid; // let database auto-generate
+          if (!insertPayload.vote_centre_iid) {
+            delete insertPayload.vote_centre_iid; // let database auto-generate
           }
           const result = await supabaseClient
-            .from('polling_list')
+            .from('vote_centre')
             .insert([insertPayload])
             .select()
             .single();
@@ -1542,9 +1457,9 @@
         } else {
           // Update existing record
           const result = await supabaseClient
-            .from('polling_list')
+            .from('vote_centre')
             .update(payload)
-            .eq('polling_iid', selectedRow.polling_iid)
+            .eq('vote_centre_iid', selectedRow.vote_centre_iid)
             .select()
             .single();
           data = result.data;

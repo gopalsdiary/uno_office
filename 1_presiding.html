@@ -859,9 +859,37 @@
   </div>
   
   <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search by name or mobile number...">
+    <input type="text" id="search-input" placeholder="Search by name, id or mobile number...">
     <button onclick="searchPolling()">Search</button>
+    <button onclick="clearSearch()" style="background:#ef4444">Clear</button>
   </div>
+  <script>
+    function debounce(fn, wait) {
+      let t;
+      return function(...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    document.getElementById('search-input').addEventListener('input', debounce(() => {
+      const val = document.getElementById('search-input').value.trim();
+      if (!val) {
+        isSearchMode = false;
+        document.getElementById('error').style.display = 'none';
+        loadPollingData(1);
+        return;
+      }
+      searchPolling();
+    }, 300));
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('error').style.display = 'none';
+      isSearchMode = false;
+      loadPollingData(1);
+    }
+  </script>
   
   <div class="action-buttons">
     <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
@@ -1269,7 +1297,7 @@
         }
 
         emptyEl.style.display = 'none';
-        renderTableRows(data, tbody);
+        renderTableRows(data, tbody, effectiveQuery);
         tableEl.style.display = 'table';
         
         // Update pagination
@@ -1288,40 +1316,58 @@
     });
 
     // Render table rows (reusable)
-    function renderTableRows(data, tbody) {
+    function renderTableRows(data, tbody, q = '') {
       const fragment = document.createDocumentFragment();
+      const terms = q ? q.toString().trim().split(/\s+/).filter(Boolean) : [];
+
+      function escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        return String(text).replace(/[&<>"']+/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'' :'&#39;'}[ch] || ch));
+      }
+
+      function highlight(text) {
+        if (!text) return '';
+        let escaped = escapeHtml(text);
+        if (terms.length === 0) return escaped;
+        terms.forEach(term => {
+          const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'ig');
+          escaped = escaped.replace(re, '<mark>$1</mark>');
+        });
+        return escaped;
+      }
+
       data.forEach(row => {
         const tr = document.createElement('tr');
-        
+
         const tdId = document.createElement('td');
-        tdId.textContent = row.presiding_iid || '';
-        
+        tdId.innerHTML = highlight(row.presiding_iid != null ? String(row.presiding_iid) : '');
+
         const tdName = document.createElement('td');
         tdName.setAttribute('data-mobile', row.mobile_number || '');
         const nameLink = document.createElement('span');
         nameLink.className = 'name-link';
-        nameLink.textContent = row.presiding_name || '';
+        nameLink.innerHTML = highlight(row.presiding_name ?? '');
         nameLink.onclick = () => showDetails(row);
         tdName.appendChild(nameLink);
-        
+
         const tdMobile = document.createElement('td');
-        tdMobile.textContent = row.mobile_number || '';
-        
+        tdMobile.innerHTML = highlight(row.mobile_number ?? '');
+
         const tdAction = document.createElement('td');
         tdAction.className = 'actions';
-        
+
         const callLink = document.createElement('a');
         callLink.className = 'call';
         const telNumber = (row.mobile_number || '').replace(/[^+\d]/g, '');
         callLink.href = telNumber ? 'tel:' + telNumber : '#';
         callLink.textContent = 'Call';
         callLink.setAttribute('aria-label', 'Call ' + (row.presiding_name || row.mobile_number || ''));
-        
+
         if (!telNumber) {
           callLink.style.opacity = '0.5';
           callLink.style.pointerEvents = 'none';
         }
-        
+
         tdAction.appendChild(callLink);
         tr.append(tdId, tdName, tdMobile, tdAction);
         fragment.appendChild(tr);
