@@ -1262,11 +1262,25 @@
       loadingEl.style.display = 'block';
 
       try {
+        // Build multi-term OR query (name, mobile, and exact id for numeric term)
+        const terms = searchTerm.split(/\s+/).filter(Boolean);
+        const orConditions = [];
+        terms.forEach(term => {
+          const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
+          orConditions.push(`ass_presiding_name.ilike.%${t}%`);
+          orConditions.push(`mobile_number.ilike.%${t}%`);
+          if (/^\d+$/.test(t)) {
+            orConditions.push(`ass_presiding_iid.eq.${t}`);
+          }
+        });
+        const orQuery = orConditions.join(',');
+
         // Get total count for search results
+        console.debug('Search terms:', terms, 'OR query:', orQuery);
         const { count, error: countError } = await supabaseClient
           .from('ass_presiding_list')
           .select('*', { count: 'exact', head: true })
-          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+          .or(orQuery);
 
         if (countError) throw countError;
         totalRecords = count || 0;
@@ -1278,13 +1292,17 @@
         const { data, error } = await supabaseClient
           .from('ass_presiding_list')
           .select('*')
-          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
+          .or(orQuery)
           .order('ass_presiding_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
 
+        const effectiveQuery = terms.join(' ');
+
         if (error) throw error;
+
+        console.debug('Search result count:', data ? data.length : 0);
 
         tbody.innerHTML = '';
 
@@ -1307,6 +1325,9 @@
       } catch (err) {
         console.error('Search error:', err);
         loadingEl.style.display = 'none';
+        const errorEl = document.getElementById('error');
+        errorEl.textContent = 'Search failed: ' + (err.message || err);
+        errorEl.style.display = 'block';
       }
     }
 
