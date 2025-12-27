@@ -4,6 +4,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Initialize Supabase client
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabaseClient = supabaseClient;
 
 // Inactivity timeout (15 minutes in milliseconds)
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes

@@ -849,6 +849,15 @@
   <div class="container">
     <h1>সহ-প্রিজাইডিং অফিসার প্যানেল </h1>
   
+  <div class="gender-report">
+    <div class="gender-stats">
+      Male: <span class="male" id="male-count">0</span>, 
+      Female: <span class="female" id="female-count">0</span>, 
+      Unknown: <span class="unknown" id="unknown-count">0</span>, 
+      Total: <span class="total" id="total-count">0</span>
+    </div>
+  </div>
+  
   <div class="search-box">
     <input type="text" id="search-input" placeholder="Search by name or mobile number...">
     <button onclick="searchPolling()">Search</button>
@@ -857,7 +866,6 @@
   <div class="action-buttons">
     <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
     <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
-    <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
   </div>
   
   <div class="editable-table-wrapper" id="editable-table-wrapper">
@@ -983,6 +991,44 @@
 
     // Load data when page loads
     loadPollingData();
+    loadGenderStats();
+    
+    // Load gender statistics
+    async function loadGenderStats() {
+      try {
+        // Fetch ALL records by using a large range
+        const { data, error } = await supabaseClient
+          .from('ass_presiding_list')
+          .select('gender')
+          .range(0, 999999);
+        
+        if (error) throw error;
+        
+        let maleCount = 0;
+        let femaleCount = 0;
+        let unknownCount = 0;
+        
+        if (data) {
+          data.forEach(row => {
+            const gender = (row.gender || '').toLowerCase().trim();
+            if (gender === 'male' || gender === 'পুরুষ') {
+              maleCount++;
+            } else if (gender === 'female' || gender === 'মহিলা') {
+              femaleCount++;
+            } else {
+              unknownCount++;
+            }
+          });
+        }
+        
+        document.getElementById('male-count').textContent = maleCount;
+        document.getElementById('female-count').textContent = femaleCount;
+        document.getElementById('unknown-count').textContent = unknownCount;
+        document.getElementById('total-count').textContent = data ? data.length : 0;
+      } catch (err) {
+        console.error('Error loading gender stats:', err);
+      }
+    }
     
     // Toggle edit table mode - navigate to separate edit page
     function toggleEditTable() {
