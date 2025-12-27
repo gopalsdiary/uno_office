@@ -1045,11 +1045,11 @@
         ];
         const femaleOr = femaleConditions.join(',');
 
-        // Attempt server-side counts first
+        // Use polling_list instead of presiding_list
         const [maleRes, femaleRes, totalRes] = await Promise.all([
-          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true }).or(maleOr),
-          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true }).or(femaleOr),
-          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true })
+          supabaseClient.from('polling_list').select('*', { count: 'exact', head: true }).or(maleOr),
+          supabaseClient.from('polling_list').select('*', { count: 'exact', head: true }).or(femaleOr),
+          supabaseClient.from('polling_list').select('*', { count: 'exact', head: true })
         ]);
 
         console.debug('loadGenderStats responses:', { maleRes, femaleRes, totalRes });
@@ -1071,26 +1071,35 @@
         if (needFallback) {
           console.debug('loadGenderStats: falling back to fetching rows');
           const { data: rows, error: rowsErr } = await supabaseClient
-            .from('presiding_list')
-            .select('presiding_iid, gender')
+            .from('polling_list')
+            .select('polling_iid, gender')
             .range(0, 9999); // fetch up to 10k rows
 
           if (rowsErr) throw rowsErr;
 
-          // Build a map of raw gender values for diagnosis
+          // Build a map of raw gender values for diagnosis and a robust normalization
           const unique = {};
-          const counts = { male: 0, female: 0, unknown: 0 };
+          const counts = { male: 0, female: 0, nullRaw: 0, unknown: 0 };
 
           rows.forEach(r => {
             const raw = r.gender === null || r.gender === undefined ? 'NULL' : String(r.gender).trim();
             const key = raw.toLowerCase();
             unique[key] = (unique[key] || 0) + 1;
 
-            // Normalize: remove non-ascii letters and digits for matching (keeps English variants)
-            const normalized = key.replace(/[^a-z]/g, '');
+            // Count explicit nulls separately
+            if (raw === 'NULL') {
+              counts.nullRaw++;
+              counts.unknown++;
+              return;
+            }
 
-            if (normalized === 'male' || normalized === 'm' || normalized.startsWith('male') || key.includes('male')) counts.male++;
-            else if (normalized === 'female' || normalized === 'f' || normalized.startsWith('female') || key.includes('female')) counts.female++;
+            // Unicode-normalize and strip diacritics, then keep ascii letters only
+            const ascii = key.normalize ? key.normalize('NFD').replace(/\p{M}/gu, '') : key;
+            const normalized = ascii.replace(/[^a-z]/g, '');
+
+            // Match by presence of 'male'/'female' substring after normalization
+            if (normalized.includes('male')) counts.male++;
+            else if (normalized.includes('female')) counts.female++;
             else counts.unknown++;
           });
 

@@ -1,10 +1,12 @@
-// Supabase Configuration
-const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+// Supabase Configuration (do not redeclare globals)
+// Use existing window values when available to avoid duplicate const errors
+window.SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
 
-// Initialize Supabase client
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-window.supabaseClient = supabaseClient;
+// Initialize Supabase client once and attach to window
+if (!window.supabaseClient) {
+  window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+}
 
 // Inactivity timeout (15 minutes in milliseconds)
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
@@ -43,7 +45,7 @@ function setupActivityListeners() {
 async function handleLogout() {
   try {
     // Sign out from Supabase
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await window.supabaseClient.auth.signOut();
     
     if (error) {
       console.error('Logout error:', error);
@@ -70,7 +72,7 @@ async function checkAuth() {
   }
   
   try {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    const { data: { session }, error } = await window.supabaseClient.auth.getSession();
     
     if (error || !session) {
       // No valid session, redirect to login
@@ -96,7 +98,7 @@ async function handlePasswordReset() {
   }
   
   try {
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/reset-password.html'
     });
     
@@ -145,5 +147,5 @@ window.authUtils = {
   handleLogout,
   handlePasswordReset,
   checkAuth,
-  supabaseClient
+  supabaseClient: window.supabaseClient
 };
