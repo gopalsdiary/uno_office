@@ -856,6 +856,7 @@
       Unknown: <span class="unknown" id="unknown-count">0</span>, 
       Total: <span class="total" id="total-count">0</span>
     </div>
+    <div id="gender-note" style="font-size:12px;color:#64748b;margin-top:6px">Source: server-side count</div>
   </div>
   
   <div class="search-box">
@@ -1022,40 +1023,104 @@
     loadPollingData();
     loadGenderStats();
     
-    // Load gender statistics
+    // Load gender statistics using server-side counts where possible,
+    // but fall back to fetching rows and computing counts locally when needed.
     async function loadGenderStats() {
+      const noteEl = document.getElementById('gender-note');
       try {
-        // Fetch ALL records by using a large range
-        const { data, error } = await supabaseClient
-          .from('polling_list')
-          .select('gender')
-          .range(0, 999999);
-        
-        if (error) throw error;
-        
-        let maleCount = 0;
-        let femaleCount = 0;
-        let unknownCount = 0;
-        
-        if (data) {
-          data.forEach(row => {
-            const gender = (row.gender || '').toLowerCase().trim();
-            if (gender === 'male' || gender === 'পুরুষ') {
-              maleCount++;
-            } else if (gender === 'female' || gender === 'মহিলা') {
-              femaleCount++;
-            } else {
-              unknownCount++;
-            }
-          });
+        // Build robust male/female conditions (English variants only)
+        const maleConditions = [
+          'gender.eq.Male',
+          'gender.eq.male',
+          "gender.ilike.%male%",
+          'gender.eq.M'
+        ];
+        const maleOr = maleConditions.join(',');
+
+        const femaleConditions = [
+          'gender.eq.Female',
+          'gender.eq.female',
+          "gender.ilike.%female%",
+          'gender.eq.F'
+        ];
+        const femaleOr = femaleConditions.join(',');
+
+        // Attempt server-side counts first
+        const [maleRes, femaleRes, totalRes] = await Promise.all([
+          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true }).or(maleOr),
+          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true }).or(femaleOr),
+          supabaseClient.from('presiding_list').select('*', { count: 'exact', head: true })
+        ]);
+
+        console.debug('loadGenderStats responses:', { maleRes, femaleRes, totalRes });
+
+        if (maleRes.error || femaleRes.error || totalRes.error) {
+          throw maleRes.error || femaleRes.error || totalRes.error;
         }
-        
-        document.getElementById('male-count').textContent = maleCount;
-        document.getElementById('female-count').textContent = femaleCount;
-        document.getElementById('unknown-count').textContent = unknownCount;
-        document.getElementById('total-count').textContent = data ? data.length : 0;
+
+        let male = Number(maleRes.count) || 0;
+        let female = Number(femaleRes.count) || 0;
+        let total = Number(totalRes.count) || 0;
+        let unknown = Math.max(0, total - male - female);
+
+        // If the server-side total looks unexpectedly small (or counts don't add up),
+        // fetch all rows (up to 10k) and compute counts locally as a reliable fallback.
+        // This is acceptable for moderate table sizes (e.g., a few thousand rows).
+        const needFallback = total === 0 || total < (male + female) || total < 100 || (male + female + unknown) !== total;
+
+        if (needFallback) {
+          console.debug('loadGenderStats: falling back to fetching rows');
+          const { data: rows, error: rowsErr } = await supabaseClient
+            .from('presiding_list')
+            .select('presiding_iid, gender')
+            .range(0, 9999); // fetch up to 10k rows
+
+          if (rowsErr) throw rowsErr;
+
+          // Build a map of raw gender values for diagnosis
+          const unique = {};
+          const counts = { male: 0, female: 0, unknown: 0 };
+
+          rows.forEach(r => {
+            const raw = r.gender === null || r.gender === undefined ? 'NULL' : String(r.gender).trim();
+            const key = raw.toLowerCase();
+            unique[key] = (unique[key] || 0) + 1;
+
+            // Normalize: remove non-ascii letters and digits for matching (keeps English variants)
+            const normalized = key.replace(/[^a-z]/g, '');
+
+            if (normalized === 'male' || normalized === 'm' || normalized.startsWith('male') || key.includes('male')) counts.male++;
+            else if (normalized === 'female' || normalized === 'f' || normalized.startsWith('female') || key.includes('female')) counts.female++;
+            else counts.unknown++;
+          });
+
+          male = counts.male;
+          female = counts.female;
+          unknown = counts.unknown;
+          total = rows.length;
+
+          // Prepare top unique values for quick inspection
+          const uniqueEntries = Object.entries(unique).sort((a,b) => b[1]-a[1]);
+          const top = uniqueEntries.slice(0,5).map(([val,num]) => `${val}(${num})`).join(', ');
+
+          noteEl.textContent = `Source: computed from ${rows.length} fetched rows — top values: ${top}`;
+          console.debug('loadGenderStats: computed from rows', { male, female, unknown, total, uniqueTop: uniqueEntries.slice(0,20) });
+        } else {
+          noteEl.textContent = 'Source: server-side count';
+          console.debug('loadGenderStats: using server counts', { male, female, unknown, total });
+        }
+
+        document.getElementById('male-count').textContent = male;
+        document.getElementById('female-count').textContent = female;
+        document.getElementById('unknown-count').textContent = unknown;
+        document.getElementById('total-count').textContent = total;
       } catch (err) {
         console.error('Error loading gender stats:', err);
+        document.getElementById('male-count').textContent = 'N/A';
+        document.getElementById('female-count').textContent = 'N/A';
+        document.getElementById('unknown-count').textContent = 'N/A';
+        document.getElementById('total-count').textContent = 'N/A';
+        noteEl.textContent = 'Error computing gender stats (see console)';
       }
     }
     
