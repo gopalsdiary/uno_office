@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>ভোট কেন্দ্র </title>
   <style>
+        /* Alternate row coloring for main table */
+        table tbody tr:nth-child(odd) {
+          background: #ffffff;
+        }
+        table tbody tr:nth-child(even) {
+          background: #f5f7fa;
+        }
     * {
       box-sizing: border-box;
     }
@@ -646,7 +653,7 @@
         margin-bottom: 6px;
       }
 
-      td:nth-child(1):before { content: 'কোড: '; font-weight:600; color:#6b7280; font-size:12px; margin-right:4px; }
+      td:nth-child(1):before { content: 'কেন্দ্র নং: '; font-weight:600; color:#6b7280; font-size:12px; margin-right:4px; }
 
       /* Name (main) */
       td:nth-child(2) {
