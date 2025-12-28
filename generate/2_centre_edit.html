@@ -1,6 +1,834 @@
-asssign centre iid > presiding > store centre iid on 
-asssign centre iid > asspresiding > store centre iid-booth
-asssign centre iid > poling > store centre iid-booth-person 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>দায়িত্ব বন্টন জেনারেটর</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .centres-container {
+            margin-top: 30px;
+        }
+        
+        .centre-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            page-break-after: always;
+        }
+        
+        .centre-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .centre-header h2 {
+            margin-bottom: 5px;
+        }
+        
+        .assignment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .assignment-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .assignment-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .assignment-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .officer-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .officer-designation {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .controls, .status, .loading {
+                display: none !important;
+            }
+            
+            .centre-card {
+                page-break-after: always;
+                margin-bottom: 0;
+            }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗳️ দায়িত্ব বন্টন এলগরিদম</h1>
+        
+        <div class="status" id="status"></div>
+        
+      
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="generateBtn" onclick="generateAssignments()">
+                ⚡ দায়িত্ব বন্টন করুন
+            </button>
+            <button class="btn btn-success" id="saveBtn" onclick="saveAssignments()" style="display:none;">
+                💾 সংরক্ষণ করুন
+            </button>
+            <button class="btn btn-print" id="printBtn" onclick="window.print()" style="display:none;">
+                🖨️ প্রিন্ট করুন
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>প্রসেসিং চলছে... অনুগ্রহ করে অপেক্ষা করুন...</p>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid" style="display:none;"></div>
+        
+        <div class="centres-container" id="centresContainer"></div>
+    </div>
 
-কেন্দ্রে asspresiding এবং pooling অফিসার বল্টনের ক্ষেত্রে 
-
+    <script>
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
+        
+        let generatedData = [];
+        
+        // Helper function to get officer name (handles different column names)
+        function getOfficerName(officer, type) {
+            if (type === 'presiding') {
+                return officer.presiding_name || officer.name || 'N/A';
+            } else if (type === 'ass_presiding') {
+                return officer.ass_presiding_name || officer.name || 'N/A';
+            } else if (type === 'polling') {
+                return officer.polling_name || officer.name || 'N/A';
+            }
+            return officer.name || 'N/A';
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Show/hide loading
+        function setLoading(isLoading) {
+            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('generateBtn').disabled = isLoading;
+        }
+        
+        // Shuffle array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        // Distribute by gender evenly
+        function distributeByGender(people, count) {
+            const male = people.filter(p => p.gender === 'Male' || p.gender === 'male');
+            const female = people.filter(p => p.gender === 'Female' || p.gender === 'female');
+            const unknown = people.filter(p => !p.gender || p.gender === 'Unknown' || p.gender === 'unknown');
+            
+            const maleShuffled = shuffleArray(male);
+            const femaleShuffled = shuffleArray(female);
+            const unknownShuffled = shuffleArray(unknown);
+            
+            const result = [];
+            let maleIndex = 0, femaleIndex = 0, unknownIndex = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const cycle = i % 3;
+                
+                if (cycle === 0 && maleIndex < maleShuffled.length) {
+                    result.push(maleShuffled[maleIndex++]);
+                } else if (cycle === 1 && femaleIndex < femaleShuffled.length) {
+                    result.push(femaleShuffled[femaleIndex++]);
+                } else if (cycle === 2 && unknownIndex < unknownShuffled.length) {
+                    result.push(unknownShuffled[unknownIndex++]);
+                } else if (maleIndex < maleShuffled.length) {
+                    result.push(maleShuffled[maleIndex++]);
+                } else if (femaleIndex < femaleShuffled.length) {
+                    result.push(femaleShuffled[femaleIndex++]);
+                } else if (unknownIndex < unknownShuffled.length) {
+                    result.push(unknownShuffled[unknownIndex++]);
+                }
+            }
+            
+            return result;
+        }
+        
+        // Fetch all data with pagination (bypass Supabase 1000 row limit)
+        async function fetchAllData(tableName, idColumnName, filterCallback = null) {
+            let allData = [];
+            let lastId = 0;
+            const batchSize = 1000;
+            let hasMore = true;
+            let batchCount = 0;
+            const maxBatches = 100;
+            
+            console.log(`📊 Fetching all data from ${tableName}...`);
+            
+            while(hasMore && batchCount < maxBatches) {
+                batchCount++;
+                console.log(`   Batch ${batchCount}, lastId: ${lastId}`);
+                
+                const { data, error } = await window.supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .gt(idColumnName, lastId)
+                    .order(idColumnName, { ascending: true })
+                    .limit(batchSize);
+                
+                if (error) {
+                    console.error(`❌ Error fetching ${tableName}:`, error);
+                    throw error;
+                }
+                
+                if (!data || data.length === 0) {
+                    hasMore = false;
+                    break;
+                }
+                
+                // Apply filter if provided
+                const filteredData = filterCallback ? data.filter(filterCallback) : data;
+                allData.push(...filteredData);
+                
+                lastId = data[data.length - 1][idColumnName];
+                console.log(`   Loaded ${data.length} rows, filtered to ${filteredData.length}, total: ${allData.length}`);
+            }
+            
+            console.log(`✅ ${tableName}: Total ${allData.length} records loaded in ${batchCount} batches`);
+            return allData;
+        }
+        
+        // Generate assignments
+        async function generateAssignments() {
+            setLoading(true);
+            generatedData = [];
+            document.getElementById('centresContainer').innerHTML = '';
+            document.getElementById('statsGrid').style.display = 'none';
+            
+            try {
+                console.log('🚀 Starting assignment generation...');
+                
+                // Check Supabase connection
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not initialized. Please check authentication.js');
+                }
+                
+                // Fetch all required data
+                console.log('📊 Fetching vote centres...');
+                const { data: voteCentres, error: centreError } = await window.supabaseClient
+                    .from('vote_centre')
+                    .select('*')
+                    .order('vote_centre_code');
+                
+                if (centreError) {
+                    console.error('❌ Vote Centre Error:', centreError);
+                    throw new Error(`Vote Centre Error: ${centreError.message}`);
+                }
+                
+                if (!voteCentres || voteCentres.length === 0) {
+                    throw new Error('কোন ভোট কেন্দ্র পাওয়া যায়নি! vote_centre টেবিলে ডেটা আছে কিনা চেক করুন।');
+                }
+                
+                console.log(`✅ Found ${voteCentres.length} vote centres`);
+                
+                // Fetch all presiding list with pagination
+                console.log('📊 Fetching presiding list with pagination...');
+                const presidingList = await fetchAllData('presiding_list', 'presiding_iid', (p) => {
+                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
+                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
+                    return !hasDisability && !isAssigned;
+                });
+                
+                if (!presidingList || presidingList.length === 0) {
+                    throw new Error('কোন প্রিসাইডিং অফিসার পাওয়া যায়নি!');
+                }
+                
+                // Fetch all assistant presiding list with pagination
+                console.log('📊 Fetching assistant presiding list with pagination...');
+                const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', (p) => {
+                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
+                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
+                    return !hasDisability && !isAssigned;
+                });
+                
+                if (!assPresidingList || assPresidingList.length === 0) {
+                    throw new Error('কোন সহকারী প্রিসাইডিং অফিসার পাওয়া যায়নি!');
+                }
+                
+                // Fetch all polling list with pagination
+                console.log('📊 Fetching polling list with pagination...');
+                const pollingList = await fetchAllData('polling_list', 'polling_iid', (p) => {
+                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
+                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
+                    return !hasDisability && !isAssigned;
+                });
+                
+                if (!pollingList || pollingList.length === 0) {
+                    throw new Error('কোন পোলিং অফিসার পাওয়া যায়নি!');
+                }
+                
+                // Use filtered data directly
+                const presidingFiltered = presidingList;
+                const assPresidingFiltered = assPresidingList;
+                const pollingFiltered = pollingList;
+                
+                // Calculate required officers
+                let totalBooths = 0;
+                voteCentres.forEach(c => totalBooths += (c.voter_both_total || 0));
+                
+                const required = {
+                    presiding: voteCentres.length,
+                    assPresiding: totalBooths,
+                    polling: totalBooths * 2
+                };
+                
+                console.log('📊 Requirements:', required);
+                console.log(`   Presiding: ${presidingFiltered.length}/${required.presiding}`);
+                console.log(`   Ass Presiding: ${assPresidingFiltered.length}/${required.assPresiding}`);
+                console.log(`   Polling: ${pollingFiltered.length}/${required.polling}`);
+                
+                // Check if we have enough officers
+                if (presidingFiltered.length < required.presiding) {
+                    throw new Error(`⚠️ যথেষ্ট প্রিসাইডিং অফিসার নেই! প্রয়োজন: ${required.presiding}, আছে: ${presidingFiltered.length}`);
+                }
+                if (assPresidingFiltered.length < required.assPresiding) {
+                    throw new Error(`⚠️ যথেষ্ট সহকারী প্রিসাইডিং অফিসার নেই! প্রয়োজন: ${required.assPresiding}, আছে: ${assPresidingFiltered.length}`);
+                }
+                if (pollingFiltered.length < required.polling) {
+                    throw new Error(`⚠️ যথেষ্ট পোলিং অফিসার নেই! প্রয়োজন: ${required.polling}, আছে: ${pollingFiltered.length}`);
+                }
+                
+                console.log('✅ All checks passed! Starting assignment...');
+                
+                // Shuffle lists
+                let presidingAvailable = shuffleArray(presidingFiltered);
+                let assPresidingAvailable = shuffleArray(assPresidingFiltered);
+                let pollingAvailable = shuffleArray(pollingFiltered);
+                
+                let presidingIndex = 0;
+                let assPresidingIndex = 0;
+                let pollingIndex = 0;
+                
+                // Process each vote centre
+                for (const centre of voteCentres) {
+                    const boothCount = centre.voter_both_total || 0;
+                    
+                    if (boothCount === 0) continue;
+                    
+                    // Assign presiding officer
+                    if (presidingIndex >= presidingAvailable.length) {
+                        showStatus('⚠️ প্রিসাইডিং অফিসার শেষ হয়ে গেছে!', 'error');
+                        break;
+                    }
+                    
+                    const presiding = presidingAvailable[presidingIndex++];
+                    
+                    // Assign assistant presiding officers (gender balanced)
+                    const assPresidingNeeded = boothCount;
+                    const assPresidingForCentre = distributeByGender(
+                        assPresidingAvailable.slice(assPresidingIndex),
+                        assPresidingNeeded
+                    );
+                    
+                    if (assPresidingForCentre.length < assPresidingNeeded) {
+                        showStatus('⚠️ সহকারী প্রিসাইডিং অফিসার যথেষ্ট নেই!', 'error');
+                        break;
+                    }
+                    
+                    assPresidingIndex += assPresidingNeeded;
+                    
+                    // Assign polling officers (2 per booth, gender balanced)
+                    const pollingNeeded = boothCount * 2;
+                    const pollingForCentre = distributeByGender(
+                        pollingAvailable.slice(pollingIndex),
+                        pollingNeeded
+                    );
+                    
+                    if (pollingForCentre.length < pollingNeeded) {
+                        showStatus('⚠️ পোলিং অফিসার যথেষ্ট নেই!', 'error');
+                        break;
+                    }
+                    
+                    pollingIndex += pollingNeeded;
+                    
+                    // Create assignment object
+                    const assignment = {
+                        centre: centre,
+                        presiding: presiding,
+                        assPresiding: assPresidingForCentre,
+                        polling: pollingForCentre
+                    };
+                    
+                    generatedData.push(assignment);
+                }
+                
+                console.log(`✅ Successfully assigned ${generatedData.length} centres`);
+                
+                if (generatedData.length === 0) {
+                    throw new Error('কোন কেন্দ্রে দায়িত্ব বন্টন হয়নি! voter_both_total মান চেক করুন।');
+                }
+                
+                // Display results
+                displayAssignments();
+                
+                // Show statistics
+                displayStats();
+                
+                // Show save and print buttons
+                document.getElementById('saveBtn').style.display = 'inline-block';
+                document.getElementById('printBtn').style.display = 'inline-block';
+                
+                showStatus(`✅ সফলভাবে ${generatedData.length} টি কেন্দ্রের জন্য দায়িত্ব বন্টন সম্পন্ন হয়েছে!`, 'success');
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+                
+                // Show detailed error in console
+                if (error.details) console.error('Details:', error.details);
+                if (error.hint) console.error('Hint:', error.hint);
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Display statistics
+        function displayStats() {
+            let totalPresiding = 0;
+            let totalAssPresiding = 0;
+            let totalPolling = 0;
+            
+            generatedData.forEach(assignment => {
+                totalPresiding += 1;
+                totalAssPresiding += assignment.assPresiding.length;
+                totalPolling += assignment.polling.length;
+            });
+            
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${generatedData.length}</div>
+                    <div class="stat-label">মোট কেন্দ্র</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalPresiding}</div>
+                    <div class="stat-label">প্রিসাইডিং অফিসার</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalAssPresiding}</div>
+                    <div class="stat-label">সহকারী প্রিসাইডিং অফিসার</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalPolling}</div>
+                    <div class="stat-label">পোলিং অফিসার</div>
+                </div>
+            `;
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = statsHTML;
+            statsGrid.style.display = 'grid';
+        }
+        
+        // Display assignments
+        function displayAssignments() {
+            const container = document.getElementById('centresContainer');
+            let html = '';
+            
+            generatedData.forEach((assignment, index) => {
+                const centre = assignment.centre;
+                const presiding = assignment.presiding;
+                const assPresiding = assignment.assPresiding;
+                const polling = assignment.polling;
+                
+                html += `
+                    <div class="centre-card">
+                        <div class="centre-header">
+                            <h2>কেন্দ্র নং – ${centre.vote_centre_code}</h2>
+                            <p>${centre.vote_centre_name || ''}</p>
+                            <p>মোট বুথ: ${centre.voter_both_total || 0}</p>
+                        </div>
+                        
+                        <table class="assignment-table">
+                            <thead>
+                                <tr>
+                                    <th>প্রিসাইডিং অফিসার</th>
+                                    <th>সহকারী প্রিসাইডিং অফিসার</th>
+                                    <th>পোলিং অফিসার</th>
+                                    <th>বিকল্প প্রিসাইডিং</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                const maxRows = Math.max(1, assPresiding.length);
+                
+                for (let i = 0; i < maxRows; i++) {
+                    const assPres = assPresiding[i];
+                    const poll1 = polling[i * 2];
+                    const poll2 = polling[i * 2 + 1];
+                    
+                    html += `
+                        <tr>
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="text-align:center; vertical-align:middle;">
+                                <div class="officer-name">${getOfficerName(presiding, 'presiding')}</div>
+                                <div class="officer-designation">${presiding.designation || ''}</div>
+                            </td>` : ''}
+                            
+                            <td style="text-align:center;">
+                                ${assPres ? `
+                                    <div class="officer-name">${getOfficerName(assPres, 'ass_presiding')}</div>
+                                    <div class="officer-designation">${assPres.designation || ''}</div>
+                                    <div class="officer-designation">${assPres.gender || ''}</div>
+                                ` : ''}
+                            </td>
+                            
+                            <td>
+                                ${poll1 ? `
+                                    <div class="officer-name">১. ${getOfficerName(poll1, 'polling')}</div>
+                                    <div class="officer-designation">${poll1.designation || ''} (${poll1.gender || ''})</div>
+                                ` : ''}
+                                ${poll2 ? `
+                                    <div class="officer-name">২. ${getOfficerName(poll2, 'polling')}</div>
+                                    <div class="officer-designation">${poll2.designation || ''} (${poll2.gender || ''})</div>
+                                ` : ''}
+                            </td>
+                            
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="text-align:center; vertical-align:middle;">
+                                ${assPresiding[0] ? `
+                                    <div class="officer-name">${getOfficerName(assPresiding[0], 'ass_presiding')}</div>
+                                    <div class="officer-designation">${assPresiding[0].designation || ''}</div>
+                                ` : ''}
+                            </td>` : ''}
+                        </tr>
+                    `;
+                }
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Save assignments to database
+        async function saveAssignments() {
+            if (generatedData.length === 0) {
+                showStatus('⚠️ কোন ডেটা সংরক্ষণের জন্য নেই!', 'error');
+                return;
+            }
+            
+            if (!confirm('আপনি কি নিশ্চিত যে এই দায়িত্ব বন্টন সংরক্ষণ করতে চান?')) {
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const assignmentsToSave = [];
+                
+                generatedData.forEach(assignment => {
+                    const centreCode = assignment.centre.vote_centre_code;
+                    const centreId = assignment.centre.vote_centre_iid;
+                    
+                    // Presiding assignment
+                    assignmentsToSave.push({
+                        vote_centre_iid: centreId,
+                        vote_centre_code: centreCode,
+                        officer_type: 'presiding',
+                        officer_iid: assignment.presiding.presiding_iid,
+                        officer_name: getOfficerName(assignment.presiding, 'presiding'),
+                        officer_designation: assignment.presiding.designation,
+                        booth_number: null,
+                        assign_code: `${centreId}`,
+                        created_at: new Date().toISOString()
+                    });
+                    
+                    // Assistant presiding assignments
+                    assignment.assPresiding.forEach((assPres, index) => {
+                        const boothNum = index + 1;
+                        assignmentsToSave.push({
+                            vote_centre_iid: centreId,
+                            vote_centre_code: centreCode,
+                            officer_type: 'ass_presiding',
+                            officer_iid: assPres.ass_presiding_iid,
+                            officer_name: getOfficerName(assPres, 'ass_presiding'),
+                            officer_designation: assPres.designation,
+                            officer_gender: assPres.gender,
+                            booth_number: boothNum,
+                            assign_code: `${centreId}-${boothNum}`,
+                            created_at: new Date().toISOString()
+                        });
+                    });
+                    
+                    // Polling assignments
+                    assignment.polling.forEach((poll, index) => {
+                        const boothNum = Math.floor(index / 2) + 1;
+                        const personNum = (index % 2) + 1;
+                        assignmentsToSave.push({
+                            vote_centre_iid: centreId,
+                            vote_centre_code: centreCode,
+                            officer_type: 'polling',
+                            officer_iid: poll.polling_iid,
+                            officer_name: getOfficerName(poll, 'polling'),
+                            officer_designation: poll.designation,
+                            officer_gender: poll.gender,
+                            booth_number: boothNum,
+                            person_number: personNum,
+                            assign_code: `${centreId}-${boothNum}-${personNum}`,
+                            created_at: new Date().toISOString()
+                        });
+                    });
+                });
+                
+                // Save to centre_assignments table
+                const { error: saveError } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .insert(assignmentsToSave);
+                
+                if (saveError) throw saveError;
+                
+                // Update assign_code in respective tables
+                for (const assignment of generatedData) {
+                    const centreId = assignment.centre.vote_centre_iid;
+                    
+                    // Update presiding
+                    await window.supabaseClient
+                        .from('presiding_list')
+                        .update({ assign_code: `${centreId}` })
+                        .eq('presiding_iid', assignment.presiding.presiding_iid);
+                    
+                    // Update ass_presiding
+                    for (let i = 0; i < assignment.assPresiding.length; i++) {
+                        await window.supabaseClient
+                            .from('ass_presiding_list')
+                            .update({ assign_code: `${centreId}-${i + 1}` })
+                            .eq('ass_presiding_iid', assignment.assPresiding[i].ass_presiding_iid);
+                    }
+                    
+                    // Update polling
+                    for (let i = 0; i < assignment.polling.length; i++) {
+                        const boothNum = Math.floor(i / 2) + 1;
+                        const personNum = (i % 2) + 1;
+                        await window.supabaseClient
+                            .from('polling_list')
+                            .update({ assign_code: `${centreId}-${boothNum}-${personNum}` })
+                            .eq('polling_iid', assignment.polling[i].polling_iid);
+                    }
+                }
+                
+                showStatus('✅ সফলভাবে সকল দায়িত্ব বন্টন সংরক্ষণ করা হয়েছে!', 'success');
+                document.getElementById('saveBtn').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                showStatus(`❌ সংরক্ষণে ত্রুটি: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
