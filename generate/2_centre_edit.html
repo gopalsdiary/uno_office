@@ -727,6 +727,42 @@
             setLoading(true);
             
             try {
+                // Delete all old assignments first
+                console.log('🗑️ Deleting old assignments...');
+                
+                // Delete from centre_assignments table
+                const { error: deleteError } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .delete()
+                    .neq('assignment_id', 0); // Delete all records
+                
+                if (deleteError) {
+                    console.error('Delete error:', deleteError);
+                    throw new Error(`পুরাতন ডেটা ডিলিট করতে সমস্যা: ${deleteError.message}`);
+                }
+                
+                console.log('✅ Old assignments deleted');
+                
+                // Reset assign_code in all officer tables
+                console.log('🔄 Resetting assign_code in officer tables...');
+                
+                await window.supabaseClient
+                    .from('presiding_list')
+                    .update({ assign_code: null })
+                    .neq('presiding_iid', 0);
+                
+                await window.supabaseClient
+                    .from('ass_presiding_list')
+                    .update({ assign_code: null })
+                    .neq('ass_presiding_iid', 0);
+                
+                await window.supabaseClient
+                    .from('polling_list')
+                    .update({ assign_code: null })
+                    .neq('polling_iid', 0);
+                
+                console.log('✅ All assign_code reset');
+                
                 const assignmentsToSave = [];
                 
                 generatedData.forEach(assignment => {
