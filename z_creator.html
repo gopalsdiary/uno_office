@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creator • Feni Model High School</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        :root{
+            --bg1:#e0f2fe; --bg2:#fce4ec; --bg3:#ffffff;
+            --brand1:#e91e63; --brand2:#2196f3; --ink:#0f172a; --muted:#475569; --line:#e2e8f0;
+        }
+        *{box-sizing:border-box}
+        body{margin:0; font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; color:var(--ink);
+            background: radial-gradient(1200px 800px at 15% 10%, var(--bg1), transparent 60%),
+                                    radial-gradient(1200px 800px at 85% 20%, var(--bg2), transparent 60%),
+                                    linear-gradient(180deg, #ffffff, #f8fafc);
+            min-height:100vh;
+        }
+        .wrap{max-width:1100px; margin:0 auto; padding:24px;}
+        header.top{display:flex; align-items:center; gap:12px; justify-content:center; padding:14px 0 4px;}
+        header.top img{width:44px; height:44px; object-fit:contain}
+        header.top h1{margin:0; font-size:1rem; font-weight:800; letter-spacing:.4px; color:#1e3a8a}
+
+        .hero{display:grid; grid-template-columns:1.2fr .8fr; gap:28px; align-items:center; padding:22px; border-radius:24px; background:linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.96)); box-shadow:0 18px 50px -20px rgba(33,150,243,.35), 0 10px 30px -18px rgba(233,30,99,.25); border:1px solid rgba(255,255,255,.6); backdrop-filter:blur(10px)}
+        .hero .title{font-size:2rem; font-weight:800; margin:0 0 6px; background:linear-gradient(135deg,var(--brand1),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+        .hero .subtitle{font-size:1rem; color:var(--muted); margin:0 0 14px}
+        .hero .bio{font-size:.95rem; color:#334155; line-height:1.65}
+        .hero .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px}
+        .btn{display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0f172a; font-weight:600; text-decoration:none; box-shadow:0 2px 10px rgba(2,6,23,.06); transition:transform .2s, box-shadow .2s}
+        .btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.12)}
+        .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#fff; border:none}
+        .portrait{justify-self:center; position:relative}
+        .portrait img{width:230px; height:280px; object-fit:cover; border-radius:18px; box-shadow:0 18px 40px rgba(2,6,23,.25); border:4px solid #fff}
+        .badge{position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); background:#0ea5e9; color:#fff; padding:6px 10px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.4px; box-shadow:0 6px 16px rgba(14,165,233,.35)}
+
+        .panel{margin-top:28px; display:grid; grid-template-columns:1fr; gap:18px}
+        .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 18px 16px; box-shadow:0 4px 18px rgba(2,6,23,.06)}
+        .card h3{margin:0 0 10px; font-size:1.05rem; font-weight:800; color:#0f172a}
+        .list{display:grid; gap:10px}
+        .list-item{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px dashed #e2e8f0; border-radius:12px; background:#f8fafc}
+        .list-item b{color:#0f172a}
+
+        .skills{display:flex; flex-wrap:wrap; gap:8px}
+        .chip{padding:8px 12px; background:linear-gradient(135deg, rgba(233,30,99,.08), rgba(33,150,243,.08)); border:1px solid #e2e8f0; border-radius:999px; font-weight:700; font-size:.8rem; color:#0f172a}
+
+        footer{margin:30px 0 14px; text-align:center; color:#64748b; font-size:.85rem}
+
+        @media (max-width:900px){ .hero{grid-template-columns:1fr; text-align:center} .portrait{order:-1} .portrait img{width:200px; height:250px} .hero .actions{justify-content:center} }
+        @media (max-width:420px){ .btn{padding:11px 14px; border-radius:10px} .chip{padding:7px 10px} .hero{padding:16px} }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="top">
+            <img src="logo.png" alt="algorithm logo" />
+            <h1>voting algorithm system</h1>
+        </header>
+
+        <section class="hero" aria-label="Creator profile">
+            <div>
+                <h2 class="title">Web Developer</h2>
+                <p class="subtitle">This website was designed and built by</p>
+                <p class="bio"><b>Gopal Roy</b> — a web developer focused on fast, simple, and mobile‑first portals. He crafted this site’s login, dynamic website, dynamic processing, algorithm, ID card, and student profile experiences with attention to performance and usability.</p>
+                <div class="actions">
+                    <a class="btn primary" href="mailto:gopalsdiary@gmail.com">✉️ Email</a>
+                    <a class="btn" href="tel:+8801521320331">📞 Call</a>
+                    <a class="btn" href="https://www.facebook.com/gopalroy24/" target="_blank" rel="noopener">📘 Facebook</a>
+                    <a class="btn" href="https://i.ibb.co.com/Wp7gdBD4/20210120-141139987-i-OS.jpg" target="_blank" rel="noopener">🌐 Portfolio</a>
+                </div>
+            </div>
+            <div class="portrait">
+                <img src="https://i.ibb.co.com/HDFLdgBM/gopals-diary.jpg" alt="Portrait of Gopal Roy" />
+                <span class="badge">Site Creator</span>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="card">
+                <h3>What’s inside this site</h3>
+                <div class="list">
+                    
+                    <div class="list-item">✅ <b>app install</b> features: installable app and offline-first improvements.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Skills & Tools</h3>
+                <div class="skills">
+                    <span class="chip">HTML</span>
+                    <span class="chip">CSS</span>
+                    <span class="chip">JavaScript</span>
+                    <span class="chip">Responsive Mobile Design</span>
+                    <span class="chip">Big Data</span>
+                    <span class="chip">web install prompt</span>
+                    <span class="chip">Firebase</span>
+                    <span class="chip">Android App</span>
+                </div>
+            </div>
+        </section>
+ <footer>
+            ডায়নামিক ওয়েবসাইট, রেজাল্ট প্রসেসিং সিস্টেম, আইডি কার্ড এবং স্টুডেন্ট প্রোফাইল তৈরির জন্য যোগাযোগ করুন ।   
+            স্কুলে এসে আইডি কার্ড এন্ট্রি করার সাথে সাথে, উপস্থিতি এপস এ দেখা যাবে। অথবা অন্যান্য যেকোনো কাস্টম সফটওয়্যার ডেভেলপমেন্ট এর জন্য যোগাযোগ করুন।
+        </footer>
+        <footer>
+            © 2026 • Built with care by Gopal Roy
+        </footer>
+    </div>
+</body>
+</html>
