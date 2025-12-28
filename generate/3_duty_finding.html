@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duty Finding</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .centres-container {
+            margin-top: 30px;
+        }
+        
+        .centre-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            page-break-after: always;
+        }
+        
+        .centre-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .centre-header h2 {
+            margin-bottom: 5px;
+        }
+        
+        .assignment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .assignment-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .assignment-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .assignment-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .officer-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .officer-designation {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .controls, .status, .loading {
+                display: none !important;
+            }
+            
+            .centre-card {
+                page-break-after: always;
+                margin-bottom: 0;
+            }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .search-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+        }
+        
+        .result-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .result-header h2 {
+            margin-bottom: 5px;
+        }
+        
+        .info-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .info-table tr {
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .info-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .info-table td {
+            padding: 15px;
+        }
+        
+        .info-table td:first-child {
+            font-weight: bold;
+            background: #f8f9fa;
+            width: 35%;
+            color: #667eea;
+        }
+        
+        .info-table td:last-child {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Duty Finding</h1>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="search-form">
+            <div class="form-group">
+                <label for="officerType">Select Officer Type:</label>
+                <select id="officerType" class="form-select" onchange="loadOfficers()">
+                    <option value="">-- Select --</option>
+                    <option value="presiding">Presiding Officer</option>
+                    <option value="ass_presiding">Assistant Presiding Officer</option>
+                    <option value="polling">Polling Officer</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="officerSelectGroup" style="display:none;">
+                <label for="officerSelect">Select Officer:</label>
+                <select id="officerSelect" class="form-select" onchange="findDuty()">
+                    <option value="">-- Select --</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="findDuty()">
+                🔍 Find Duty
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading information... Please wait...</p>
+        </div>
+        
+        <div class="result-container" id="resultContainer"></div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
+        
+        let allOfficers = [];
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Show/hide loading
+        function setLoading(isLoading) {
+            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+        }
+        
+        // Load officers based on selected type
+        async function loadOfficers() {
+            const officerType = document.getElementById('officerType').value;
+            const officerSelect = document.getElementById('officerSelect');
+            const officerSelectGroup = document.getElementById('officerSelectGroup');
+            
+            if (!officerType) {
+                officerSelectGroup.style.display = 'none';
+                return;
+            }
+            
+            setLoading(true);
+            officerSelect.innerHTML = '<option value="">-- Select --</option>';
+            
+            try {
+                let tableName, idColumn, nameColumn;
+                
+                if (officerType === 'presiding') {
+                    tableName = 'presiding_list';
+                    idColumn = 'presiding_iid';
+                    nameColumn = 'presiding_name';
+                } else if (officerType === 'ass_presiding') {
+                    tableName = 'ass_presiding_list';
+                    idColumn = 'ass_presiding_iid';
+                    nameColumn = 'ass_presiding_name';
+                } else if (officerType === 'polling') {
+                    tableName = 'polling_list';
+                    idColumn = 'polling_iid';
+                    nameColumn = 'polling_name';
+                }
+                
+                // Fetch officers with assign_code
+                const { data: officers, error } = await window.supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .not('assign_code', 'is', null)
+                    .order(nameColumn);
+                
+                if (error) throw error;
+                
+                if (!officers || officers.length === 0) {
+                    showStatus('⚠️ No assigned officers found!', 'error');
+                    officerSelectGroup.style.display = 'none';
+                    return;
+                }
+                
+                allOfficers = officers;
+                
+                // Populate dropdown
+                officers.forEach(officer => {
+                    const option = document.createElement('option');
+                    option.value = officer[idColumn];
+                    const name = officer[nameColumn] || officer.name || 'N/A';
+                    option.textContent = `${name} - ${officer.designation || ''}`;
+                    officerSelect.appendChild(option);
+                });
+                
+                officerSelectGroup.style.display = 'block';
+                showStatus(`✅ Found ${officers.length} officers`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading officers:', error);
+                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Find duty for selected officer
+        async function findDuty() {
+            const officerType = document.getElementById('officerType').value;
+            const officerSelect = document.getElementById('officerSelect');
+            const selectedOfficerId = officerSelect.value;
+            
+            if (!officerType || !selectedOfficerId) {
+                showStatus('⚠️ Please select officer type and officer', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            document.getElementById('resultContainer').innerHTML = '';
+            
+            try {
+                // Get selected officer details
+                const selectedOfficer = allOfficers.find(o => {
+                    if (officerType === 'presiding') return o.presiding_iid == selectedOfficerId;
+                    if (officerType === 'ass_presiding') return o.ass_presiding_iid == selectedOfficerId;
+                    if (officerType === 'polling') return o.polling_iid == selectedOfficerId;
+                    return false;
+                });
+                
+                if (!selectedOfficer) {
+                    throw new Error('Officer not found');
+                }
+                
+                const assignCode = selectedOfficer.assign_code;
+                
+                // Get vote centre ID from assign_code
+                const centreId = assignCode.split('-')[0];
+                
+                // Fetch vote centre details
+                const { data: centre, error: centreError } = await window.supabaseClient
+                    .from('vote_centre')
+                    .select('*')
+                    .eq('vote_centre_iid', centreId)
+                    .single();
+                
+                if (centreError) throw centreError;
+                
+                // Fetch centre assignments to get presiding and assistant presiding info
+                const { data: assignments, error: assignError } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .select('*')
+                    .eq('vote_centre_iid', centreId)
+                    .in('officer_type', ['presiding', 'ass_presiding']);
+                
+                if (assignError) throw assignError;
+                
+                // Find presiding officer
+                const presidingAssignment = assignments.find(a => a.officer_type === 'presiding');
+                
+                // Find assistant presiding officers
+                const assPresidingAssignments = assignments.filter(a => a.officer_type === 'ass_presiding');
+                
+                // Display results
+                displayDutyInfo(selectedOfficer, officerType, centre, presidingAssignment, assPresidingAssignments);
+                
+                showStatus('✅ Duty information found', 'success');
+                
+            } catch (error) {
+                console.error('Error finding duty:', error);
+                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Display duty information
+        function displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments) {
+            const container = document.getElementById('resultContainer');
+            
+            let officerName = '';
+            if (officerType === 'presiding') {
+                officerName = officer.presiding_name || officer.name || 'N/A';
+            } else if (officerType === 'ass_presiding') {
+                officerName = officer.ass_presiding_name || officer.name || 'N/A';
+            } else if (officerType === 'polling') {
+                officerName = officer.polling_name || officer.name || 'N/A';
+            }
+            
+            let officerTypeLabel = '';
+            if (officerType === 'presiding') officerTypeLabel = 'Presiding Officer';
+            else if (officerType === 'ass_presiding') officerTypeLabel = 'Assistant Presiding Officer';
+            else if (officerType === 'polling') officerTypeLabel = 'Polling Officer';
+            
+            let html = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <h2>Duty Information</h2>
+                    </div>
+                    
+                    <table class="info-table">
+                        <tr>
+                            <td>Officer Name</td>
+                            <td>${officerName}</td>
+                        </tr>
+                        <tr>
+                            <td>Officer Type</td>
+                            <td>${officerTypeLabel}</td>
+                        </tr>
+                        <tr>
+                            <td>Designation</td>
+                            <td>${officer.designation || 'N/A'}</td>
+                        </tr>
+                        ${officer.gender ? `
+                        <tr>
+                            <td>Gender</td>
+                            <td>${officer.gender}</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td>Assignment Code</td>
+                            <td>${officer.assign_code}</td>
+                        </tr>
+                        <tr>
+                            <td>Vote Centre No.</td>
+                            <td>${centre.vote_centre_code || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td>Vote Centre Name</td>
+                            <td><strong>${centre.vote_centre_name || 'N/A'}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Total Booths</td>
+                            <td>${centre.voter_both_total || 0}</td>
+                        </tr>
+            `;
+            
+            // Add presiding officer info
+            if (presidingAssignment) {
+                html += `
+                        <tr>
+                            <td>Presiding Officer</td>
+                            <td><strong>${presidingAssignment.officer_name || 'N/A'}</strong></td>
+                        </tr>
+                `;
+            }
+            
+            // Add assistant presiding officers info
+            if (assPresidingAssignments && assPresidingAssignments.length > 0) {
+                html += `
+                        <tr>
+                            <td>Assistant Presiding Officers</td>
+                            <td>
+                `;
+                
+                assPresidingAssignments.forEach((assPres, index) => {
+                    html += `${index + 1}. ${assPres.officer_name} (Booth ${assPres.booth_number})<br>`;
+                });
+                
+                html += `
+                            </td>
+                        </tr>
+                `;
+            }
+            
+            html += `
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
