@@ -261,36 +261,86 @@
             font-size: 14px;
             opacity: 0.9;
         }
+
+        .centre-select {
+            min-width: 220px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccd;
+            font-size: 15px;
+            background: #f8f9fb;
+        }
+
+        .officer-select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #d0d4dc;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .edit-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .edit-mode .officer-select {
+            display: inline-block;
+        }
+
+        .normal-mode .officer-select {
+            display: none;
+        }
+
+        .edit-mode .officer-name,
+        .edit-mode .officer-designation {
+            display: none;
+        }
+
+        .normal-mode .officer-name,
+        .normal-mode .officer-designation {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🗳️ দায়িত্ব বন্টন এলগরিদম</h1>
+        <h1>🗳️ Duty Allocation</h1>
         
         <div class="status" id="status"></div>
         
       
         
         <div class="controls">
-            <button class="btn btn-load" id="loadBtn" onclick="loadFromDatabase()">
-                📂 ডাটাবেস থেকে ওপেন করুন
-            </button>
-            <button class="btn btn-regenerate" id="regenerateBtn" onclick="regenerateAssignments()">
-                🔄 নতুন করে বন্টন করুন
-            </button>
+            <select id="centreSelect" class="centre-select" onchange="onCentreChange()">
+                <option value="all">🔍 View all centres</option>
+            </select>
             <button class="btn btn-success" id="saveBtn" onclick="saveAssignments()" style="display:none;">
-                💾 সংরক্ষণ করুন
+                💾 Save
             </button>
             <button class="btn btn-print" id="printBtn" onclick="window.print()">
-                🖨️ প্রিন্ট করুন
+                🖨️ Print
             </button>
         </div>
-        
-        <div class="loading" id="loading">
+
+        <div class="loading" id="loading" style="display:none;">
             <div class="spinner"></div>
-            <p>প্রসেসিং চলছে... অনুগ্রহ করে অপেক্ষা করুন...</p>
+            <p>Processing... please wait...</p>
         </div>
         
+       
         <div class="stats-grid" id="statsGrid" style="display:none;"></div>
         
         <div class="centres-container" id="centresContainer"></div>
@@ -304,6 +354,11 @@
         });
         
         let generatedData = [];
+        let selectedCentreCode = '';
+        let presidingPool = [];
+        let assPresidingPool = [];
+        let pollingPool = [];
+        let poolsLoaded = false;
         
         // Helper function to get officer name (handles different column names)
         function getOfficerName(officer, type) {
@@ -317,6 +372,69 @@
                 return officer.polling_name || officer.name || 'N/A';
             }
             return officer.name || 'N/A';
+        }
+
+        function getOfficerId(officer, type) {
+            if (!officer) return '';
+            if (type === 'presiding') return officer.presiding_iid || officer.officer_iid || officer.id || officer.iid || '';
+            if (type === 'ass_presiding') return officer.ass_presiding_iid || officer.officer_iid || officer.id || officer.iid || '';
+            if (type === 'polling') return officer.polling_iid || officer.officer_iid || officer.id || officer.iid || '';
+            return officer.id || officer.iid || '';
+        }
+
+        function getOfficerDisplay(officer, type) {
+            if (!officer) return 'N/A';
+            const name = getOfficerName(officer, type);
+            const role = officer.designation ? ` (${officer.designation})` : '';
+            const id = getOfficerId(officer, type);
+            if (id) {
+                return `${id} - ${name}${role}`;
+            }
+            return `${name}${role}`;
+        }
+
+        function buildOptions(pool, selectedId, idKey, type, selectedOfficer = null) {
+            const opts = ['<option value="">-- Clear --</option>'];
+            const sorted = [...pool].sort((a, b) => {
+                const aId = Number(a[idKey]) || 0;
+                const bId = Number(b[idKey]) || 0;
+                if (aId !== bId) return aId - bId;
+                return getOfficerName(a, type).localeCompare(getOfficerName(b, type));
+            });
+            let foundSelected = false;
+
+            sorted.forEach((item, idx) => {
+                const idVal = String(item[idKey]);
+                const isSelected = selectedId && String(selectedId) === idVal;
+                if (isSelected) foundSelected = true;
+                const label = `${idx + 1}. ${getOfficerDisplay(item, type)}`;
+                opts.push(`<option value="${idVal}" ${isSelected ? 'selected' : ''}>${label}</option>`);
+            });
+
+            if (selectedId && selectedOfficer && !foundSelected) {
+                const idVal = String(selectedId);
+                const label = `* ${getOfficerDisplay(selectedOfficer, type)}`;
+                opts.splice(1, 0, `<option value="${idVal}" selected>${label}</option>`);
+            }
+
+            return opts.join('');
+        }
+
+        function buildAlternateOptions(list, selectedId) {
+            const opts = ['<option value="">-- Clear --</option>'];
+            const sorted = list.filter(Boolean).sort((a, b) => {
+                const aId = Number(a.ass_presiding_iid) || 0;
+                const bId = Number(b.ass_presiding_iid) || 0;
+                if (aId !== bId) return aId - bId;
+                return getOfficerName(a, 'ass_presiding').localeCompare(getOfficerName(b, 'ass_presiding'));
+            });
+            sorted.forEach((item, idx) => {
+                const idVal = item.ass_presiding_iid ? String(item.ass_presiding_iid) : '';
+                const selected = selectedId && String(selectedId) === idVal ? 'selected' : '';
+                const label = `${idx + 1}. ${getOfficerDisplay(item, 'ass_presiding')}`;
+                opts.push(`<option value="${idVal}" ${selected}>${label}</option>`);
+            });
+            return opts.join('');
         }
         
         // Show status message
@@ -335,15 +453,12 @@
         
         // Show/hide loading
         function setLoading(isLoading) {
-            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+            const loading = document.getElementById('loading');
+            if (loading) loading.style.display = isLoading ? 'block' : 'none';
             
             // Disable/enable buttons during loading
-            const loadBtn = document.getElementById('loadBtn');
-            const regenerateBtn = document.getElementById('regenerateBtn');
             const saveBtn = document.getElementById('saveBtn');
             
-            if (loadBtn) loadBtn.disabled = isLoading;
-            if (regenerateBtn) regenerateBtn.disabled = isLoading;
             if (saveBtn) saveBtn.disabled = isLoading;
         }
         
@@ -434,6 +549,15 @@
             console.log(`✅ ${tableName}: Total ${allData.length} records loaded in ${batchCount} batches`);
             return allData;
         }
+
+        async function loadOfficerPools() {
+            if (poolsLoaded) return;
+            const unassigned = (row) => !row.assign_code || String(row.assign_code).trim() === '';
+            presidingPool = await fetchAllData('presiding_list', 'presiding_iid', unassigned);
+            assPresidingPool = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', unassigned);
+            pollingPool = await fetchAllData('polling_list', 'polling_iid', unassigned);
+            poolsLoaded = true;
+        }
         
         // Generate assignments
         async function generateAssignments() {
@@ -463,7 +587,7 @@
                 }
                 
                 if (!voteCentres || voteCentres.length === 0) {
-                    throw new Error('কোন ভোট কেন্দ্র পাওয়া যায়নি! vote_centre টেবিলে ডেটা আছে কিনা চেক করুন।');
+                    throw new Error('No vote centre found. Please check vote_centre table.');
                 }
                 
                 console.log(`✅ Found ${voteCentres.length} vote centres`);
@@ -477,7 +601,7 @@
                 });
                 
                 if (!presidingList || presidingList.length === 0) {
-                    throw new Error('কোন প্রিসাইডিং অফিসার পাওয়া যায়নি!');
+                    throw new Error('No presiding officer found.');
                 }
                 
                 // Fetch all assistant presiding list with pagination
@@ -489,7 +613,7 @@
                 });
                 
                 if (!assPresidingList || assPresidingList.length === 0) {
-                    throw new Error('কোন সহকারী প্রিসাইডিং অফিসার পাওয়া যায়নি!');
+                    throw new Error('No assistant presiding officer found.');
                 }
                 
                 // Fetch all polling list with pagination
@@ -501,7 +625,7 @@
                 });
                 
                 if (!pollingList || pollingList.length === 0) {
-                    throw new Error('কোন পোলিং অফিসার পাওয়া যায়নি!');
+                    throw new Error('No polling officer found.');
                 }
                 
                 // Use filtered data directly
@@ -532,19 +656,19 @@
                 
                 let warnings = [];
                 if (presidingFiltered.length < required.presiding) {
-                    warnings.push(`⚠️ প্রিসাইডিং: ${presidingFiltered.length}/${required.presiding} জন (${required.presiding - presidingFiltered.length} জন কম)`);
+                    warnings.push(`⚠️ Presiding: ${presidingFiltered.length}/${required.presiding} (${required.presiding - presidingFiltered.length} short)`);
                 }
                 if (assPresidingFiltered.length < required.assPresiding) {
-                    warnings.push(`⚠️ সহকারী প্রিসাইডিং: ${assPresidingFiltered.length}/${required.assPresiding} জন (${required.assPresiding - assPresidingFiltered.length} জন কম)`);
+                    warnings.push(`⚠️ Assistant presiding: ${assPresidingFiltered.length}/${required.assPresiding} (${required.assPresiding - assPresidingFiltered.length} short)`);
                 }
                 if (pollingFiltered.length < required.polling) {
-                    warnings.push(`⚠️ পোলিং: ${pollingFiltered.length}/${required.polling} জন (${required.polling - pollingFiltered.length} জন কম)`);
+                    warnings.push(`⚠️ Polling: ${pollingFiltered.length}/${required.polling} (${required.polling - pollingFiltered.length} short)`);
                 }
                 
                 if (warnings.length > 0) {
                     console.log('⚠️ Officer shortage detected:');
                     warnings.forEach(w => console.log(`   ${w}`));
-                    showStatus(`⚠️ যথেষ্ট অফিসার নেই! শুধু ${canAssignCentres} টি কেন্দ্রের জন্য বন্টন করা হবে।\n${warnings.join('\n')}`, 'error');
+                    showStatus(`⚠️ Not enough officers. Only ${canAssignCentres} centres will be assigned.\n${warnings.join('\n')}`, 'error');
                 }
                 
                 console.log(`✅ Starting assignment for ${canAssignCentres} centres...`);
@@ -570,21 +694,21 @@
                     // Check if we have enough officers for this centre
                     if (presidingIndex >= presidingAvailable.length) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - no presiding officer`);
-                        skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (প্রিসাইডিং অফিসার নেই)`);
+                        skippedCentres.push(`Centre ${centre.vote_centre_code} (presiding officer missing)`);
                         continue;
                     }
                     
                     const assPresidingNeeded = boothCount;
                     if (assPresidingIndex + assPresidingNeeded > assPresidingAvailable.length) {
-                        console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough ass presiding`);
-                        skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (সহকারী প্রিসাইডিং কম)`);
+                        console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough assistant presiding`);
+                        skippedCentres.push(`Centre ${centre.vote_centre_code} (assistant presiding shortage)`);
                         continue;
                     }
                     
                     const pollingNeeded = boothCount * 2;
                     if (pollingIndex + pollingNeeded > pollingAvailable.length) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough polling`);
-                        skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (পোলিং অফিসার কম)`);
+                        skippedCentres.push(`Centre ${centre.vote_centre_code} (polling officer shortage)`);
                         continue;
                     }
                     
@@ -626,31 +750,30 @@
                 }
                 
                 if (generatedData.length === 0) {
-                    throw new Error('কোন কেন্দ্রে দায়িত্ব বন্টন হয়নি! অফিসার সংখ্যা চেক করুন।');
+                    throw new Error('No centre was assigned. Please check officer counts.');
                 }
                 
-                // Display results
-                displayAssignments();
-                
-                // Show statistics
-                displayStats();
+                // Display results (filtered by dropdown)
+                selectedCentreCode = 'all';
+                populateCentreDropdown();
+                renderAssignmentsAndStats();
                 
                 // Show save, regenerate and print buttons (always show regenerate for retry)
                 document.getElementById('saveBtn').style.display = 'inline-block';
                 document.getElementById('printBtn').style.display = 'inline-block';
                 
-                let successMsg = `✅ সফলভাবে ${generatedData.length} টি কেন্দ্রের জন্য দায়িত্ব বন্টন সম্পন্ন হয়েছে!`;
+                let successMsg = `✅ Assigned ${generatedData.length} centres successfully`;
                 if (skippedCentres.length > 0) {
-                    successMsg += ` ⚠️ ${skippedCentres.length} টি কেন্দ্র skip হয়েছে (যথেষ্ট অফিসার নেই)। পছন্দ না হলে 'নতুন করে বন্টন করুন' চাপুন।`;
+                    successMsg += ` ⚠️ ${skippedCentres.length} centre(s) skipped (officer shortage).`;
                 } else {
-                    successMsg += ` পছন্দ না হলে 'নতুন করে বন্টন করুন' চাপুন।`;
+                    successMsg += `.`;
                 }
                 
                 showStatus(successMsg, skippedCentres.length > 0 ? 'error' : 'success');
                 
             } catch (error) {
                 console.error('❌ Error:', error);
-                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+                showStatus(`❌ Error: ${error.message}`, 'error');
                 
                 // Show detailed error in console
                 if (error.details) console.error('Details:', error.details);
@@ -660,34 +783,180 @@
             }
         }
         
+        // Get filtered data based on dropdown selection
+        function getFilteredAssignments() {
+            if (selectedCentreCode === 'all') return generatedData;
+            return generatedData.filter(item => item.centre.vote_centre_code === selectedCentreCode);
+        }
+
+        // Populate centre dropdown
+        function populateCentreDropdown() {
+            const select = document.getElementById('centreSelect');
+            if (!select) return;
+            const options = ['<option value="">-- Select centre --</option>', '<option value="all">🔍 View all centres</option>'];
+            const sorted = [...generatedData].sort((a, b) => (a.centre.vote_centre_code || '').localeCompare(b.centre.vote_centre_code || ''));
+            sorted.forEach(item => {
+                const code = item.centre.vote_centre_code || '';
+                const name = item.centre.vote_centre_name || '';
+                const label = name ? `${code} - ${name}` : code;
+                options.push(`<option value="${code}">${label}</option>`);
+            });
+            select.innerHTML = options.join('');
+            select.value = selectedCentreCode || '';
+        }
+
+        function onCentreChange() {
+            const select = document.getElementById('centreSelect');
+            selectedCentreCode = select ? select.value : '';
+            renderAssignmentsAndStats();
+        }
+
+        // Toggle edit mode for a centre
+        async function toggleEditMode(centreIndex) {
+            const centreCard = document.getElementById(`centre-${centreIndex}`);
+            if (!centreCard) return;
+            
+            if (centreCard.classList.contains('normal-mode')) {
+                centreCard.classList.remove('normal-mode');
+                centreCard.classList.add('edit-mode');
+                const btn = centreCard.querySelector('.edit-btn');
+                if (btn) btn.textContent = '✅ Done';
+            } else {
+                centreCard.classList.remove('edit-mode');
+                centreCard.classList.add('normal-mode');
+                const btn = centreCard.querySelector('.edit-btn');
+                if (btn) btn.textContent = '✏️ Edit';
+                // Save immediately when leaving edit mode
+                await saveAssignments();
+                // Re-render to show updated names
+                renderAssignmentsAndStats();
+            }
+        }
+
+        // Update officer assignment
+        function updateOfficer(centreIndex, officerType, position, newId) {
+            const assignment = generatedData[centreIndex];
+            if (!assignment) return;
+
+            if (officerType === 'presiding') {
+                if (newId === '') {
+                    assignment.presiding = null;
+                } else {
+                    const officer = presidingPool.find(o => String(o.presiding_iid) === String(newId));
+                    if (officer) {
+                        assignment.presiding = {
+                            presiding_iid: officer.presiding_iid,
+                            presiding_name: officer.presiding_name || officer.name,
+                            designation: officer.designation,
+                            gender: officer.gender
+                        };
+                    }
+                }
+            } else if (officerType === 'ass_presiding') {
+                if (newId === '') {
+                    if (position >= 0) {
+                        assignment.assPresiding[position] = null; // keep row but blank
+                    }
+                } else {
+                    const officer = assPresidingPool.find(o => String(o.ass_presiding_iid) === String(newId));
+                    if (officer) {
+                        const newOfficer = {
+                            ass_presiding_iid: officer.ass_presiding_iid,
+                            ass_presiding_name: officer.ass_presiding_name || officer.name,
+                            designation: officer.designation,
+                            gender: officer.gender,
+                            booth_number: assignment.assPresiding[position]?.booth_number || position + 1
+                        };
+                        if (position >= 0 && position < assignment.assPresiding.length) {
+                            assignment.assPresiding[position] = newOfficer;
+                        } else {
+                            assignment.assPresiding.push(newOfficer);
+                        }
+                    }
+                }
+            } else if (officerType === 'polling') {
+                if (newId === '') {
+                    if (position >= 0) {
+                        assignment.polling[position] = null; // keep slot but blank
+                    }
+                } else {
+                    const officer = pollingPool.find(o => String(o.polling_iid) === String(newId));
+                    if (officer) {
+                        const boothNum = Math.floor(position / 2) + 1;
+                        const personNum = (position % 2) + 1;
+                        const newOfficer = {
+                            polling_iid: officer.polling_iid,
+                            polling_name: officer.polling_name || officer.name,
+                            designation: officer.designation,
+                            gender: officer.gender,
+                            booth_number: boothNum,
+                            person_number: personNum
+                        };
+                        if (position >= 0 && position < assignment.polling.length) {
+                            assignment.polling[position] = newOfficer;
+                        } else {
+                            assignment.polling.push(newOfficer);
+                        }
+                    }
+                }
+            } else if (officerType === 'alternate') {
+                if (newId === '') {
+                    if (assignment.assPresiding.length > 0) {
+                        assignment.assPresiding[0] = null;
+                    }
+                } else {
+                    const idx = assignment.assPresiding.findIndex(o => o && String(o.ass_presiding_iid) === String(newId));
+                    if (idx !== -1) {
+                        const chosen = assignment.assPresiding[idx];
+                        assignment.assPresiding.splice(idx, 1);
+                        assignment.assPresiding.unshift(chosen);
+                    }
+                }
+            }
+
+            // Show save button when changes are made
+            document.getElementById('saveBtn').style.display = 'inline-block';
+        }
+
+        function renderAssignmentsAndStats() {
+            const data = getFilteredAssignments();
+            if (!selectedCentreCode) {
+                document.getElementById('centresContainer').innerHTML = '';
+                document.getElementById('statsGrid').style.display = 'none';
+                return;
+            }
+            displayAssignments(data);
+            displayStats(data);
+        }
+
         // Display statistics
-        function displayStats() {
+        function displayStats(data = generatedData) {
             let totalPresiding = 0;
             let totalAssPresiding = 0;
             let totalPolling = 0;
             
-            generatedData.forEach(assignment => {
-                totalPresiding += 1;
-                totalAssPresiding += assignment.assPresiding.length;
-                totalPolling += assignment.polling.length;
+            data.forEach(assignment => {
+                totalPresiding += assignment.presiding ? 1 : 0;
+                totalAssPresiding += assignment.assPresiding.filter(Boolean).length;
+                totalPolling += assignment.polling.filter(Boolean).length;
             });
             
             const statsHTML = `
                 <div class="stat-card">
-                    <div class="stat-number">${generatedData.length}</div>
-                    <div class="stat-label">মোট কেন্দ্র</div>
+                    <div class="stat-number">${data.length}</div>
+                    <div class="stat-label">Total centres</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">${totalPresiding}</div>
-                    <div class="stat-label">প্রিসাইডিং অফিসার</div>
+                    <div class="stat-label">Presiding officers</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">${totalAssPresiding}</div>
-                    <div class="stat-label">সহকারী প্রিসাইডিং অফিসার</div>
+                    <div class="stat-label">Assistant presiding officers</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">${totalPolling}</div>
-                    <div class="stat-label">পোলিং অফিসার</div>
+                    <div class="stat-label">Polling officers</div>
                 </div>
             `;
             
@@ -697,38 +966,44 @@
         }
         
         // Display assignments
-        function displayAssignments() {
+        function displayAssignments(data = generatedData) {
             const container = document.getElementById('centresContainer');
             let html = '';
+            const sorted = [...data].sort((a, b) => (a.centre.vote_centre_code || '').localeCompare(b.centre.vote_centre_code || ''));
             
-            generatedData.forEach((assignment, index) => {
+            sorted.forEach((assignment, index) => {
                 const centre = assignment.centre;
                 const presiding = assignment.presiding;
                 const assPresiding = assignment.assPresiding;
                 const polling = assignment.polling;
+                const centreIndex = generatedData.findIndex(a => a.centre.vote_centre_code === centre.vote_centre_code);
                 
                 html += `
-                    <div class="centre-card">
+                    <div class="centre-card normal-mode" id="centre-${centreIndex}">
                         <div class="centre-header">
-                            <h2>কেন্দ্র নং – ${centre.vote_centre_code}</h2>
+                            <h2>${index + 1}. Centre ${centre.vote_centre_code}</h2>
                             <p>${centre.vote_centre_name || ''}</p>
-                            <p>মোট বুথ: ${centre.voter_both_total || 0}</p>
+                            <p>Total booths: ${centre.voter_both_total || 0}</p>
+                            <button class="edit-btn" onclick="toggleEditMode(${centreIndex})">✏️ Edit</button>
                         </div>
                         
                         <table class="assignment-table">
                             <thead>
                                 <tr>
-                                    <th>প্রিসাইডিং অফিসার</th>
-                                    <th>সহকারী প্রিসাইডিং অফিসার</th>
-                                    <th>পোলিং অফিসার</th>
-                                    <th>বিকল্প প্রিসাইডিং</th>
+                                    <th>Presiding officer</th>
+                                    <th>Assistant presiding officer</th>
+                                    <th>Polling officers</th>
+                                    <th>Alternate presiding</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
                 
-                const maxRows = Math.max(1, assPresiding.length);
+                const pollingRows = Math.max(1, Math.ceil(polling.length / 2));
+                const maxRows = Math.max(1, assPresiding.length, pollingRows);
                 
+                const firstAssPres = assPresiding.find(Boolean) || null;
+
                 for (let i = 0; i < maxRows; i++) {
                     const assPres = assPresiding[i];
                     const poll1 = polling[i * 2];
@@ -741,6 +1016,9 @@
                                     <div class="officer-name">${getOfficerName(presiding, 'presiding')}</div>
                                     <div class="officer-designation">${presiding.designation || ''}</div>
                                 ` : '<div class="officer-name">N/A</div>'}
+                                <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'presiding', -1, this.value)">
+                                    ${buildOptions(presidingPool, presiding?.presiding_iid, 'presiding_iid', 'presiding', presiding)}
+                                </select>
                             </td>` : ''}
                             
                             <td style="text-align:center;">
@@ -749,24 +1027,36 @@
                                     <div class="officer-designation">${assPres.designation || ''}</div>
                                     <div class="officer-designation">${assPres.gender || ''}</div>
                                 ` : ''}
+                                <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'ass_presiding', ${i}, this.value)">
+                                    ${assPres ? buildOptions(assPresidingPool, assPres.ass_presiding_iid, 'ass_presiding_iid', 'ass_presiding', assPres) : buildOptions(assPresidingPool, null, 'ass_presiding_iid', 'ass_presiding')}
+                                </select>
                             </td>
                             
                             <td>
                                 ${poll1 ? `
-                                    <div class="officer-name">১. ${getOfficerName(poll1, 'polling')}</div>
+                                    <div class="officer-name">1. ${getOfficerName(poll1, 'polling')}</div>
                                     <div class="officer-designation">${poll1.designation || ''} (${poll1.gender || ''})</div>
                                 ` : ''}
+                                <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2}, this.value)">
+                                    ${poll1 ? buildOptions(pollingPool, poll1.polling_iid, 'polling_iid', 'polling', poll1) : buildOptions(pollingPool, null, 'polling_iid', 'polling')}
+                                </select>
                                 ${poll2 ? `
-                                    <div class="officer-name">২. ${getOfficerName(poll2, 'polling')}</div>
+                                    <div class="officer-name">2. ${getOfficerName(poll2, 'polling')}</div>
                                     <div class="officer-designation">${poll2.designation || ''} (${poll2.gender || ''})</div>
                                 ` : ''}
+                                <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2 + 1}, this.value)">
+                                    ${poll2 ? buildOptions(pollingPool, poll2.polling_iid, 'polling_iid', 'polling', poll2) : buildOptions(pollingPool, null, 'polling_iid', 'polling')}
+                                </select>
                             </td>
                             
                             ${i === 0 ? `<td rowspan="${maxRows}" style="text-align:center; vertical-align:middle;">
-                                ${assPresiding[0] ? `
-                                    <div class="officer-name">${getOfficerName(assPresiding[0], 'ass_presiding')}</div>
-                                    <div class="officer-designation">${assPresiding[0].designation || ''}</div>
+                                ${firstAssPres ? `
+                                    <div class="officer-name">${getOfficerName(firstAssPres, 'ass_presiding')}</div>
+                                    <div class="officer-designation">${firstAssPres.designation || ''}</div>
                                 ` : '<div class="officer-name">N/A</div>'}
+                                <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'alternate', 0, this.value)">
+                                    ${buildAlternateOptions(assPresiding, firstAssPres?.ass_presiding_iid)}
+                                </select>
                             </td>` : ''}
                         </tr>
                     `;
@@ -788,7 +1078,7 @@
             generatedData = [];
             document.getElementById('centresContainer').innerHTML = '';
             document.getElementById('statsGrid').style.display = 'none';
-            showStatus('📂 ডাটাবেস থেকে ডেটা লোড করা হচ্ছে...', 'info');
+            showStatus('📂 Loading assignments from database...', 'info');
             
             try {
                 console.log('🔍 Loading data from database...');
@@ -833,7 +1123,7 @@
                 
                 if (!assignments || assignments.length === 0) {
                     console.log('⚠️ No saved assignments found in database');
-                    showStatus('⚠️ ডাটাবেসে কোন সংরক্ষিত দায়িত্ব বন্টন নেই! "নতুন করে বন্টন করুন" ক্লিক করুন।', 'error');
+                    showStatus('⚠️ No saved assignments in database. Generate and save first.', 'error');
                     document.getElementById('saveBtn').style.display = 'none';
                     setLoading(false);
                     return;
@@ -864,11 +1154,13 @@
                     
                     if (assignment.officer_type === 'presiding') {
                         centreData.presiding = {
+                            presiding_iid: assignment.officer_iid,
                             presiding_name: assignment.officer_name,
                             designation: assignment.officer_designation
                         };
                     } else if (assignment.officer_type === 'ass_presiding') {
                         centreData.assPresiding.push({
+                            ass_presiding_iid: assignment.officer_iid,
                             ass_presiding_name: assignment.officer_name,
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
@@ -880,6 +1172,7 @@
                         );
                     } else if (assignment.officer_type === 'polling') {
                         centreData.polling.push({
+                            polling_iid: assignment.officer_iid,
                             polling_name: assignment.officer_name,
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
@@ -906,9 +1199,10 @@
                 });
                 
                 console.log('🎨 Displaying assignments...');
-                // Display the loaded data
-                displayAssignments();
-                displayStats();
+                await loadOfficerPools();
+                selectedCentreCode = '';
+                populateCentreDropdown();
+                renderAssignmentsAndStats();
                 
                 console.log('✅ Load complete!');
                 
@@ -916,11 +1210,11 @@
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('printBtn').style.display = 'inline-block';
                 
-                showStatus(`✅ সফলভাবে ${generatedData.length} টি কেন্দ্রের দায়িত্ব বন্টন লোড করা হয়েছে!`, 'success');
+                showStatus(`✅ Loaded assignments for ${generatedData.length} centres`, 'success');
                 
             } catch (error) {
                 console.error('Load error:', error);
-                showStatus(`❌ লোড করতে ত্রুটি: ${error.message}`, 'error');
+                showStatus(`❌ Load error: ${error.message}`, 'error');
             } finally {
                 setLoading(false);
             }
@@ -928,12 +1222,12 @@
         
         // Regenerate assignments (clear and generate again)
         async function regenerateAssignments() {
-            if (!confirm('আপনি কি নিশ্চিত যে আবার নতুন করে দায়িত্ব বন্টন করতে চান? পুরানো ডেটা মুছে নতুন করে বন্টন হবে।')) {
+            if (!confirm('Are you sure you want to regenerate? Existing data will be cleared.')) {
                 return;
             }
             
             setLoading(true);
-            showStatus('🔄 পুরানো ডেটা রিসেট করা হচ্ছে...', 'info');
+            showStatus('🔄 Resetting old data...', 'info');
             
             try {
                 // Delete all old assignments from database
@@ -946,7 +1240,7 @@
                 
                 if (deleteError) {
                     console.error('Delete error:', deleteError);
-                    throw new Error(`পুরাতন ডেটা ডিলিট করতে সমস্যা: ${deleteError.message}`);
+                    throw new Error(`Failed to delete old data: ${deleteError.message}`);
                 }
                 
                 console.log('✅ Old assignments deleted from database');
@@ -977,14 +1271,14 @@
                 document.getElementById('statsGrid').style.display = 'none';
                 generatedData = [];
                 
-                showStatus('✅ ডেটা রিসেট সম্পন্ন! নতুন করে জেনারেট করা হচ্ছে...', 'success');
+                showStatus('✅ Data reset complete. Generating fresh assignments...', 'success');
                 
                 // Generate new assignments
                 await generateAssignments();
                 
             } catch (error) {
                 console.error('❌ Regenerate Error:', error);
-                showStatus(`❌ রিজেনারেট করতে ত্রুটি: ${error.message}`, 'error');
+                showStatus(`❌ Regenerate error: ${error.message}`, 'error');
             } finally {
                 setLoading(false);
             }
@@ -993,11 +1287,11 @@
         // Save assignments to database
         async function saveAssignments() {
             if (generatedData.length === 0) {
-                showStatus('⚠️ কোন ডেটা সংরক্ষণের জন্য নেই!', 'error');
+                showStatus('⚠️ Nothing to save.', 'error');
                 return;
             }
             
-            if (!confirm('আপনি কি নিশ্চিত যে এই দায়িত্ব বন্টন সংরক্ষণ করতে চান?')) {
+            if (!confirm('Save these assignments to database?')) {
                 return;
             }
             
@@ -1015,7 +1309,7 @@
                 
                 if (deleteError) {
                     console.error('Delete error:', deleteError);
-                    throw new Error(`পুরাতন ডেটা ডিলিট করতে সমস্যা: ${deleteError.message}`);
+                    throw new Error(`Failed to delete old data: ${deleteError.message}`);
                 }
                 
                 console.log('✅ Old assignments deleted');
@@ -1047,22 +1341,26 @@
                     const centreCode = assignment.centre.vote_centre_code;
                     const centreId = assignment.centre.vote_centre_iid;
                     
-                    // Presiding assignment
-                    assignmentsToSave.push({
-                        vote_centre_iid: centreId,
-                        vote_centre_code: centreCode,
-                        officer_type: 'presiding',
-                        officer_iid: assignment.presiding.presiding_iid,
-                        officer_name: getOfficerName(assignment.presiding, 'presiding'),
-                        officer_designation: assignment.presiding.designation,
-                        booth_number: null,
-                        assign_code: `${centreId}`,
-                        created_at: new Date().toISOString()
-                    });
+                    // Presiding assignment (skip if none selected)
+                    if (assignment.presiding && assignment.presiding.presiding_iid) {
+                        assignmentsToSave.push({
+                            vote_centre_iid: centreId,
+                            vote_centre_code: centreCode,
+                            officer_type: 'presiding',
+                            officer_iid: assignment.presiding.presiding_iid,
+                            officer_name: getOfficerName(assignment.presiding, 'presiding'),
+                            officer_designation: assignment.presiding.designation,
+                            booth_number: null,
+                            assign_code: `${centreId}`,
+                            created_at: new Date().toISOString()
+                        });
+                    }
                     
                     // Assistant presiding assignments
-                    assignment.assPresiding.forEach((assPres, index) => {
-                        const boothNum = index + 1;
+                    for (let i = 0; i < assignment.assPresiding.length; i++) {
+                        const assPres = assignment.assPresiding[i];
+                        if (!assPres) continue;
+                        const boothNum = i + 1;
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -1075,12 +1373,14 @@
                             assign_code: `${centreId}-${boothNum}`,
                             created_at: new Date().toISOString()
                         });
-                    });
+                    }
                     
                     // Polling assignments
-                    assignment.polling.forEach((poll, index) => {
-                        const boothNum = Math.floor(index / 2) + 1;
-                        const personNum = (index % 2) + 1;
+                    for (let i = 0; i < assignment.polling.length; i++) {
+                        const poll = assignment.polling[i];
+                        if (!poll) continue;
+                        const boothNum = Math.floor(i / 2) + 1;
+                        const personNum = (i % 2) + 1;
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -1094,7 +1394,7 @@
                             assign_code: `${centreId}-${boothNum}-${personNum}`,
                             created_at: new Date().toISOString()
                         });
-                    });
+                    }
                 });
                 
                 console.log(`📊 Total assignments to save: ${assignmentsToSave.length}`);
@@ -1182,12 +1482,12 @@
                 
                 console.log('✅ All assign_code updated in officer tables');
                 
-                showStatus('✅ সফলভাবে সকল দায়িত্ব বন্টন সংরক্ষণ করা হয়েছে! আবার জেনারেট করতে চাইলে "নতুন করে বন্টন করুন" বাটন ক্লিক করুন।', 'success');
+                showStatus('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success');
                 document.getElementById('saveBtn').style.display = 'none';
                 
             } catch (error) {
                 console.error('Save error:', error);
-                showStatus(`❌ সংরক্ষণে ত্রুটি: ${error.message}`, 'error');
+                showStatus(`❌ Save error: ${error.message}`, 'error');
             } finally {
                 setLoading(false);
             }
