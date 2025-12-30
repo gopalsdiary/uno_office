@@ -1143,7 +1143,7 @@
                     return;
                 }
                 
-                console.log('📦 Processing assignment data...');
+                console.log('📦 Processing centre data...');
                 // Group assignments by vote centre
                 const centreMap = new Map();
                 
@@ -1212,7 +1212,7 @@
                     });
                 });
                 
-                console.log('🎨 Displaying assignments...');
+                console.log('🎨 Displaying centres...');
                 await loadOfficerPools();
                 selectedCentreCode = '';
                 populateCentreDropdown();
@@ -1224,7 +1224,7 @@
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('printBtn').style.display = 'inline-block';
                 
-                showStatus(`✅ Loaded assignments for ${generatedData.length} centres`, 'success');
+                showStatus(`✅ Loaded Centre Info for ${generatedData.length} centres`, 'success');
                 
             } catch (error) {
                 console.error('Load error:', error);

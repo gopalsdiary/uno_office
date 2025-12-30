@@ -419,6 +419,12 @@
             return null;
         }
         
+        // Convert Arabic numerals to Bengali numerals
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+        
         // Show status message
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
@@ -517,14 +523,15 @@
                 .from('centre_assignments')
                 .select('*')
                 .eq('vote_centre_iid', centreId)
-                .in('officer_type', ['presiding', 'ass_presiding']);
+                .in('officer_type', ['presiding', 'ass_presiding', 'polling']);
             
             if (assignError) throw assignError;
             
             const presidingAssignment = (assignments || []).find(a => a.officer_type === 'presiding');
             const assPresidingAssignments = (assignments || []).filter(a => a.officer_type === 'ass_presiding');
+            const pollingAssignments = (assignments || []).filter(a => a.officer_type === 'polling');
             
-            displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments);
+            displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments, pollingAssignments);
             if (successMessage) {
                 showStatus(successMessage, 'success');
             }
@@ -589,6 +596,8 @@
                     const config = getOfficerConfig(type);
                     if (!config) continue;
 
+                    console.log(`Searching ${type} in ${config.tableName} for mobile: ${normalizedMobile}`);
+                    
                     const { data, error } = await window.supabaseClient
                         .from(config.tableName)
                         .select('*')
@@ -596,7 +605,15 @@
                         .ilike('mobile_number', `%${normalizedMobile}%`)
                         .limit(1);
 
-                    if (error) throw error;
+                    if (error) {
+                        console.error(`Error searching ${type}:`, error);
+                        throw error;
+                    }
+                    
+                    console.log(`Found ${data?.length || 0} ${type} officers`);
+                    if (data && data.length > 0) {
+                        console.log(`Officer data:`, data[0]);
+                    }
 
                     if (data && data.length > 0) {
                         foundOfficer = data[0];
@@ -621,7 +638,7 @@
         }
         
         // Display duty information
-        function displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments) {
+        function displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments, pollingAssignments) {
             const container = document.getElementById('resultContainer');
             
             let officerName = '';
@@ -676,6 +693,10 @@
                             <td><strong>${centre.vote_centre_name || 'N/A'}</strong></td>
                         </tr>
                         <tr>
+                            <td>Vote Centre Location</td>
+                            <td>${centre.vote_centre_location || 'N/A'}</td>
+                        </tr>
+                        <tr>
                             <td>Total Booths</td>
                             <td>${centre.voter_both_total || 0}</td>
                         </tr>
@@ -700,7 +721,25 @@
                 `;
                 
                 assPresidingAssignments.forEach((assPres, index) => {
-                    html += `${index + 1}. ${assPres.officer_name} (Booth ${assPres.booth_number})<br>`;
+                    html += `${toBengaliNumber(index + 1)}। ${assPres.officer_name} (বুথ-${toBengaliNumber(assPres.booth_number)})<br>`;
+                });
+                
+                html += `
+                            </td>
+                        </tr>
+                `;
+            }
+            
+            // Add polling officers info
+            if (pollingAssignments && pollingAssignments.length > 0) {
+                html += `
+                        <tr>
+                            <td>Polling Officers</td>
+                            <td>
+                `;
+                
+                pollingAssignments.forEach((poll, index) => {
+                    html += `${toBengaliNumber(index + 1)}। ${poll.officer_name} (বুথ-${toBengaliNumber(poll.booth_number)}, ব্যক্তি-${toBengaliNumber(poll.person_number)})<br>`;
                 });
                 
                 html += `
