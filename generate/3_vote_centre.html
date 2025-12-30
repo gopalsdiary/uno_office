@@ -1081,11 +1081,9 @@
                 return;
             }
             
-            // Store centre data in sessionStorage to pass to appointment page
-            sessionStorage.setItem('selectedCentreData', JSON.stringify(assignment));
-            
-            // Navigate to appointment letter page
-            window.location.href = '1_apointment_letter.html';
+            // Navigate to appointment letter page with centre code as URL parameter
+            const centreCode = assignment.centre.vote_centre_code;
+            window.location.href = '1_apointment_letter.html?code=' + encodeURIComponent(centreCode);
         }
 
         // Load assignments from database
