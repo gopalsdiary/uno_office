@@ -985,6 +985,7 @@
                             <p>${centre.vote_centre_name || ''}</p>
                             <p>Total booths: ${centre.voter_both_total || 0}</p>
                             <button class="edit-btn" onclick="toggleEditMode(${centreIndex})">✏️ Edit</button>
+                            <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
                         </div>
                         
                         <table class="assignment-table">
@@ -1072,6 +1073,21 @@
             container.innerHTML = html;
         }
         
+        // Function to open appointment letter with centre data
+        function openAppointmentLetter(centreIndex) {
+            const assignment = generatedData[centreIndex];
+            if (!assignment) {
+                showStatus('❌ Centre data not found', 'error');
+                return;
+            }
+            
+            // Store centre data in sessionStorage to pass to appointment page
+            sessionStorage.setItem('selectedCentreData', JSON.stringify(assignment));
+            
+            // Navigate to appointment letter page
+            window.location.href = '1_apointment_letter.html';
+        }
+
         // Load assignments from database
         async function loadFromDatabase() {
             setLoading(true);
@@ -1492,6 +1508,6 @@
                 setLoading(false);
             }
         }
-    </script>
+        // Function to open appointment letter with centre data`r`n        function openAppointmentLetter() {`r`n            const centreSelect = document.getElementById('centreSelect');`r`n            const selectedValue = centreSelect.value;`r`n            `r`n            if (selectedValue === 'all' || !selectedValue) {`r`n                showStatus(' Please select a specific centre first', 'error');`r`n                return;`r`n            }`r`n            `r`n            // Find the selected centre data`r`n            const centreData = generatedData.find(c => c.vote_centre_code === selectedValue);`r`n            `r`n            if (!centreData) {`r`n                showStatus(' Centre data not found', 'error');`r`n                return;`r`n            }`r`n            `r`n            // Store centre data in sessionStorage to pass to appointment page`r`n            sessionStorage.setItem('selectedCentreData', JSON.stringify(centreData));`r`n            `r`n            // Navigate to appointment letter page`r`n            window.location.href = '1_apointment_copy.html';`r`n        }`r`n    </script>
 </body>
 </html>
