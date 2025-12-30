@@ -92,10 +92,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="no-print">
-            <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
-            <button class="btn btn-success" onclick="window.history.back()">← Back</button>
-        </div>
         
         <div id="appointmentContent">
             <div class="loading">
@@ -227,6 +223,12 @@
             };
         }
         
+        // Convert Arabic numerals to Bengali numerals (e.g., 1 -> ১)
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
         function getOfficerName(officer, type) {
             if (!officer) return '';
             // Fields from centre_assignments table
@@ -272,14 +274,16 @@
                             </td>` : ''}
                             
                             <td style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${assPres ? getOfficerName(assPres, 'ass_presiding') : ''}</span></p>
+                                <p style="margin:0; font-size:10pt;">
+                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${getOfficerName(assPres, 'ass_presiding')}</span>` : ''}
+                                </p>
                                 ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt;">${assPres.designation}</p>` : ''}
                                 ${assPres && assPres.gender ? `<p style="margin:0; font-size:8pt;">${assPres.gender}</p>` : ''}
                             </td>
                             
                             <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">
-                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>1.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll1, 'polling')}</span>${poll1.designation ? `, ${poll1.designation}` : ''}${poll1.gender ? ` (${poll1.gender})` : ''}</p>` : ''}
-                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>2.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll2, 'polling')}</span>${poll2.designation ? `, ${poll2.designation}` : ''}${poll2.gender ? ` (${poll2.gender})` : ''}</p>` : ''}
+                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll1, 'polling')}</span>${poll1.designation ? `, ${poll1.designation}` : ''}${poll1.gender ? ` (${poll1.gender})` : ''}</p>` : ''}
+                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll2, 'polling')}</span>${poll2.designation ? `, ${poll2.designation}` : ''}${poll2.gender ? ` (${poll2.gender})` : ''}</p>` : ''}
                             </td>
                             
                             ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
@@ -341,12 +345,13 @@
                 <p><span style="font-family:NikoshBAN; font-size:14pt;">তারিখ: </span></p>
                 
                 <div style="text-align:right; margin-top:40px;">
-                    <p style="font-size:10pt;"><span style="font-family:NikoshBAN;">মনিরা হক</span></p>
-                    <p style="font-size:10pt;"><span style="font-family:NikoshBAN;">জেলা প্রশাসক, ফেনী ও</span></p>
-                    <p style="font-size:10pt;"><span style="font-family:NikoshBAN;">রিটার্নিং অফিসার, নির্বাচনী এলাকা 266, ফেনী-2</span></p>
+                    <p style="font-size:12pt; margin:0 0 6px;"><strong style="font-family:NikoshBAN;">মনিরা হক</strong></p>
+                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">জেলা প্রশাসক, ফেনী</span></p>
+                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">ও</span></p>
+                    <p style="font-size:10pt; margin:0;"><span style="font-family:NikoshBAN;">রিটার্নিং অফিসার, নির্বাচনী এলাকা 266, ফেনী-2</span></p>
                 </div>
                 
-                <div style="page-break-before:always; margin-top:50px;">
+                <div style="margin-top:50px; border-top:2px solid #000; padding-top:20px;">
                     <p style="text-align:center; font-size:12pt; margin-bottom:10px;">
                         <span style="font-family:NikoshBAN;">প্রাপ্তি স্বীকার ও অংগীকারনামা</span>
                     </p>
