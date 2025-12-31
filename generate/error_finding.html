@@ -362,6 +362,7 @@
         <div class="tabs" id="tabs" style="display:none;">
             <button class="tab-btn active" onclick="showTab('missing')">❌ অফিসার কম আছে</button>
             <button class="tab-btn" onclick="showTab('disability')">♿ Disabled অফিসার</button>
+            <button class="tab-btn" onclick="showTab('duplicate')">👥 একাধিক কেন্দ্রে</button>
             <button class="tab-btn" onclick="showTab('all')">📋 সব কেন্দ্র</button>
         </div>
         
@@ -377,6 +378,7 @@
         let errorData = {
             missingOfficers: [],
             disabilityAssigned: [],
+            duplicateAssignments: [],
             allCentres: []
         };
         
@@ -495,6 +497,40 @@
                     }
                 });
                 
+                // Detect duplicate assignments (same officer in multiple centres)
+                const officerCentreMap = {}; // key: "officer_type_officer_iid", value: array of centre info
+                allAssignments.forEach(assignment => {
+                    const key = `${assignment.officer_type}_${assignment.officer_iid}`;
+                    if (!officerCentreMap[key]) {
+                        officerCentreMap[key] = [];
+                    }
+                    const centre = allCentres.find(c => String(c.vote_centre_iid) === String(assignment.vote_centre_iid));
+                    officerCentreMap[key].push({
+                        assignment,
+                        centre
+                    });
+                });
+
+                // Find officers assigned to multiple centres
+                errorData.duplicateAssignments = [];
+                Object.entries(officerCentreMap).forEach(([key, entries]) => {
+                    if (entries.length > 1) {
+                        // Same officer assigned to multiple centres
+                        const firstEntry = entries[0];
+                        errorData.duplicateAssignments.push({
+                            officer_type: firstEntry.assignment.officer_type,
+                            officer_iid: firstEntry.assignment.officer_iid,
+                            officer_name: firstEntry.assignment.officer_name,
+                            officer_designation: firstEntry.assignment.officer_designation,
+                            centres: entries.map(e => ({
+                                vote_centre_code: e.centre ? e.centre.vote_centre_code : 'N/A',
+                                vote_centre_name: e.centre ? e.centre.vote_centre_name : 'N/A',
+                                booth_number: e.assignment.booth_number
+                            }))
+                        });
+                    }
+                });
+
                 // Analyze each centre
                 errorData.missingOfficers = [];
                 errorData.disabilityAssigned = [];
@@ -585,6 +621,10 @@
                     <div class="stat-number">${toBengaliNumber(errorData.disabilityAssigned.length)}</div>
                     <div class="stat-label">Disability অফিসার</div>
                 </div>
+                <div class="stat-card error">
+                    <div class="stat-number">${toBengaliNumber(errorData.duplicateAssignments.length)}</div>
+                    <div class="stat-label">একাধিক কেন্দ্রে</div>
+                </div>
                 <div class="stat-card success">
                     <div class="stat-number">${toBengaliNumber(allCentres.length - errorData.missingOfficers.length)}</div>
                     <div class="stat-label">সম্পূর্ণ কেন্দ্র</div>
@@ -602,6 +642,9 @@
                 </div>
                 <div class="tab-content" id="tab-disability">
                     ${renderDisabilityOfficers()}
+                </div>
+                <div class="tab-content" id="tab-duplicate">
+                    ${renderDuplicateAssignments()}
                 </div>
                 <div class="tab-content" id="tab-all">
                     ${renderAllCentres()}
@@ -720,6 +763,54 @@
             return html;
         }
         
+        // Render duplicate assignments table
+        function renderDuplicateAssignments() {
+            if (errorData.duplicateAssignments.length === 0) {
+                return '<div class="no-errors">✅ কোনো অফিসার একাধিক কেন্দ্রে অ্যাসাইন করা হয়নি!</div>';
+            }
+            
+            let html = `
+                <div class="error-section">
+                    <div class="section-header" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);">👥 একাধিক কেন্দ্রে দায়িত্বপ্রাপ্ত অফিসার (${toBengaliNumber(errorData.duplicateAssignments.length)} জন)</div>
+                    <table class="error-table">
+                        <thead>
+                            <tr>
+                                <th>ক্রম</th>
+                                <th>অফিসারের নাম</th>
+                                <th>পদবি</th>
+                                <th>অফিসার টাইপ</th>
+                                <th>কেন্দ্র সংখ্যা</th>
+                                <th>কেন্দ্র সমূহ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            errorData.duplicateAssignments.forEach((item, index) => {
+                const centreList = item.centres.map(c => 
+                    `<div style="margin: 2px 0;"><strong>${c.vote_centre_code}</strong> - ${c.vote_centre_name}${c.booth_number ? ` (বুথ ${toBengaliNumber(c.booth_number)})` : ''}</div>`
+                ).join('');
+                
+                html += `
+                    <tr>
+                        <td>${toBengaliNumber(index + 1)}</td>
+                        <td><strong>${item.officer_name || 'N/A'}</strong></td>
+                        <td>${item.officer_designation || 'N/A'}</td>
+                        <td>
+                            <span class="badge badge-warning">
+                                ${getOfficerTypeLabel(item.officer_type)}
+                            </span>
+                        </td>
+                        <td><span class="badge badge-danger">${toBengaliNumber(item.centres.length)} টি</span></td>
+                        <td style="text-align: left;">${centreList}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            return html;
+        }
+
         // Render all centres table
         function renderAllCentres() {
             let html = `

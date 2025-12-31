@@ -391,6 +391,37 @@
             return result;
         }
         
+        // Shuffle array with gender balance interleaving (for pre-shuffling entire list)
+        function shuffleWithGenderBalance(people) {
+            const male = shuffleArray(people.filter(p => p.gender === 'Male' || p.gender === 'male'));
+            const female = shuffleArray(people.filter(p => p.gender === 'Female' || p.gender === 'female'));
+            const unknown = shuffleArray(people.filter(p => !p.gender || p.gender === 'Unknown' || p.gender === 'unknown'));
+            
+            const result = [];
+            let maleIndex = 0, femaleIndex = 0, unknownIndex = 0;
+            const total = male.length + female.length + unknown.length;
+            
+            for (let i = 0; i < total; i++) {
+                const cycle = i % 3;
+                
+                if (cycle === 0 && maleIndex < male.length) {
+                    result.push(male[maleIndex++]);
+                } else if (cycle === 1 && femaleIndex < female.length) {
+                    result.push(female[femaleIndex++]);
+                } else if (cycle === 2 && unknownIndex < unknown.length) {
+                    result.push(unknown[unknownIndex++]);
+                } else if (maleIndex < male.length) {
+                    result.push(male[maleIndex++]);
+                } else if (femaleIndex < female.length) {
+                    result.push(female[femaleIndex++]);
+                } else if (unknownIndex < unknown.length) {
+                    result.push(unknown[unknownIndex++]);
+                }
+            }
+            
+            return result;
+        }
+        
         // Fetch all data with pagination (bypass Supabase 1000 row limit)
         async function fetchAllData(tableName, idColumnName, filterCallback = null) {
             let allData = [];
@@ -549,10 +580,10 @@
                 
                 console.log(`✅ Starting assignment for ${canAssignCentres} centres...`);
                 
-                // Shuffle lists
+                // Shuffle lists with gender balance (shuffle once, then interleave genders)
                 let presidingAvailable = shuffleArray(presidingFiltered);
-                let assPresidingAvailable = shuffleArray(assPresidingFiltered);
-                let pollingAvailable = shuffleArray(pollingFiltered);
+                let assPresidingAvailable = shuffleWithGenderBalance(assPresidingFiltered);
+                let pollingAvailable = shuffleWithGenderBalance(pollingFiltered);
                 
                 let presidingIndex = 0;
                 let assPresidingIndex = 0;
@@ -591,20 +622,12 @@
                     // Assign presiding officer
                     const presiding = presidingAvailable[presidingIndex++];
                     
-                    // Assign assistant presiding officers (gender balanced)
-                    const assPresidingForCentre = distributeByGender(
-                        assPresidingAvailable.slice(assPresidingIndex),
-                        assPresidingNeeded
-                    );
-                    
+                    // Assign assistant presiding officers (take next N from shuffled list - no duplicates)
+                    const assPresidingForCentre = assPresidingAvailable.slice(assPresidingIndex, assPresidingIndex + assPresidingNeeded);
                     assPresidingIndex += assPresidingNeeded;
                     
-                    // Assign polling officers (2 per booth, gender balanced)
-                    const pollingForCentre = distributeByGender(
-                        pollingAvailable.slice(pollingIndex),
-                        pollingNeeded
-                    );
-                    
+                    // Assign polling officers (2 per booth - take next N from shuffled list - no duplicates)
+                    const pollingForCentre = pollingAvailable.slice(pollingIndex, pollingIndex + pollingNeeded);
                     pollingIndex += pollingNeeded;
                     
                     // Create assignment object
