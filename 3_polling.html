@@ -972,29 +972,28 @@
       const tbody = tableEl.querySelector('tbody');
 
       try {
-        // Get total count first
-        const { count, error: countError } = await supabaseClient
-          .from('polling_list')
-          .select('*', { count: 'exact', head: true });
-
-        if (countError) throw countError;
-        totalRecords = count || 0;
-
-        // Fetch paginated data
+        // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
-        const { data, error } = await supabaseClient
-          .from('polling_list')
-          .select('*')
-          .order('polling_iid', { ascending: true })
-          .range(from, to);
+        const [countResult, dataResult] = await Promise.all([
+          supabaseClient
+            .from('polling_list')
+            .select('*', { count: 'exact', head: true }),
+          supabaseClient
+            .from('polling_list')
+            .select('*')
+            .order('polling_iid', { ascending: true })
+            .range(from, to)
+        ]);
+
+        if (countResult.error) throw countResult.error;
+        if (dataResult.error) throw dataResult.error;
+
+        totalRecords = countResult.count || 0;
+        const data = dataResult.data;
 
         loadingEl.style.display = 'none';
-
-        if (error) {
-          throw error;
-        }
 
         if (!data || data.length === 0) {
           emptyEl.style.display = 'block';
@@ -1003,9 +1002,16 @@
           return;
         }
 
-        // Populate table
+        // Use DocumentFragment for faster DOM manipulation
+        const fragment = document.createDocumentFragment();
+        const tempTbody = document.createElement('tbody');
+        renderTableRows(data, tempTbody);
+        while (tempTbody.firstChild) {
+          fragment.appendChild(tempTbody.firstChild);
+        }
         tbody.innerHTML = '';
-        renderTableRows(data, tbody);
+        tbody.appendChild(fragment);
+        
         tableEl.style.display = 'table';
         emptyEl.style.display = 'none';
         
@@ -1321,7 +1327,9 @@
       }
     }
 
-    // Search functionality
+    // Search functionality with debouncing
+    let searchDebounceTimer = null;
+    
     async function searchPolling(page = 1) {
       searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
       const tbody = document.getElementById('polling-table').querySelector('tbody');
@@ -1339,7 +1347,7 @@
       loadingEl.style.display = 'block';
 
       try {
-          const terms = searchTerm.split(/\s+/).filter(Boolean);
+        const terms = searchTerm.split(/\s+/).filter(Boolean);
         const orConditions = [];
         terms.forEach(term => {
           const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
@@ -1351,33 +1359,36 @@
         });
         const orQuery = orConditions.join(',');
 
-        // Get total count for search results
-        const { count, error: countError } = await supabaseClient
-          .from('polling_list')
-          .select('*', { count: 'exact', head: true })
-          .or(orQuery);
-
-        if (countError) throw countError;
-        totalRecords = count || 0;
-
-        // Fetch paginated search results
+        // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
-        const { data, error } = await supabaseClient
-          .from('polling_list')
-          .select('*')
-          .or(orQuery)
-          .order('polling_iid', { ascending: true })
-          .range(from, to);
+        const [countResult, dataResult] = await Promise.all([
+          supabaseClient
+            .from('polling_list')
+            .select('*', { count: 'exact', head: true })
+            .or(orQuery),
+          supabaseClient
+            .from('polling_list')
+            .select('*')
+            .or(orQuery)
+            .order('polling_iid', { ascending: true })
+            .range(from, to)
+        ]);
+
+        if (countResult.error) throw countResult.error;
+        if (dataResult.error) throw dataResult.error;
+
+        totalRecords = countResult.count || 0;
+        const data = dataResult.data;
 
         loadingEl.style.display = 'none';
 
         const effectiveQuery = terms.join(' ');
 
-        if (error) throw error;
-
-        tbody.innerHTML = '';
+        // Use DocumentFragment for faster DOM manipulation
+        const fragment = document.createDocumentFragment();
+        const tempTbody = document.createElement('tbody');
 
         if (!data || data.length === 0) {
           tableEl.style.display = 'none';
@@ -1388,7 +1399,12 @@
         }
 
         emptyEl.style.display = 'none';
-        renderTableRows(data, tbody, effectiveQuery);
+        renderTableRows(data, tempTbody, effectiveQuery);
+        while (tempTbody.firstChild) {
+          fragment.appendChild(tempTbody.firstChild);
+        }
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
         tableEl.style.display = 'table';
         
         // Update pagination
@@ -1404,9 +1420,22 @@
       }
     }
 
-    // Enable search on Enter key
+    // Enable search on Enter key with debouncing
     document.getElementById('search-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') searchPolling();
+      if (e.key === 'Enter') {
+        clearTimeout(searchDebounceTimer);
+        searchPolling();
+      }
+    });
+    
+    // Debounced search on input
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        if (e.target.value.trim().length >= 2) {
+          searchPolling();
+        }
+      }, 300);
     });
 
     // Render table rows (reusable)

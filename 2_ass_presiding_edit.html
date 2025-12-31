@@ -851,6 +851,13 @@
     <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
   </div>
   
+   <div class="pagination" id="pagination-top">
+    <button id="prev-btn-top" onclick="prevPage()">⬅ Previous</button>
+    <span class="page-info" id="page-info-top">Page 1</span>
+    <button id="next-btn-top" onclick="nextPage()">Next ➡</button>
+  </div>
+
+
   <div class="editable-table-wrapper active" id="editable-table-wrapper">
     <table class="editable-table" id="editable-table">
       <thead id="editable-thead"></thead>
@@ -876,6 +883,7 @@
     </table>
   </div>
 
+ 
   <div class="pagination" id="pagination">
     <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
     <span class="page-info" id="page-info">Page 1</span>
@@ -904,8 +912,20 @@
     }
     const supabaseClient = window.supabaseClient;
 
+      // Handle expired/invalid auth tokens centrally
+      function handleAuthError(err) {
+        const status = err && (err.status || err.code);
+        if (status === 401 || status === 'PGRST301') {
+          alert('Session expired. Please login again.');
+          window.location.href = 'index.html';
+          return true;
+        }
+        return false;
+      }
+
     // Pagination variables
-    const PAGE_SIZE = 500;
+    const PAGE_SIZE = 150;
+    const ID_COLUMN = 'ass_presiding_iid';
     let currentPage = 1;
     let totalRecords = 0;
     let isSearchMode = false;
@@ -948,29 +968,28 @@
       const tbody = tableEl.querySelector('tbody');
 
       try {
-        // Get total count first
-        const { count, error: countError } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*', { count: 'exact', head: true });
-
-        if (countError) throw countError;
-        totalRecords = count || 0;
-
-        // Fetch paginated data
+        // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
-        const { data, error } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*')
-          .order('ass_presiding_iid', { ascending: true })
-          .range(from, to);
+        const [countResult, dataResult] = await Promise.all([
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*', { count: 'exact', head: true }),
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*')
+            .order('ass_presiding_iid', { ascending: true })
+            .range(from, to)
+        ]);
+
+        if (countResult.error) throw countResult.error;
+        if (dataResult.error) throw dataResult.error;
+
+        totalRecords = countResult.count || 0;
+        const data = dataResult.data;
 
         loadingEl.style.display = 'none';
-
-        if (error) {
-          throw error;
-        }
 
         if (!data || data.length === 0) {
           emptyEl.style.display = 'block';
@@ -979,9 +998,16 @@
           return;
         }
 
-        // Populate table
+        // Use DocumentFragment for faster DOM manipulation
+        const fragment = document.createDocumentFragment();
+        const tempTbody = document.createElement('tbody');
+        renderTableRows(data, tempTbody);
+        while (tempTbody.firstChild) {
+          fragment.appendChild(tempTbody.firstChild);
+        }
         tbody.innerHTML = '';
-        renderTableRows(data, tbody);
+        tbody.appendChild(fragment);
+        
         tableEl.style.display = 'table';
         emptyEl.style.display = 'none';
         
@@ -990,6 +1016,7 @@
         updatePagination();
 
       } catch (err) {
+        if (handleAuthError(err)) return;
         console.error('Error loading polling data:', err);
         loadingEl.style.display = 'none';
         errorEl.textContent = 'Error loading data: ' + err.message;
@@ -1029,33 +1056,37 @@
       loadingEl.style.display = 'block';
       
       try {
-        // Get total count
-        const { count, error: countError } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*', { count: 'exact', head: true });
-        
-        if (countError) throw countError;
-        totalRecords = count || 0;
-        
-        // Fetch paginated data
+        // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
         
-        const { data, error } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*')
-          .order('ass_presiding_iid', { ascending: true })
-          .range(from, to);
+        const [countResult, dataResult] = await Promise.all([
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*', { count: 'exact', head: true }),
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*')
+            .order('ass_presiding_iid', { ascending: true })
+            .range(from, to)
+        ]);
         
-        if (error) throw error;
+        if (countResult.error) throw countResult.error;
+        if (dataResult.error) throw dataResult.error;
         
-        allTableData = data || [];
+        totalRecords = countResult.count || 0;
+        allTableData = dataResult.data || [];
         resolvedColumns = buildColumnOrder(allTableData);
         currentPage = page;
-        renderEditableTable();
-        updatePagination();
-        loadingEl.style.display = 'none';
+        
+        // Use requestAnimationFrame for smoother rendering
+        requestAnimationFrame(() => {
+          renderEditableTable();
+          updatePagination();
+          loadingEl.style.display = 'none';
+        });
       } catch (err) {
+        if (handleAuthError(err)) return;
         console.error('Error loading all data:', err);
         alert('Error loading table data: ' + err.message);
         loadingEl.style.display = 'none';
@@ -1073,11 +1104,11 @@
       }
       
       const columns = showGenderOnly 
-        ? ['ass_presiding_iid', 'ass_presiding_name', 'gender']
+        ? [ID_COLUMN, 'ass_presiding_name', 'gender']
         : (resolvedColumns.length ? resolvedColumns : buildColumnOrder(allTableData));
       
       // Render header
-      thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
+      thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '<th>Action</th></tr>';
       
       // Render rows
       tbody.innerHTML = '';
@@ -1088,7 +1119,7 @@
         columns.forEach(col => {
           const td = document.createElement('td');
 
-          if (col === 'ass_presiding_iid') {
+          if (col === ID_COLUMN) {
             // Read-only for ID
             td.textContent = row[col] || '';
             td.style.fontWeight = '700';
@@ -1193,7 +1224,21 @@
 
           tr.appendChild(td);
         });
-        
+
+        // Action column with per-row update
+        const actionTd = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.textContent = 'Update';
+        btn.className = 'action-btn';
+        btn.onclick = () => saveSingleRow(index);
+        const status = document.createElement('span');
+        status.className = 'row-status';
+        status.style.marginLeft = '8px';
+        status.style.fontSize = '12px';
+        actionTd.appendChild(btn);
+        actionTd.appendChild(status);
+        tr.appendChild(actionTd);
+
         tbody.appendChild(tr);
       });
     }
@@ -1282,10 +1327,10 @@
 
         modifiedRows.forEach((changes, rowIndex) => {
           const row = allTableData[rowIndex];
-          const ass_presiding_iid = row && row.ass_presiding_iid;
+          const rowId = row && row[ID_COLUMN];
 
-          if (ass_presiding_iid) {
-            payloads.push({ ass_presiding_iid, ...changes });
+          if (rowId) {
+            payloads.push({ [ID_COLUMN]: rowId, ...changes });
           }
         });
 
@@ -1299,9 +1344,10 @@
           const batch = payloads.slice(i, i + chunkSize);
           const { error } = await supabaseClient
             .from('ass_presiding_list')
-            .upsert(batch, { onConflict: 'ass_presiding_iid' });
+            .upsert(batch, { onConflict: ID_COLUMN });
 
           if (error) {
+            if (handleAuthError(error)) throw error;
             throw error;
           }
         }
@@ -1313,16 +1359,85 @@
         await loadAllTableData(currentPage);
         updateUpdateButton();
         
-      } catch (err) {
-        console.error('Error saving changes:', err);
-        alert('❌ Error saving changes: ' + err.message);
+        } catch (err) {
+          if (handleAuthError(err)) return;
+          console.error('Error saving changes:', err);
+          alert('❌ Error saving changes: ' + err.message);
       } finally {
         updateBtn.textContent = '💾 Update';
         updateUpdateButton();
       }
     }
 
-    // Search functionality
+      // Save a single row immediately with inline status next to the button
+      async function saveSingleRow(rowIndex) {
+        const row = allTableData[rowIndex];
+        const statusEl = document.querySelector(`tr[data-row-index="${rowIndex}"] .row-status`);
+        const rowBtn = document.querySelector(`tr[data-row-index="${rowIndex}"] .action-btn`);
+
+        if (!row || !row[ID_COLUMN]) {
+          if (statusEl) {
+            statusEl.textContent = 'Missing ID';
+            statusEl.style.color = '#b91c1c';
+          }
+          return;
+        }
+
+        // Merge existing row data with any modified values for this row
+        const changes = modifiedRows.get(rowIndex) || {};
+        const payload = { ...row, ...changes };
+
+        const prevText = rowBtn ? rowBtn.textContent : '';
+        if (rowBtn) {
+          rowBtn.disabled = true;
+          rowBtn.textContent = 'Updating...';
+        }
+        if (statusEl) {
+          statusEl.textContent = 'Saving...';
+          statusEl.style.color = '#1f2937';
+        }
+
+        try {
+          const { error } = await supabaseClient
+            .from('ass_presiding_list')
+            .upsert([payload], { onConflict: ID_COLUMN });
+
+          if (error) {
+            if (handleAuthError(error)) return;
+            throw error;
+          }
+
+          modifiedRows.delete(rowIndex);
+          updateUpdateButton();
+          if (statusEl) {
+            statusEl.textContent = 'Saved';
+            statusEl.style.color = '#047857';
+          }
+          await loadAllTableData(currentPage);
+        } catch (err) {
+          if (handleAuthError(err)) {
+            if (statusEl) {
+              statusEl.textContent = 'Login required';
+              statusEl.style.color = '#b91c1c';
+            }
+            return;
+          }
+          console.error('Error saving row:', err);
+          if (statusEl) {
+            statusEl.textContent = 'Error saving row';
+            statusEl.style.color = '#b91c1c';
+          }
+        } finally {
+          if (rowBtn) {
+            rowBtn.disabled = false;
+            rowBtn.textContent = prevText || 'Update';
+          }
+        }
+      }
+
+    // Search functionality with debouncing
+    let searchDebounceTimer = null;
+    
     async function searchPolling(page = 1) {
       searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
       const tbody = document.getElementById('polling-table').querySelector('tbody');
@@ -1340,31 +1455,35 @@
       loadingEl.style.display = 'block';
 
       try {
-        // Get total count for search results
-        const { count, error: countError } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*', { count: 'exact', head: true })
-          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
-
-        if (countError) throw countError;
-        totalRecords = count || 0;
-
-        // Fetch paginated search results
+        // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
+        const orQuery = `ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`;
 
-        const { data, error } = await supabaseClient
-          .from('ass_presiding_list')
-          .select('*')
-          .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`)
-          .order('ass_presiding_iid', { ascending: true })
-          .range(from, to);
+        const [countResult, dataResult] = await Promise.all([
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*', { count: 'exact', head: true })
+            .or(orQuery),
+          supabaseClient
+            .from('ass_presiding_list')
+            .select('*')
+            .or(orQuery)
+            .order('ass_presiding_iid', { ascending: true })
+            .range(from, to)
+        ]);
+
+        if (countResult.error) throw countResult.error;
+        if (dataResult.error) throw dataResult.error;
+
+        totalRecords = countResult.count || 0;
+        const data = dataResult.data;
 
         loadingEl.style.display = 'none';
 
-        if (error) throw error;
-
-        tbody.innerHTML = '';
+        // Use DocumentFragment for faster DOM manipulation
+        const fragment = document.createDocumentFragment();
+        const tempTbody = document.createElement('tbody');
 
         if (!data || data.length === 0) {
           tableEl.style.display = 'none';
@@ -1375,7 +1494,12 @@
         }
 
         emptyEl.style.display = 'none';
-        renderTableRows(data, tbody);
+        renderTableRows(data, tempTbody);
+        while (tempTbody.firstChild) {
+          fragment.appendChild(tempTbody.firstChild);
+        }
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
         tableEl.style.display = 'table';
         
         // Update pagination
@@ -1383,10 +1507,29 @@
         updatePagination();
 
       } catch (err) {
+        if (handleAuthError(err)) return;
         console.error('Search error:', err);
         loadingEl.style.display = 'none';
       }
     }
+
+    // Enable search on Enter key with debouncing
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        clearTimeout(searchDebounceTimer);
+        searchPolling();
+      }
+    });
+    
+    // Debounced search on input
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        if (e.target.value.trim().length >= 2) {
+          searchPolling();
+        }
+      }, 300);
+    });
 
     // Render table rows (reusable)
     function renderTableRows(data, tbody) {
@@ -1629,21 +1772,26 @@
     // Pagination functions
     function updatePagination() {
       const totalPages = Math.ceil(totalRecords / PAGE_SIZE);
-      const paginationEl = document.getElementById('pagination');
-      const pageInfo = document.getElementById('page-info');
-      const prevBtn = document.getElementById('prev-btn');
-      const nextBtn = document.getElementById('next-btn');
+      const suffixes = ['', '-top'];
 
-      if (totalPages <= 1) {
-        paginationEl.style.display = 'none';
-        return;
-      }
+      suffixes.forEach(suffix => {
+        const paginationEl = document.getElementById(`pagination${suffix}`);
+        if (!paginationEl) return;
 
-      paginationEl.style.display = 'flex';
-      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-      
-      prevBtn.disabled = currentPage === 1;
-      nextBtn.disabled = currentPage === totalPages;
+        const pageInfo = document.getElementById(`page-info${suffix}`);
+        const prevBtn = document.getElementById(`prev-btn${suffix}`);
+        const nextBtn = document.getElementById(`next-btn${suffix}`);
+
+        if (totalPages <= 1) {
+          paginationEl.style.display = 'none';
+          return;
+        }
+
+        paginationEl.style.display = 'flex';
+        if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+      });
     }
 
     function nextPage() {
