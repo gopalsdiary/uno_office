@@ -1398,6 +1398,22 @@
     // State for editing
     let selectedRow = null;
     let isAddMode = false;
+    const preferredFields = [
+      'presiding_iid',
+      'presiding_name',
+      'mobile_number',
+      'gender',
+      'disability',
+      'sallery_scale',
+      'current_grade_sallery',
+      'date_of_birth',
+      'own_discrict',
+      'address',
+      'Nid_number',
+      'previous_election',
+      'comment'
+    ];
+    const genderOptions = ['Male', 'Female', 'Other'];
 
     function escapeHtml(text) {
       if (text === null || text === undefined) return '';
@@ -1417,6 +1433,8 @@
         presiding_iid: '',
         presiding_name: '',
         mobile_number: '',
+        gender: '',
+        disability: '',
         sallery_scale: '',
         current_grade_sallery: '',
         date_of_birth: '',
@@ -1444,27 +1462,13 @@
 
     function renderModalContent(row, isEdit) {
       const modalBody = document.getElementById('modal-body');
-      const fields = [
-        { key: 'presiding_iid', label: 'presiding_iid' },
-        { key: 'presiding_name', label: 'presiding_name' },
-        { key: 'mobile_number', label: 'mobile_number' },
-        { key: 'sallery_scale', label: 'sallery_scale' },
-        { key: 'current_grade_sallery', label: 'current_grade_sallery' },
-        { key: 'date_of_birth', label: 'date_of_birth' },
-        { key: 'own_discrict', label: 'own_discrict' },
-        { key: 'address', label: 'address' },
-        { key: 'Nid_number', label: 'Nid_number' },
-        { key: 'previous_election', label: 'previous_election' },
-        { key: 'gender', label: 'gender' },
-
-        { key: 'comment', label: 'comment' }
-      ];
+      const fieldOrder = buildFieldOrder(row);
 
       if (!isEdit) {
-        const html = fields.map(field => `
+        const html = fieldOrder.map(key => `
           <div class="detail-row">
-            <div class="detail-label">${field.label}:</div>
-            <div class="detail-value">${escapeHtml(row[field.key] ?? 'N/A')}</div>
+            <div class="detail-label">${key}:</div>
+            <div class="detail-value">${escapeHtml(row[key] ?? 'N/A')}</div>
           </div>
         `).join('');
 
@@ -1475,16 +1479,61 @@
         return;
       }
 
-      const html = fields.map(field => `
-        <div class="detail-row">
-          <div class="detail-label">${field.label}:</div>
-          <div class="detail-value">
-            ${field.key === 'presiding_iid' && !isAddMode
-              ? `<div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(row[field.key] ?? '')}</div>`
-              : `<input class="detail-input" name="${field.key}" value="${escapeHtml(row[field.key] ?? '')}" ${field.key === 'presiding_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`}
-          </div>
-        </div>
-      `).join('');
+      const html = fieldOrder.map(key => {
+        const val = row[key] ?? '';
+        const readOnlyId = key === 'presiding_iid' && !isAddMode;
+
+        if (key === 'gender') {
+          const options = genderOptions.map(opt => `<option value="${opt}" ${val === opt ? 'selected' : ''}>${opt}</option>`).join('');
+          const extraOpt = val && !genderOptions.includes(val) ? `<option value="${escapeHtml(val)}" selected>${escapeHtml(val)} (existing)</option>` : '';
+          return `
+            <div class="detail-row">
+              <div class="detail-label">${key}:</div>
+              <div class="detail-value">
+                <select class="detail-input" name="${key}">
+                  <option value="" ${val ? '' : 'selected'}>-- Select --</option>
+                  ${options}
+                  ${extraOpt}
+                </select>
+              </div>
+            </div>`;
+        }
+
+        if (key === 'disability') {
+          const yesSelected = val === 'Yes' ? 'selected' : '';
+          const extraOpt = val && val !== 'Yes' ? `<option value="${escapeHtml(val)}" selected>${escapeHtml(val)} (existing)</option>` : '';
+          return `
+            <div class="detail-row">
+              <div class="detail-label">${key}:</div>
+              <div class="detail-value">
+                <select class="detail-input" name="${key}">
+                  <option value="" ${val ? '' : 'selected'}>-- Select --</option>
+                  <option value="Yes" ${yesSelected}>Yes</option>
+                  ${extraOpt}
+                </select>
+              </div>
+            </div>`;
+        }
+
+        if (readOnlyId) {
+          return `
+            <div class="detail-row">
+              <div class="detail-label">${key}:</div>
+              <div class="detail-value" style="font-weight:700; color:#111827;">${escapeHtml(val)}</div>
+            </div>`;
+        }
+
+        const isLongText = key === 'address' || key === 'comment';
+        const inputEl = isLongText
+          ? `<textarea class="detail-input" name="${key}" rows="2">${escapeHtml(val)}</textarea>`
+          : `<input class="detail-input" name="${key}" value="${escapeHtml(val)}" ${key === 'presiding_iid' && isAddMode ? 'placeholder="Auto-generated"' : ''} />`;
+
+        return `
+          <div class="detail-row">
+            <div class="detail-label">${key}:</div>
+            <div class="detail-value">${inputEl}</div>
+          </div>`;
+      }).join('');
 
       modalBody.innerHTML = `
         <form id="edit-form" onsubmit="event.preventDefault(); saveEdit();">
@@ -1505,6 +1554,28 @@
     function cancelEdit() {
       if (!selectedRow) return;
       renderModalContent(selectedRow, false);
+    }
+
+    function buildFieldOrder(rowObj) {
+      const seen = new Set();
+      const keys = Object.keys(rowObj || {});
+      const ordered = [];
+
+      preferredFields.forEach(k => {
+        if (keys.includes(k)) {
+          ordered.push(k);
+          seen.add(k);
+        }
+      });
+
+      keys.forEach(k => {
+        if (!seen.has(k)) {
+          ordered.push(k);
+          seen.add(k);
+        }
+      });
+
+      return ordered;
     }
 
     async function saveEdit() {
