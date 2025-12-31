@@ -422,6 +422,91 @@
             return result;
         }
         
+        // Stratified sampling: প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন করে
+        // এতে সব অফিসারদের সমান সুযোগ থাকে (শুরু, মাঝখান, শেষ - সবার থেকে সমান)
+        function stratifiedShuffle(people, chunkSize = 100) {
+            if (people.length === 0) return [];
+            
+            // প্রথমে পুরো লিস্টকে ১০০ জনের গ্রুপে ভাগ করি
+            const chunks = [];
+            for (let i = 0; i < people.length; i += chunkSize) {
+                const chunk = people.slice(i, i + chunkSize);
+                // প্রতিটি চাঙ্ক শাফেল করি
+                chunks.push(shuffleArray(chunk));
+            }
+            
+            console.log(`   📊 Stratified shuffle: ${chunks.length} chunks of ~${chunkSize} each`);
+            
+            // এখন প্রতিটি গ্রুপ থেকে পালাক্রমে একজন করে নিই
+            // এতে সব গ্রুপ থেকে সমান সংখ্যক নেওয়া হবে
+            const result = [];
+            const chunkIndices = chunks.map(() => 0); // প্রতিটি চাঙ্কের জন্য ইনডেক্স ট্র্যাক
+            
+            let totalPicked = 0;
+            const totalPeople = people.length;
+            
+            while (totalPicked < totalPeople) {
+                let pickedThisRound = false;
+                
+                for (let c = 0; c < chunks.length; c++) {
+                    if (chunkIndices[c] < chunks[c].length) {
+                        result.push(chunks[c][chunkIndices[c]]);
+                        chunkIndices[c]++;
+                        totalPicked++;
+                        pickedThisRound = true;
+                    }
+                }
+                
+                if (!pickedThisRound) break;
+            }
+            
+            return result;
+        }
+        
+        // Stratified + Gender balanced shuffle
+        // প্রথমে পুরো লিস্টে stratified (প্রতি ১০০ জন থেকে সমান), তারপর gender balance
+        function stratifiedGenderBalancedShuffle(people, chunkSize = 100) {
+            if (people.length === 0) return [];
+            
+            // ধাপ ১: প্রথমে পুরো লিস্টে stratified shuffle করি
+            // এতে প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন হবে
+            const stratified = stratifiedShuffle(people, chunkSize);
+            
+            console.log(`   📊 After stratified shuffle: ${stratified.length} people`);
+            
+            // ধাপ ২: এখন stratified লিস্ট থেকে gender আলাদা করি
+            const male = stratified.filter(p => p.gender === 'Male' || p.gender === 'male');
+            const female = stratified.filter(p => p.gender === 'Female' || p.gender === 'female');
+            const unknown = stratified.filter(p => !p.gender || p.gender === 'Unknown' || p.gender === 'unknown');
+            
+            console.log(`   👥 Gender split (after stratified): Male=${male.length}, Female=${female.length}, Unknown=${unknown.length}`);
+            
+            // ধাপ ৩: Gender interleave করি (M, F, U, M, F, U...)
+            const result = [];
+            let maleIndex = 0, femaleIndex = 0, unknownIndex = 0;
+            const total = male.length + female.length + unknown.length;
+            
+            for (let i = 0; i < total; i++) {
+                const cycle = i % 3;
+                
+                if (cycle === 0 && maleIndex < male.length) {
+                    result.push(male[maleIndex++]);
+                } else if (cycle === 1 && femaleIndex < female.length) {
+                    result.push(female[femaleIndex++]);
+                } else if (cycle === 2 && unknownIndex < unknown.length) {
+                    result.push(unknown[unknownIndex++]);
+                } else if (maleIndex < male.length) {
+                    result.push(male[maleIndex++]);
+                } else if (femaleIndex < female.length) {
+                    result.push(female[femaleIndex++]);
+                } else if (unknownIndex < unknown.length) {
+                    result.push(unknown[unknownIndex++]);
+                }
+            }
+            
+            return result;
+        }
+        
         // Fetch all data with pagination (bypass Supabase 1000 row limit)
         async function fetchAllData(tableName, idColumnName, filterCallback = null) {
             let allData = [];
@@ -580,10 +665,12 @@
                 
                 console.log(`✅ Starting assignment for ${canAssignCentres} centres...`);
                 
-                // Shuffle lists with gender balance (shuffle once, then interleave genders)
-                let presidingAvailable = shuffleArray(presidingFiltered);
-                let assPresidingAvailable = shuffleWithGenderBalance(assPresidingFiltered);
-                let pollingAvailable = shuffleWithGenderBalance(pollingFiltered);
+                // Stratified + Gender balanced shuffle
+                // প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন করে (শুরু, মাঝখান, শেষ - সবার থেকে সমান)
+                console.log('🔀 Applying stratified gender-balanced shuffle (equal from every 100)...');
+                let presidingAvailable = stratifiedShuffle(presidingFiltered, 100);
+                let assPresidingAvailable = stratifiedGenderBalancedShuffle(assPresidingFiltered, 100);
+                let pollingAvailable = stratifiedGenderBalancedShuffle(pollingFiltered, 100);
                 
                 let presidingIndex = 0;
                 let assPresidingIndex = 0;
