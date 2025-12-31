@@ -916,6 +916,23 @@
     let modifiedRows = new Map();
     let isEditTableMode = false;
     let showGenderOnly = false;
+    const preferredColumns = [
+      'ass_presiding_iid',
+      'ass_presiding_name',
+      'gender',
+      'disability',
+      'mobile_number',
+      'sallery_scale',
+      'current_grade_sallery',
+      'date_of_birth',
+      'own_discrict',
+      'address',
+      'Nid_number',
+      'previous_election',
+      'comment'
+    ];
+    let resolvedColumns = [];
+    const genderOptions = ['Male', 'Female', 'Other'];
     
     // Toggle gender filter
     function toggleGenderFilter() {
@@ -1033,6 +1050,7 @@
         if (error) throw error;
         
         allTableData = data || [];
+        resolvedColumns = buildColumnOrder(allTableData);
         currentPage = page;
         renderEditableTable();
         updatePagination();
@@ -1054,26 +1072,9 @@
         return;
       }
       
-      // Get column names from first row
-      const allColumns = [
-        'ass_presiding_iid',
-        'ass_presiding_name',
-        'gender',
-        'mobile_number',
-        'sallery_scale',
-        'current_grade_sallery',
-        'date_of_birth',
-        'own_discrict',
-        'address',
-        'Nid_number',
-        'previous_election',
-        'comment'
-      ];
-      
-      // Filter columns based on showGenderOnly flag
       const columns = showGenderOnly 
         ? ['ass_presiding_iid', 'ass_presiding_name', 'gender']
-        : allColumns;
+        : (resolvedColumns.length ? resolvedColumns : buildColumnOrder(allTableData));
       
       // Render header
       thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
@@ -1093,36 +1094,70 @@
             td.style.fontWeight = '700';
             td.style.color = '#111827';
           } else if (col === 'gender') {
-            // use select for gender
             const select = document.createElement('select');
             select.dataset.column = col;
             select.dataset.rowIndex = index;
             select.dataset.originalValue = row[col] || '';
-            
+
+            const currentVal = (row[col] ?? '').toString().trim();
+
             // Add blank option
             const blankOpt = document.createElement('option');
             blankOpt.value = '';
             blankOpt.textContent = '-- Select --';
             select.appendChild(blankOpt);
-            
-            // Add Male option
-            const maleOpt = document.createElement('option');
-            maleOpt.value = 'Male';
-            maleOpt.textContent = 'Male';
-            select.appendChild(maleOpt);
-            
-            // Add Female option
-            const femaleOpt = document.createElement('option');
-            femaleOpt.value = 'Female';
-            femaleOpt.textContent = 'Female';
-            select.appendChild(femaleOpt);
-            
-            // Set selected value
-            const currentVal = (row[col] || '').trim();
+
+            // Standard gender options
+            genderOptions.forEach(optVal => {
+              const opt = document.createElement('option');
+              opt.value = optVal;
+              opt.textContent = optVal;
+              select.appendChild(opt);
+            });
+
+            // Preserve any unexpected existing value so we don't lose it on save
+            if (currentVal && !genderOptions.includes(currentVal)) {
+              const existingOpt = document.createElement('option');
+              existingOpt.value = currentVal;
+              existingOpt.textContent = `${currentVal} (existing)`;
+              select.appendChild(existingOpt);
+            }
+
             if (currentVal) {
               select.value = currentVal;
             }
-            
+
+            select.addEventListener('change', onCellChange);
+            td.appendChild(select);
+          } else if (col === 'disability') {
+            const select = document.createElement('select');
+            select.dataset.column = col;
+            select.dataset.rowIndex = index;
+            select.dataset.originalValue = row[col] || '';
+
+            const currentVal = (row[col] ?? '').toString().trim();
+
+            const blankOpt = document.createElement('option');
+            blankOpt.value = '';
+            blankOpt.textContent = '-- Select --';
+            select.appendChild(blankOpt);
+
+            const yesOpt = document.createElement('option');
+            yesOpt.value = 'Yes';
+            yesOpt.textContent = 'Yes';
+            select.appendChild(yesOpt);
+
+            if (currentVal && currentVal !== 'Yes') {
+              const existingOpt = document.createElement('option');
+              existingOpt.value = currentVal;
+              existingOpt.textContent = `${currentVal} (existing)`;
+              select.appendChild(existingOpt);
+            }
+
+            if (currentVal) {
+              select.value = currentVal;
+            }
+
             select.addEventListener('change', onCellChange);
             td.appendChild(select);
           } else if (col === 'ass_presiding_name' || col === 'address') {
@@ -1161,6 +1196,35 @@
         
         tbody.appendChild(tr);
       });
+    }
+
+    // Build column order so known columns stay first and new columns appear afterwards
+    function buildColumnOrder(rows) {
+      const seen = new Set();
+      const fetchedColumns = [];
+      rows.forEach(r => {
+        Object.keys(r || {}).forEach(col => {
+          if (!seen.has(col)) {
+            seen.add(col);
+            fetchedColumns.push(col);
+          }
+        });
+      });
+
+      const ordered = [];
+      preferredColumns.forEach(col => {
+        if (seen.has(col)) {
+          ordered.push(col);
+        }
+      });
+
+      fetchedColumns.forEach(col => {
+        if (!ordered.includes(col)) {
+          ordered.push(col);
+        }
+      });
+
+      return ordered;
     }
     
     // Handle cell change
@@ -1214,35 +1278,39 @@
       updateBtn.textContent = '⏳ Updating...';
       
       try {
-        const updates = [];
-        
+        const payloads = [];
+
         modifiedRows.forEach((changes, rowIndex) => {
           const row = allTableData[rowIndex];
-          const ass_presiding_iid = row.ass_presiding_iid;
-          
+          const ass_presiding_iid = row && row.ass_presiding_iid;
+
           if (ass_presiding_iid) {
-            updates.push(
-              supabaseClient
-                .from('ass_presiding_list')
-                .update(changes)
-                .eq('ass_presiding_iid', ass_presiding_iid)
-            );
+            payloads.push({ ass_presiding_iid, ...changes });
           }
         });
-        
-        const results = await Promise.all(updates);
-        
-        // Check for errors
-        const errors = results.filter(r => r.error);
-        if (errors.length > 0) {
-          throw new Error(`Failed to update ${errors.length} row(s)`);
+
+        if (payloads.length === 0) {
+          throw new Error('No valid rows to update');
         }
-        
-        alert(`✅ Successfully updated ${modifiedRows.size} row(s)!`);
-        
+
+        // Chunk updates to avoid request size or rate-limit issues
+        const chunkSize = 100;
+        for (let i = 0; i < payloads.length; i += chunkSize) {
+          const batch = payloads.slice(i, i + chunkSize);
+          const { error } = await supabaseClient
+            .from('ass_presiding_list')
+            .upsert(batch, { onConflict: 'ass_presiding_iid' });
+
+          if (error) {
+            throw error;
+          }
+        }
+
+        alert(`✅ Successfully updated ${payloads.length} row(s)!`);
+
         // Reload editable data
         modifiedRows.clear();
-        await loadAllTableData();
+        await loadAllTableData(currentPage);
         updateUpdateButton();
         
       } catch (err) {
