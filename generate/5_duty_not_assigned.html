@@ -588,6 +588,7 @@
                             <th>বেতন স্কেল</th>
                             <th>Disability</th>
                             <th>অফিসার টাইপ</th>
+                            <th>Call</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -595,13 +596,14 @@
             
             officers.forEach((officer, index) => {
                 const isDisabled = officer.disability === 'Yes' || officer.disability === 'yes' || officer.disability === 'YES';
+                const mobile = officer.mobile_number || '';
                 
                 html += `
                     <tr>
                         <td>${toBengaliNumber(index + 1)}</td>
                         <td>${getOfficerId(officer)}</td>
                         <td style="text-align: left;"><strong>${getOfficerName(officer)}</strong></td>
-                        <td>${officer.mobile_number || '-'}</td>
+                        <td>${mobile || '-'}</td>
                         <td>${officer.gender || '-'}</td>
                         <td>${officer.sallery_scale || '-'}</td>
                         <td>
@@ -612,6 +614,9 @@
                         </td>
                         <td>
                             <span class="badge badge-primary">${getOfficerTypeLabel(officer.type)}</span>
+                        </td>
+                        <td>
+                            ${mobile ? `<a href="tel:${mobile}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">📞 Call</a>` : '-'}
                         </td>
                     </tr>
                 `;

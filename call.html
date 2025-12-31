@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কল করুন - Call Officers</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-call {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-call:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+        
+        .search-box {
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 300px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .centre-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .centre-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .centre-header:hover {
+            opacity: 0.95;
+        }
+        
+        .centre-info {
+            flex: 1;
+        }
+        
+        .centre-code {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .centre-name {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .centre-stats {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-primary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .centre-details {
+            display: none;
+            padding: 20px;
+            background: white;
+        }
+        
+        .centre-details.active {
+            display: block;
+        }
+        
+        .officer-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .officer-card.presiding {
+            border-left-color: #e74c3c;
+        }
+        
+        .officer-card.ass_presiding {
+            border-left-color: #f39c12;
+        }
+        
+        .officer-card.polling {
+            border-left-color: #3498db;
+        }
+        
+        .officer-info {
+            flex: 1;
+        }
+        
+        .officer-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .officer-details {
+            font-size: 13px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .officer-type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .type-presiding {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        
+        .type-ass_presiding {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .type-polling {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .officer-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .mobile-number {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .controls, .btn-call {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .centre-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .officer-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .officer-action {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📞 কল করুন - Call Officers</h1>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="কেন্দ্র কোড, নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="searchCentres()">
+            
+            <button class="btn btn-primary" onclick="loadData()">
+                🔄 রিফ্রেশ করুন
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>ডেটা লোড হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন...</p>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid" style="display:none;"></div>
+        
+        <div id="dataContainer"></div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
+        
+        let allCentres = [];
+        let filteredCentres = [];
+        
+        // Convert Arabic numerals to Bengali numerals
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Show/hide loading
+        function setLoading(isLoading) {
+            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+        }
+        
+        // Fetch all data with pagination
+        async function fetchAllData(tableName, idColumn, selectColumns = '*') {
+            let allData = [];
+            let lastId = 0;
+            let hasMore = true;
+            const batchSize = 1000;
+            
+            while (hasMore) {
+                const { data, error } = await window.supabaseClient
+                    .from(tableName)
+                    .select(selectColumns)
+                    .gt(idColumn, lastId)
+                    .order(idColumn, { ascending: true })
+                    .limit(batchSize);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    hasMore = false;
+                    break;
+                }
+                
+                allData.push(...data);
+                lastId = data[data.length - 1][idColumn];
+                
+                if (data.length < batchSize) {
+                    hasMore = false;
+                }
+            }
+            
+            return allData;
+        }
+        
+        // Load data
+        async function loadData() {
+            setLoading(true);
+            
+            try {
+                showStatus('📊 কেন্দ্র তথ্য লোড হচ্ছে...', 'info');
+                
+                // Fetch vote centres
+                const voteCentres = await fetchAllData('vote_centre', 'vote_centre_iid', 
+                    'vote_centre_iid, vote_centre_code, vote_centre_name');
+                console.log(`✅ Vote centres loaded: ${voteCentres.length}`);
+                
+                // Fetch all assignments
+                showStatus('📊 অ্যাসাইনমেন্ট লোড হচ্ছে...', 'info');
+                const assignments = await fetchAllData('centre_assignments', 'assignment_id', 
+                    'assignment_id, vote_centre_iid, vote_centre_code, officer_type, officer_iid, officer_name, officer_designation, officer_gender, booth_number, person_number');
+                console.log(`✅ Assignments loaded: ${assignments.length}`);
+                
+                // Fetch officer mobile numbers
+                showStatus('📊 মোবাইল নম্বর লোড হচ্ছে...', 'info');
+                const presidingList = await fetchAllData('presiding_list', 'presiding_iid', 'presiding_iid, mobile_number');
+                const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', 'ass_presiding_iid, mobile_number');
+                const pollingList = await fetchAllData('polling_list', 'polling_iid', 'polling_iid, mobile_number');
+                
+                // Create mobile number maps
+                const mobileMap = new Map();
+                presidingList.forEach(o => mobileMap.set(`presiding_${o.presiding_iid}`, o.mobile_number));
+                assPresidingList.forEach(o => mobileMap.set(`ass_presiding_${o.ass_presiding_iid}`, o.mobile_number));
+                pollingList.forEach(o => mobileMap.set(`polling_${o.polling_iid}`, o.mobile_number));
+                
+                // Group assignments by centre
+                const centreAssignments = new Map();
+                assignments.forEach(a => {
+                    if (!centreAssignments.has(a.vote_centre_iid)) {
+                        centreAssignments.set(a.vote_centre_iid, []);
+                    }
+                    // Add mobile number
+                    const mobileKey = `${a.officer_type}_${a.officer_iid}`;
+                    a.mobile_number = mobileMap.get(mobileKey) || '';
+                    centreAssignments.get(a.vote_centre_iid).push(a);
+                });
+                
+                // Build centre data with assignments
+                allCentres = voteCentres.map(centre => {
+                    const centreData = {
+                        ...centre,
+                        assignments: centreAssignments.get(centre.vote_centre_iid) || []
+                    };
+                    
+                    // Count officers
+                    centreData.presiding = centreData.assignments.filter(a => a.officer_type === 'presiding');
+                    centreData.ass_presiding = centreData.assignments.filter(a => a.officer_type === 'ass_presiding');
+                    centreData.polling = centreData.assignments.filter(a => a.officer_type === 'polling');
+                    centreData.totalOfficers = centreData.assignments.length;
+                    
+                    return centreData;
+                });
+                
+                // Sort by centre code
+                allCentres.sort((a, b) => {
+                    const codeA = parseInt(a.vote_centre_code) || 0;
+                    const codeB = parseInt(b.vote_centre_code) || 0;
+                    return codeA - codeB;
+                });
+                
+                filteredCentres = [...allCentres];
+                
+                // Display stats
+                displayStats();
+                
+                // Render
+                renderCentres();
+                
+                const totalOfficers = allCentres.reduce((sum, c) => sum + c.totalOfficers, 0);
+                showStatus(`✅ ${toBengaliNumber(allCentres.length)} টি কেন্দ্র ও ${toBengaliNumber(totalOfficers)} জন অফিসার লোড হয়েছে!`, 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Display stats
+        function displayStats() {
+            const totalOfficers = allCentres.reduce((sum, c) => sum + c.totalOfficers, 0);
+            const totalPresiding = allCentres.reduce((sum, c) => sum + c.presiding.length, 0);
+            const totalAssPresiding = allCentres.reduce((sum, c) => sum + c.ass_presiding.length, 0);
+            const totalPolling = allCentres.reduce((sum, c) => sum + c.polling.length, 0);
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.style.display = 'grid';
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(allCentres.length)}</div>
+                    <div class="stat-label">মোট কেন্দ্র</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-number">${toBengaliNumber(totalOfficers)}</div>
+                    <div class="stat-label">মোট অফিসার</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalPresiding)}</div>
+                    <div class="stat-label">প্রিজাইডিং</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalAssPresiding)}</div>
+                    <div class="stat-label">সহ-প্রিজাইডিং</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalPolling)}</div>
+                    <div class="stat-label">পোলিং</div>
+                </div>
+            `;
+        }
+        
+        // Search centres
+        function searchCentres() {
+            const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                filteredCentres = [...allCentres];
+            } else {
+                filteredCentres = allCentres.filter(centre => {
+                    // Search in centre code and name
+                    const codeMatch = (centre.vote_centre_code || '').toLowerCase().includes(searchTerm);
+                    const nameMatch = (centre.vote_centre_name || '').toLowerCase().includes(searchTerm);
+                    
+                    // Search in officer names and mobile numbers
+                    const officerMatch = centre.assignments.some(a => {
+                        const officerNameMatch = (a.officer_name || '').toLowerCase().includes(searchTerm);
+                        const mobileMatch = (a.mobile_number || '').includes(searchTerm);
+                        return officerNameMatch || mobileMatch;
+                    });
+                    
+                    return codeMatch || nameMatch || officerMatch;
+                });
+            }
+            
+            renderCentres();
+        }
+        
+        // Get officer type label in Bengali
+        function getOfficerTypeLabel(type) {
+            switch(type) {
+                case 'presiding': return 'প্রিজাইডিং';
+                case 'ass_presiding': return 'সহ-প্রিজাইডিং';
+                case 'polling': return 'পোলিং';
+                default: return type;
+            }
+        }
+        
+        // Render centres
+        function renderCentres() {
+            const container = document.getElementById('dataContainer');
+            
+            if (!filteredCentres || filteredCentres.length === 0) {
+                container.innerHTML = '<div class="no-data">কোনো কেন্দ্র পাওয়া যায়নি!</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            filteredCentres.forEach((centre, index) => {
+                html += `
+                    <div class="centre-section">
+                        <div class="centre-header" onclick="toggleDetails('centre-${centre.vote_centre_iid}')">
+                            <div class="centre-info">
+                                <div class="centre-code">${toBengaliNumber(index + 1)}. কেন্দ্র কোড: ${centre.vote_centre_code}</div>
+                                <div class="centre-name">${centre.vote_centre_name || 'N/A'}</div>
+                            </div>
+                            <div class="centre-stats">
+                                <span class="badge badge-primary">👤 ${toBengaliNumber(centre.totalOfficers)} জন</span>
+                            </div>
+                        </div>
+                        <div class="centre-details" id="centre-${centre.vote_centre_iid}">
+                            ${renderOfficers(centre)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <p style="margin-top: 20px; text-align: center; color: #666;">
+                    মোট ${toBengaliNumber(filteredCentres.length)} টি কেন্দ্র দেখাচ্ছে
+                </p>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Render officers for a centre
+        function renderOfficers(centre) {
+            if (!centre.assignments || centre.assignments.length === 0) {
+                return '<p style="padding: 15px; color: #666; text-align: center;">কোনো অফিসার অ্যাসাইন করা হয়নি।</p>';
+            }
+            
+            let html = '';
+            
+            // Presiding Officers
+            if (centre.presiding.length > 0) {
+                html += '<div class="section-title">প্রিজাইডিং অফিসার</div>';
+                centre.presiding.forEach(officer => {
+                    html += renderOfficerCard(officer);
+                });
+            }
+            
+            // Ass Presiding Officers
+            if (centre.ass_presiding.length > 0) {
+                html += '<div class="section-title">সহ-প্রিজাইডিং অফিসার</div>';
+                centre.ass_presiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+                centre.ass_presiding.forEach(officer => {
+                    html += renderOfficerCard(officer);
+                });
+            }
+            
+            // Polling Officers
+            if (centre.polling.length > 0) {
+                html += '<div class="section-title">পোলিং অফিসার</div>';
+                centre.polling.sort((a, b) => {
+                    if ((a.booth_number || 0) !== (b.booth_number || 0)) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+                centre.polling.forEach(officer => {
+                    html += renderOfficerCard(officer);
+                });
+            }
+            
+            return html;
+        }
+        
+        // Render single officer card
+        function renderOfficerCard(officer) {
+            const boothInfo = officer.booth_number ? `বুথ: ${toBengaliNumber(officer.booth_number)}` : '';
+            const personInfo = officer.person_number ? `ক্রম: ${toBengaliNumber(officer.person_number)}` : '';
+            const extraInfo = [boothInfo, personInfo].filter(x => x).join(', ');
+            
+            return `
+                <div class="officer-card ${officer.officer_type}">
+                    <div class="officer-info">
+                        <div class="officer-name">
+                            ${officer.officer_name || 'N/A'}
+                            <span class="officer-type-badge type-${officer.officer_type}">${getOfficerTypeLabel(officer.officer_type)}</span>
+                        </div>
+                        <div class="officer-details">
+                            ${officer.officer_designation || ''} ${officer.officer_gender ? `| ${officer.officer_gender}` : ''} ${extraInfo ? `| ${extraInfo}` : ''}
+                        </div>
+                    </div>
+                    <div class="officer-action">
+                        ${officer.mobile_number 
+                            ? `<span class="mobile-number">📱 ${officer.mobile_number}</span>
+                               <a href="tel:${officer.mobile_number}" class="btn btn-call">📞 Call</a>`
+                            : '<span style="color: #999;">নম্বর নেই</span>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Toggle centre details
+        function toggleDetails(id) {
+            const details = document.getElementById(id);
+            if (details) {
+                details.classList.toggle('active');
+            }
+        }
+        
+        // Auto-load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                loadData();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
