@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডিউটি এসাইন হয়নি - Unassigned Officers</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .dropdown-select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            min-width: 220px;
+        }
+        
+        .dropdown-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        
+        .search-box {
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 250px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .data-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-primary {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            background: #d4edda;
+            border-radius: 10px;
+            color: #155724;
+            font-size: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .controls {
+                display: none !important;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 6px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .dropdown-select, .search-box {
+                width: 100%;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ডিউটি এসাইন হয়নি - Unassigned Officers</h1>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="controls">
+            <select class="dropdown-select" id="officerType" onchange="filterByType()">
+                <option value="all">সকল অফিসার</option>
+                <option value="presiding">প্রিজাইডিং অফিসার</option>
+                <option value="ass_presiding">সহ-প্রিজাইডিং অফিসার</option>
+                <option value="polling">পোলিং অফিসার</option>
+            </select>
+            
+            <input type="text" class="search-box" id="searchBox" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="searchOfficers()">
+            
+            <button class="btn btn-primary" onclick="loadUnassignedOfficers()">
+                🔄 রিফ্রেশ করুন
+            </button>
+            
+            <button class="btn btn-danger" onclick="window.print()">
+                🖨️ প্রিন্ট করুন
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>ডেটা লোড হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন...</p>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid" style="display:none;"></div>
+        
+        <div id="dataContainer"></div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
+        
+        let allUnassignedOfficers = {
+            presiding: [],
+            ass_presiding: [],
+            polling: []
+        };
+        
+        let filteredOfficers = [];
+        
+        // Convert Arabic numerals to Bengali numerals
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Show/hide loading
+        function setLoading(isLoading) {
+            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+        }
+        
+        // Fetch all data with pagination (Supabase default limit is 1000)
+        async function fetchAllData(tableName, idColumn, selectColumns = '*') {
+            let allData = [];
+            let lastId = 0;
+            let hasMore = true;
+            const batchSize = 1000;
+            
+            while (hasMore) {
+                const { data, error } = await window.supabaseClient
+                    .from(tableName)
+                    .select(selectColumns)
+                    .gt(idColumn, lastId)
+                    .order(idColumn, { ascending: true })
+                    .limit(batchSize);
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    hasMore = false;
+                    break;
+                }
+                
+                allData.push(...data);
+                lastId = data[data.length - 1][idColumn];
+                
+                if (data.length < batchSize) {
+                    hasMore = false;
+                }
+            }
+            
+            return allData;
+        }
+        
+        // Load unassigned officers
+        async function loadUnassignedOfficers() {
+            setLoading(true);
+            
+            try {
+                showStatus('📊 অফিসার তথ্য লোড হচ্ছে...', 'info');
+                
+                // Fetch all assignments to know who is assigned
+                const assignments = await fetchAllData('centre_assignments', 'assignment_id', 'assignment_id, officer_type, officer_iid');
+                console.log(`✅ Assignments loaded: ${assignments.length}`);
+                
+                // Create sets of assigned officer IDs by type
+                const assignedPresiding = new Set();
+                const assignedAssPresiding = new Set();
+                const assignedPolling = new Set();
+                
+                assignments.forEach(a => {
+                    if (a.officer_type === 'presiding') {
+                        assignedPresiding.add(a.officer_iid);
+                    } else if (a.officer_type === 'ass_presiding') {
+                        assignedAssPresiding.add(a.officer_iid);
+                    } else if (a.officer_type === 'polling') {
+                        assignedPolling.add(a.officer_iid);
+                    }
+                });
+                
+                // Fetch all officers
+                showStatus('📊 প্রিজাইডিং অফিসার লোড হচ্ছে...', 'info');
+                const presidingList = await fetchAllData('presiding_list', 'presiding_iid', 
+                    'presiding_iid, presiding_name, mobile_number, gender, disability, sallery_scale, own_discrict');
+                
+                showStatus('📊 সহ-প্রিজাইডিং অফিসার লোড হচ্ছে...', 'info');
+                const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid',
+                    'ass_presiding_iid, ass_presiding_name, mobile_number, gender, disability, sallery_scale, own_discrict');
+                
+                showStatus('📊 পোলিং অফিসার লোড হচ্ছে...', 'info');
+                const pollingList = await fetchAllData('polling_list', 'polling_iid',
+                    'polling_iid, polling_name, mobile_number, gender, disability, sallery_scale, own_discrict');
+                
+                console.log(`✅ Officers loaded: Presiding=${presidingList.length}, AssPresiding=${assPresidingList.length}, Polling=${pollingList.length}`);
+                
+                // Filter unassigned officers
+                allUnassignedOfficers.presiding = presidingList.filter(o => !assignedPresiding.has(o.presiding_iid));
+                allUnassignedOfficers.ass_presiding = assPresidingList.filter(o => !assignedAssPresiding.has(o.ass_presiding_iid));
+                allUnassignedOfficers.polling = pollingList.filter(o => !assignedPolling.has(o.polling_iid));
+                
+                console.log(`✅ Unassigned: Presiding=${allUnassignedOfficers.presiding.length}, AssPresiding=${allUnassignedOfficers.ass_presiding.length}, Polling=${allUnassignedOfficers.polling.length}`);
+                
+                // Display stats
+                displayStats();
+                
+                // Filter and display
+                filterByType();
+                
+                const totalUnassigned = allUnassignedOfficers.presiding.length + 
+                                        allUnassignedOfficers.ass_presiding.length + 
+                                        allUnassignedOfficers.polling.length;
+                
+                showStatus(`✅ মোট ${toBengaliNumber(totalUnassigned)} জন অফিসারের ডিউটি এসাইন হয়নি!`, 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Display stats
+        function displayStats() {
+            const totalPresiding = allUnassignedOfficers.presiding.length;
+            const totalAssPresiding = allUnassignedOfficers.ass_presiding.length;
+            const totalPolling = allUnassignedOfficers.polling.length;
+            const totalUnassigned = totalPresiding + totalAssPresiding + totalPolling;
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.style.display = 'grid';
+            statsGrid.innerHTML = `
+                <div class="stat-card warning">
+                    <div class="stat-number">${toBengaliNumber(totalUnassigned)}</div>
+                    <div class="stat-label">মোট এসাইন হয়নি</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalPresiding)}</div>
+                    <div class="stat-label">প্রিজাইডিং অফিসার</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalAssPresiding)}</div>
+                    <div class="stat-label">সহ-প্রিজাইডিং অফিসার</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${toBengaliNumber(totalPolling)}</div>
+                    <div class="stat-label">পোলিং অফিসার</div>
+                </div>
+            `;
+        }
+        
+        // Filter by officer type
+        function filterByType() {
+            const type = document.getElementById('officerType').value;
+            document.getElementById('searchBox').value = '';
+            
+            if (type === 'all') {
+                // Combine all
+                filteredOfficers = [
+                    ...allUnassignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' })),
+                    ...allUnassignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' })),
+                    ...allUnassignedOfficers.polling.map(o => ({ ...o, type: 'polling' }))
+                ];
+            } else if (type === 'presiding') {
+                filteredOfficers = allUnassignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' }));
+            } else if (type === 'ass_presiding') {
+                filteredOfficers = allUnassignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' }));
+            } else if (type === 'polling') {
+                filteredOfficers = allUnassignedOfficers.polling.map(o => ({ ...o, type: 'polling' }));
+            }
+            
+            renderTable(filteredOfficers);
+        }
+        
+        // Search officers
+        function searchOfficers() {
+            const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                filterByType();
+                return;
+            }
+            
+            const searched = filteredOfficers.filter(o => {
+                const name = getOfficerName(o).toLowerCase();
+                const mobile = (o.mobile_number || '').toLowerCase();
+                return name.includes(searchTerm) || mobile.includes(searchTerm);
+            });
+            
+            renderTable(searched);
+        }
+        
+        // Get officer name based on type
+        function getOfficerName(officer) {
+            if (officer.presiding_name) return officer.presiding_name;
+            if (officer.ass_presiding_name) return officer.ass_presiding_name;
+            if (officer.polling_name) return officer.polling_name;
+            return 'N/A';
+        }
+        
+        // Get officer ID based on type
+        function getOfficerId(officer) {
+            if (officer.presiding_iid) return officer.presiding_iid;
+            if (officer.ass_presiding_iid) return officer.ass_presiding_iid;
+            if (officer.polling_iid) return officer.polling_iid;
+            return 'N/A';
+        }
+        
+        // Get officer type label in Bengali
+        function getOfficerTypeLabel(type) {
+            switch(type) {
+                case 'presiding': return 'প্রিজাইডিং';
+                case 'ass_presiding': return 'সহ-প্রিজাইডিং';
+                case 'polling': return 'পোলিং';
+                default: return type;
+            }
+        }
+        
+        // Render table
+        function renderTable(officers) {
+            const container = document.getElementById('dataContainer');
+            
+            if (!officers || officers.length === 0) {
+                container.innerHTML = '<div class="no-data">✅ সকল অফিসারের ডিউটি এসাইন করা হয়েছে!</div>';
+                return;
+            }
+            
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ক্রম</th>
+                            <th>আইডি</th>
+                            <th>নাম</th>
+                            <th>মোবাইল</th>
+                            <th>লিঙ্গ</th>
+                            <th>বেতন স্কেল</th>
+                            <th>Disability</th>
+                            <th>অফিসার টাইপ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            officers.forEach((officer, index) => {
+                const isDisabled = officer.disability === 'Yes' || officer.disability === 'yes' || officer.disability === 'YES';
+                
+                html += `
+                    <tr>
+                        <td>${toBengaliNumber(index + 1)}</td>
+                        <td>${getOfficerId(officer)}</td>
+                        <td style="text-align: left;"><strong>${getOfficerName(officer)}</strong></td>
+                        <td>${officer.mobile_number || '-'}</td>
+                        <td>${officer.gender || '-'}</td>
+                        <td>${officer.sallery_scale || '-'}</td>
+                        <td>
+                            ${isDisabled 
+                                ? '<span class="badge badge-warning">হ্যাঁ</span>' 
+                                : '<span class="badge badge-success">না</span>'
+                            }
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">${getOfficerTypeLabel(officer.type)}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+                <p style="margin-top: 15px; text-align: center; color: #666;">
+                    মোট ${toBengaliNumber(officers.length)} জন অফিসার দেখাচ্ছে
+                </p>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Auto-load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                loadUnassignedOfficers();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
