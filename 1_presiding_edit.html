@@ -1335,7 +1335,12 @@
           const rowId = row && row[ID_COLUMN];
 
           if (rowId) {
-            payloads.push({ [ID_COLUMN]: rowId, ...changes });
+            const merged = { [ID_COLUMN]: rowId, ...changes };
+            if ('disability' in merged) {
+              const d = (merged.disability ?? '').toString().trim();
+              merged.disability = d === '' ? null : d; // normalize cleared disability to NULL
+            }
+            payloads.push(merged);
           }
         });
 
@@ -1385,6 +1390,10 @@
       // Merge existing row data with any modified values for this row
       const changes = modifiedRows.get(rowIndex) || {};
       const payload = { ...row, ...changes };
+      if ('disability' in payload) {
+        const d = (payload.disability ?? '').toString().trim();
+        payload.disability = d === '' ? null : d;
+      }
 
       const btn = document.getElementById('update-btn');
       const prevText = btn.textContent;
