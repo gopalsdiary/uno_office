@@ -1695,6 +1695,10 @@
       formData.forEach((value, key) => {
         if (key === 'polling_iid' && !isAddMode) return; // do not update primary id in edit mode
         const trimmedValue = value.trim();
+        if (key === 'disability') {
+          payload[key] = trimmedValue ? trimmedValue : null; // allow saving cleared disability as NULL
+          return;
+        }
         if (trimmedValue || key === 'polling_iid') {
           payload[key] = trimmedValue;
         }
