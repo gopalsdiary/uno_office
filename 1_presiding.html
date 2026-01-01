@@ -1606,13 +1606,21 @@
 
       const payload = {};
       formData.forEach((value, key) => {
-        if (key === 'presiding_iid' && !isAddMode) return; // do not update primary id in edit mode
-        const trimmedValue = value.trim();
+        const trimmedValue = (value ?? '').toString().trim();
+
+        if (key === 'presiding_iid') {
+          if (isAddMode && trimmedValue) {
+            payload[key] = trimmedValue;
+          }
+          return; // never update primary id in edit mode
+        }
+
         if (key === 'disability') {
-          payload[key] = trimmedValue ? trimmedValue : null; // allow saving cleared disability as NULL
+          payload[key] = trimmedValue === '' ? null : trimmedValue; // ensure cleared disability becomes NULL
           return;
         }
-        if (trimmedValue || key === 'presiding_iid') {
+
+        if (trimmedValue) {
           payload[key] = trimmedValue;
         }
       });
