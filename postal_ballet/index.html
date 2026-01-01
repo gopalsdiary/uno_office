@@ -602,12 +602,9 @@
             let html = '<h3 style="margin-bottom: 15px; color: #333;">খোঁজার ফলাফল:</h3>';
             
             searchResultsData.forEach((officer, index) => {
-                // Get last 3 digits of mobile number
-                const mobileLastThree = officer.mobile ? officer.mobile.slice(-3) : '';
-                
                 // Mask any mobile numbers in the name field
                 const maskedName = maskMobileNumber(officer.name || 'N/A');
-                const displayName = mobileLastThree ? `${maskedName} (${mobileLastThree})` : maskedName;
+                const displayName = maskedName;
                 
                 html += `
                     <div class="result-item" onclick="selectOfficer(${index})">
