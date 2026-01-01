@@ -52,10 +52,12 @@
       padding: 12px;
       border-radius: 12px;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+      flex-wrap: wrap;
     }
     
     .search-box input {
       flex: 1;
+      min-width: 150px;
       padding: 12px 16px;
       border: 2px solid #e2e8f0;
       border-radius: 8px;
@@ -63,6 +65,28 @@
       font-family: inherit;
       transition: all 0.2s;
       background: white;
+    }
+    
+    .search-box select {
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 150px;
+    }
+    
+    .search-box select:hover {
+      border-color: #cbd5e1;
+    }
+    
+    .search-box select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
     
     .search-box input:focus {
@@ -605,6 +629,23 @@
       background: #f1f5f9;
       border-radius: 8px;
     }
+
+    /* Centered total centres display */
+    .centres-count {
+      text-align: center;
+      margin: 12px auto;
+      font-size: 15px;
+      font-weight: 700;
+      color: #475569;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      max-width: 360px;
+    }
+
+    @media (max-width: 480px) {
+      .centres-count { width: 100%; max-width: none; }
+    }
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
@@ -688,9 +729,8 @@
       /* small tweaks on hover */
       tr:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(15,23,42,0.06); }
     }
-        text-align: center;
-      }
-      
+    
+    @media (max-width: 480px) {
       .modal {
         padding: 0;
       }
@@ -749,6 +789,20 @@
         font-size: 11px;
         padding: 6px;
       }
+
+      .search-box {
+        flex-direction: column;
+      }
+
+      .search-box input,
+      .search-box select {
+        flex: 1;
+        min-width: 100%;
+      }
+
+      .search-box button {
+        flex: 1;
+      }
     }
     
     @media (max-width: 480px) {
@@ -782,6 +836,9 @@
   
   <div class="search-box">
     <input type="text" id="search-input" placeholder="Search by name, code, location or area...">
+    <select id="area-filter" style="padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; font-family: inherit; background: white; cursor: pointer; transition: all 0.2s;">
+      <option value="">সব এলাকা (All Areas)</option>
+    </select>
     <button onclick="searchPolling()">Search</button>
     <button onclick="clearSearch()" style="background:#ef4444">Clear</button>
   </div>
@@ -812,6 +869,7 @@
     // Clear search helper
     function clearSearch() {
       document.getElementById('search-input').value = '';
+      document.getElementById('area-filter').value = '';
       document.getElementById('error').style.display = 'none';
       isSearchMode = false;
       loadPollingData(1);
@@ -847,6 +905,9 @@
       <tbody></tbody>
     </table>
   </div>
+
+  <!-- Centered total count -->
+  <div id="centres-count" class="centres-count" style="display:none;">মোট কেন্দ্র: ০ টি</div>
 
   <div class="pagination" id="pagination" style="display: none;">
     <button id="prev-btn" onclick="prevPage()">⬅ Previous</button>
@@ -924,6 +985,9 @@
           emptyEl.style.display = 'block';
           tableEl.style.display = 'none';
           document.getElementById('pagination').style.display = 'none';
+          // still show total count (may be zero)
+          const centresEl = document.getElementById('centres-count');
+          if (centresEl) { centresEl.textContent = `মোট কেন্দ্র: ${toBengaliNumber(totalRecords)} টি`; centresEl.style.display = 'block'; }
           return;
         }
 
@@ -937,6 +1001,10 @@
         currentPage = page;
         updatePagination();
 
+        // Update total centres display
+        const centresEl = document.getElementById('centres-count');
+        if (centresEl) { centresEl.textContent = `মোট কেন্দ্র: ${toBengaliNumber(totalRecords)} টি`; centresEl.style.display = 'block'; }
+
       } catch (err) {
         console.error('Error loading polling data:', err);
         loadingEl.style.display = 'none';
@@ -948,6 +1016,49 @@
     // Load data when page loads
     loadPollingData();
     loadGenderStats();
+    loadAreaOptions();
+
+    // Convert western numerals to Bengali numerals
+    function toBengaliNumber(n) {
+      const map = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+      return String(n).split('').map(ch => map[ch] || ch).join('');
+    }
+    
+    // Load all available areas for dropdown filter
+    async function loadAreaOptions() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('vote_centre')
+          .select('vote_centre_area')
+          .neq('vote_centre_area', null)
+          .order('vote_centre_area', { ascending: true });
+
+        if (error) throw error;
+
+        // Get unique areas
+        const uniqueAreas = [...new Set(data.map(row => row.vote_centre_area).filter(Boolean))];
+        
+        // Populate dropdown
+        const areaFilter = document.getElementById('area-filter');
+        areaFilter.innerHTML = '<option value="">সব এলাকা (All Areas)</option>';
+        
+        uniqueAreas.forEach(area => {
+          const option = document.createElement('option');
+          option.value = area;
+          option.textContent = area;
+          areaFilter.appendChild(option);
+        });
+
+        // Add change event listener to area filter
+        areaFilter.addEventListener('change', () => {
+          document.getElementById('search-input').value = ''; // Clear search input
+          searchPolling(1); // Trigger search with new filter
+        });
+
+      } catch (err) {
+        console.error('Error loading area options:', err);
+      }
+    }
     
     // Load basic voter statistics (sums) from vote_centre
     async function loadGenderStats() {
@@ -1173,12 +1284,14 @@
     // Search functionality
     async function searchPolling(page = 1) {
       searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+      const areaFilter = document.getElementById('area-filter').value;
       const tbody = document.getElementById('polling-table').querySelector('tbody');
       const emptyEl = document.getElementById('empty');
       const tableEl = document.getElementById('polling-table');
       const loadingEl = document.getElementById('loading');
 
-      if (!searchTerm) {
+      // Check if search term or area filter is provided
+      if (!searchTerm && !areaFilter) {
         isSearchMode = false;
         loadPollingData(1);
         return;
@@ -1188,49 +1301,83 @@
       loadingEl.style.display = 'block';
 
       try {
-            // Build conditions to support multi-term search and code search
-        const terms = searchTerm.split(/\s+/).filter(Boolean);
-        const orConditions = [];
+        let query = supabaseClient
+          .from('vote_centre')
+          .select('*');
 
-        terms.forEach(term => {
-          const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
-          orConditions.push(`vote_centre_name.ilike.%${t}%`);
-          orConditions.push(`vote_centre_location.ilike.%${t}%`);
-          orConditions.push(`vote_centre_area.ilike.%${t}%`);
-          // if term is numeric, search code by exact match
-          if (/^\d+$/.test(t)) {
-            orConditions.push(`vote_centre_code.eq.${t}`);
-          }
-        });
+        // Apply area filter if selected
+        if (areaFilter) {
+          query = query.eq('vote_centre_area', areaFilter);
+        }
 
-        const orQuery = orConditions.join(',');
+        // Apply search term filter if provided
+        if (searchTerm) {
+          const terms = searchTerm.split(/\s+/).filter(Boolean);
+          const orConditions = [];
+
+          terms.forEach(term => {
+            const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
+            orConditions.push(`vote_centre_name.ilike.%${t}%`);
+            orConditions.push(`vote_centre_location.ilike.%${t}%`);
+            orConditions.push(`vote_centre_area.ilike.%${t}%`);
+            // if term is numeric, search code by exact match
+            if (/^\d+$/.test(t)) {
+              orConditions.push(`vote_centre_code.eq.${t}`);
+            }
+          });
+
+          const orQuery = orConditions.join(',');
+          query = query.or(orQuery);
+        }
 
         // Get total count for search results
-        const { count, error: countError } = await supabaseClient
+        const countQuery = supabaseClient
           .from('vote_centre')
-          .select('*', { count: 'exact', head: true })
-          .or(orQuery);
+          .select('*', { count: 'exact', head: true });
+
+        if (areaFilter) {
+          countQuery.eq('vote_centre_area', areaFilter);
+        }
+
+        if (searchTerm) {
+          const terms = searchTerm.split(/\s+/).filter(Boolean);
+          const orConditions = [];
+
+          terms.forEach(term => {
+            const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
+            orConditions.push(`vote_centre_name.ilike.%${t}%`);
+            orConditions.push(`vote_centre_location.ilike.%${t}%`);
+            orConditions.push(`vote_centre_area.ilike.%${t}%`);
+            if (/^\d+$/.test(t)) {
+              orConditions.push(`vote_centre_code.eq.${t}`);
+            }
+          });
+
+          const orQuery = orConditions.join(',');
+          countQuery.or(orQuery);
+        }
+
+        const { count, error: countError } = await countQuery;
 
         if (countError) throw countError;
         totalRecords = count || 0;
+
+        // Update total centres display (for search results)
+        const centresEl = document.getElementById('centres-count');
+        if (centresEl) { centresEl.textContent = `মোট কেন্দ্র: ${toBengaliNumber(totalRecords)} টি`; centresEl.style.display = 'block'; }
 
         // Fetch paginated search results
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
-        const { data, error } = await supabaseClient
-          .from('vote_centre')
-          .select('*')
-          .or(orQuery)
+        const { data, error } = await query
           .order('vote_centre_iid', { ascending: true })
           .range(from, to);
 
         loadingEl.style.display = 'none';
 
         // Pass the search term to renderer so it can highlight matches
-        const effectiveQuery = terms.join(' ');
-
-        console.debug('Search terms:', terms, 'OR query:', orQuery);
+        const effectiveQuery = searchTerm;
 
         if (error) throw error;
 
@@ -1241,6 +1388,9 @@
           emptyEl.textContent = 'No matches found.';
           emptyEl.style.display = 'block';
           document.getElementById('pagination').style.display = 'none';
+          // show total (even if zero)
+          const centresElNo = document.getElementById('centres-count');
+          if (centresElNo) { centresElNo.textContent = `মোট কেন্দ্র: ${toBengaliNumber(totalRecords)} টি`; centresElNo.style.display = 'block'; }
           return;
         }
 

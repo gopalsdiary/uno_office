@@ -94,6 +94,21 @@
             border-color: #667eea;
         }
         
+        .area-filter {
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 250px;
+            cursor: pointer;
+            background: white;
+        }
+        
+        .area-filter:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
         .status {
             padding: 12px 20px;
             border-radius: 8px;
@@ -358,6 +373,10 @@
                 width: 100%;
             }
             
+            .area-filter {
+                width: 100%;
+            }
+            
             .centre-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -385,6 +404,10 @@
         
         <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="কেন্দ্র কোড, নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="searchCentres()">
+            
+            <select class="area-filter" id="areaFilter" onchange="searchCentres()">
+                <option value="">সব এলাকা (All Areas)</option>
+            </select>
             
             <button class="btn btn-primary" onclick="loadData()">
                 🔄 রিফ্রেশ করুন
@@ -475,7 +498,7 @@
                 
                 // Fetch vote centres
                 const voteCentres = await fetchAllData('vote_centre', 'vote_centre_iid', 
-                    'vote_centre_iid, vote_centre_code, vote_centre_name');
+                    'vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_area');
                 console.log(`✅ Vote centres loaded: ${voteCentres.length}`);
                 
                 // Fetch all assignments
@@ -533,6 +556,9 @@
                 
                 filteredCentres = [...allCentres];
                 
+                // Load area options
+                loadAreaOptions();
+                
                 // Display stats
                 displayStats();
                 
@@ -583,28 +609,51 @@
             `;
         }
         
+        // Load area options
+        function loadAreaOptions() {
+            const uniqueAreas = [...new Set(allCentres.map(c => c.vote_centre_area).filter(Boolean))];
+            uniqueAreas.sort();
+            
+            const areaFilter = document.getElementById('areaFilter');
+            areaFilter.innerHTML = '<option value="">সব এলাকা (All Areas)</option>';
+            
+            uniqueAreas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area;
+                option.textContent = area;
+                areaFilter.appendChild(option);
+            });
+        }
+        
         // Search centres
         function searchCentres() {
             const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
+            const selectedArea = document.getElementById('areaFilter').value;
             
-            if (!searchTerm) {
-                filteredCentres = [...allCentres];
-            } else {
-                filteredCentres = allCentres.filter(centre => {
-                    // Search in centre code and name
-                    const codeMatch = (centre.vote_centre_code || '').toLowerCase().includes(searchTerm);
-                    const nameMatch = (centre.vote_centre_name || '').toLowerCase().includes(searchTerm);
-                    
-                    // Search in officer names and mobile numbers
-                    const officerMatch = centre.assignments.some(a => {
-                        const officerNameMatch = (a.officer_name || '').toLowerCase().includes(searchTerm);
-                        const mobileMatch = (a.mobile_number || '').includes(searchTerm);
-                        return officerNameMatch || mobileMatch;
-                    });
-                    
-                    return codeMatch || nameMatch || officerMatch;
+            filteredCentres = allCentres.filter(centre => {
+                // Area filter
+                if (selectedArea && centre.vote_centre_area !== selectedArea) {
+                    return false;
+                }
+                
+                // Search filter
+                if (!searchTerm) {
+                    return true;
+                }
+                
+                // Search in centre code and name
+                const codeMatch = (centre.vote_centre_code || '').toLowerCase().includes(searchTerm);
+                const nameMatch = (centre.vote_centre_name || '').toLowerCase().includes(searchTerm);
+                
+                // Search in officer names and mobile numbers
+                const officerMatch = centre.assignments.some(a => {
+                    const officerNameMatch = (a.officer_name || '').toLowerCase().includes(searchTerm);
+                    const mobileMatch = (a.mobile_number || '').includes(searchTerm);
+                    return officerNameMatch || mobileMatch;
                 });
-            }
+                
+                return codeMatch || nameMatch || officerMatch;
+            });
             
             renderCentres();
         }
@@ -635,7 +684,7 @@
                     <div class="centre-section">
                         <div class="centre-header" onclick="toggleDetails('centre-${centre.vote_centre_iid}')">
                             <div class="centre-info">
-                                <div class="centre-code">${toBengaliNumber(index + 1)}. কেন্দ্র কোড: ${centre.vote_centre_code}</div>
+                                <div class="centre-code">${toBengaliNumber(index + 1)}. কেন্দ্র কোড: ${centre.vote_centre_code}${centre.vote_centre_area ? ` (${centre.vote_centre_area})` : ''}</div>
                                 <div class="centre-name">${centre.vote_centre_name || 'N/A'}</div>
                             </div>
                             <div class="centre-stats">
