@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পোস্টাল ব্যালেট ড্যাশবোর্ড</title>
+    <!-- Inline favicon to avoid 404 -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%F0%9F%93%AE%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SolaimanLipi', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.presiding {
+            border-top: 5px solid #4CAF50;
+        }
+
+        .stat-card.ass-presiding {
+            border-top: 5px solid #2196F3;
+        }
+
+        .stat-card.polling {
+            border-top: 5px solid #FF9800;
+        }
+
+        .stat-card.total {
+            border-top: 5px solid #9C27B0;
+        }
+
+        .stat-title {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+
+        .search-filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .refresh-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Delete button */
+        .delete-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .delete-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .photo-cell {
+            text-align: center;
+        }
+
+        .photo-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 15px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .photo-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-presiding {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .badge-ass-presiding {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .badge-polling {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 পোস্টাল ব্যালেট ড্যাশবোর্ড</h1>
+            <p>নিবন্ধন সম্পন্ন যারা করেছে, তাদের তালিকা</p>
+
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card presiding">
+                <div class="stat-title">প্রিজাইডিং</div>
+                <div class="stat-value" id="presidingCount">০</div>
+            </div>
+            <div class="stat-card ass-presiding">
+                <div class="stat-title">সহ-প্রিজাইডিং</div>
+                <div class="stat-value" id="assPresidingCount">০</div>
+            </div>
+            <div class="stat-card polling">
+                <div class="stat-title">পোলিং</div>
+                <div class="stat-value" id="pollingCount">০</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-title">মোট</div>
+                <div class="stat-value" id="totalCount">০</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="search-filter-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="🔍 নাম বা এলাকা খুঁজুন...">
+                <select id="filterType" class="filter-select">
+                    <option value="">সব ধরন</option>
+                    <option value="presiding_list">প্রিজাইডিং</option>
+                    <option value="ass_presiding_list">সহ-প্রিজাইডিং</option>
+                    <option value="polling_list">পোলিং</option>
+                </select>
+                <button class="refresh-btn" onclick="loadData()">🔄 রিফ্রেশ</button>
+            </div>
+
+            <div id="loadingMessage" class="loading">ডাটা লোড হচ্ছে...</div>
+            
+            <table id="dataTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ক্রমিক</th>
+                        <th>নাম</th>
+                        <th>ধরন</th>
+                        <th>এলাকা</th>
+                        <th>নিবন্ধন তথ্য</th>
+                        <th>মন্তব্য</th>
+                        <th>ছবি</th>
+                        <th>তারিখ</th>
+                        <th>ক্রিয়া</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+
+            <div id="noData" class="no-data" style="display: none;">
+                কোনো ডাটা পাওয়া যায়নি
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+        
+        // Reuse one global Supabase client if available to avoid duplicate GoTrue instances
+        const supabaseClient = window.supabaseClient || (window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+
+        let allData = [];
+        let filteredData = [];
+
+        // Bengali number conversion
+        function toBengaliNumber(n) {
+            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return String(n).split('').map(digit => bengaliDigits[digit] || digit).join('');
+        }
+
+        // Load data from Supabase
+        async function loadData() {
+            try {
+                document.getElementById('loadingMessage').style.display = 'block';
+                document.getElementById('dataTable').style.display = 'none';
+                document.getElementById('noData').style.display = 'none';
+
+                const { data, error } = await supabaseClient
+                    .from('postal_vote_data')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading data:', error);
+                    alert('ডাটা লোড করতে সমস্যা হয়েছে: ' + error.message);
+                    return;
+                }
+
+                allData = data || [];
+                updateStats();
+                applyFilters();
+            } catch (err) {
+                console.error('Error:', err);
+                alert('একটি সমস্যা হয়েছে');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const presidingCount = allData.filter(item => item.assign_table === 'presiding_list').length;
+            const assPresidingCount = allData.filter(item => item.assign_table === 'ass_presiding_list').length;
+            const pollingCount = allData.filter(item => item.assign_table === 'polling_list').length;
+            const totalCount = allData.length;
+
+            document.getElementById('presidingCount').textContent = toBengaliNumber(presidingCount);
+            document.getElementById('assPresidingCount').textContent = toBengaliNumber(assPresidingCount);
+            document.getElementById('pollingCount').textContent = toBengaliNumber(pollingCount);
+            document.getElementById('totalCount').textContent = toBengaliNumber(totalCount);
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+
+            filteredData = allData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    (item.officer_name && item.officer_name.toLowerCase().includes(searchTerm)) ||
+                    (item.area && item.area.toLowerCase().includes(searchTerm));
+                
+                const matchesType = !filterType || item.assign_table === filterType;
+
+                return matchesSearch && matchesType;
+            });
+
+            displayData();
+        }
+
+        // Display data in table
+        function displayData() {
+            const tableBody = document.getElementById('tableBody');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const dataTable = document.getElementById('dataTable');
+            const noData = document.getElementById('noData');
+
+            loadingMessage.style.display = 'none';
+
+            if (filteredData.length === 0) {
+                dataTable.style.display = 'none';
+                noData.style.display = 'block';
+                return;
+            }
+
+            dataTable.style.display = 'table';
+            noData.style.display = 'none';
+
+            tableBody.innerHTML = filteredData.map((item, index) => {
+                const assignTypeText = getAssignTypeText(item.assign_table);
+                const assignTypeBadge = getAssignTypeBadge(item.assign_table);
+                const formattedDate = formatDate(item.created_at);
+                
+                return `
+                    <tr>
+                        <td>${toBengaliNumber(index + 1)}</td>
+                        <td><strong>${item.officer_name || '-'}</strong></td>
+                        <td><span class="badge ${assignTypeBadge}">${assignTypeText}</span></td>
+                        <td>${item.area || '-'}</td>
+                        <td>${item.postal_ballet_info_info || '-'}</td>
+                        <td>${item.postal_ballet_comment || '-'}</td>
+                        <td class="photo-cell">
+                            ${item.photo_url ? `<a href="${item.photo_url}" target="_blank" class="photo-link">দেখুন</a>` : '-'}
+                        </td>
+                        <td class="date-cell">${formattedDate}</td>
+                        <td>
+                            <button class="delete-btn" onclick='confirmDelete(${JSON.stringify(item.id || null)}, ${JSON.stringify(item.assign_table || '')}, ${JSON.stringify(item.assign_table_iid || '')}, this)'>মুছুন</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Get assignment type text
+        function getAssignTypeText(assignTable) {
+            switch (assignTable) {
+                case 'presiding_list':
+                    return 'প্রিজাইডিং';
+                case 'ass_presiding_list':
+                    return 'সহ-প্রিজাইডিং';
+                case 'polling_list':
+                    return 'পোলিং';
+                default:
+                    return assignTable || '-';
+            }
+        }
+
+        // Get assignment type badge class
+        function getAssignTypeBadge(assignTable) {
+            switch (assignTable) {
+                case 'presiding_list':
+                    return 'badge-presiding';
+                case 'ass_presiding_list':
+                    return 'badge-ass-presiding';
+                case 'polling_list':
+                    return 'badge-polling';
+                default:
+                    return '';
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${toBengaliNumber(day)}/${toBengaliNumber(month)}/${toBengaliNumber(year)} ${toBengaliNumber(hours)}:${toBengaliNumber(minutes)}`;
+        }
+
+        // Confirm and delete a record (accepts id or falls back to assign_table + assign_table_iid)
+        async function confirmDelete(id, assignTable, assignTableIid, btnEl) {
+            const identifier = id || (assignTable ? `${assignTable}/${assignTableIid}` : 'এই এন্ট্রি');
+            const ok = confirm(`আপনি কি নিশ্চিত যে "${identifier}" এন্ট্রি মুছে ফেলতে চান? এটি পূর্বাবস্থায় ফিরবে না।`);
+            if (!ok) return;
+
+            try {
+                if (btnEl) {
+                    btnEl.disabled = true;
+                    btnEl.textContent = 'মুছা হচ্ছে...';
+                }
+
+                document.getElementById('loadingMessage').textContent = 'মুছে ফেলা হচ্ছে...';
+                document.getElementById('loadingMessage').style.display = 'block';
+
+                let result;
+                if (id) {
+                    result = await supabaseClient
+                        .from('postal_vote_data')
+                        .delete()
+                        .eq('id', id);
+                } else {
+                    result = await supabaseClient
+                        .from('postal_vote_data')
+                        .delete()
+                        .match({ assign_table: assignTable, assign_table_iid: String(assignTableIid) });
+                }
+
+                if (result.error) throw result.error;
+
+                alert('সফলভাবে মুছে ফেলা হয়েছে।');
+                await loadData();
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('মুছতে তদন্তে ব্যর্থ হয়েছে: ' + (err.message || err));
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.textContent = 'মুছুন';
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', applyFilters);
+        document.getElementById('filterType').addEventListener('change', applyFilters);
+
+        // Load data on page load
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+      <script src="../authentication.js"></script>
+
+</body>
+</html>
