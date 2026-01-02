@@ -312,6 +312,44 @@
                 gap: 10px;
             }
         }
+
+        /* Upload modal (blocking) */
+        .upload-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .upload-modal-overlay.active {
+            display: flex;
+        }
+        .upload-modal-content {
+            background: #fff;
+            padding: 24px 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            max-width: 90%;
+            width: 360px;
+            pointer-events: auto;
+        }
+        .upload-modal-message {
+            margin-top: 12px;
+            font-size: 16px;
+            color: #333;
+        }
+        .upload-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -396,6 +434,14 @@
         </div>
     </div>
 
+    <!-- Upload modal (blocks interaction during upload/save) -->
+    <div id="uploadModal" class="upload-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="upload-modal-content" tabindex="-1">
+            <div class="upload-spinner" aria-hidden="true"></div>
+            <div class="upload-modal-message" id="uploadModalMessage">ছবি আপলোড হচ্ছে...</div>
+        </div>
+    </div>
+
     <script>
         // Supabase configuration
         const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
@@ -427,6 +473,43 @@
         // Show/hide loading
         function setLoading(isLoading) {
             document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
+        }
+
+        // Upload modal controls - blocks interaction while visible
+        function showUploadModal(message = 'ছবি আপলোড হচ্ছে...') {
+            const modal = document.getElementById('uploadModal');
+            const msgEl = document.getElementById('uploadModalMessage');
+            if (msgEl) msgEl.textContent = message;
+            if (modal) modal.classList.add('active');
+            if (modal) modal.setAttribute('aria-hidden','false');
+            // prevent body scroll
+            document.body.style.overflow = 'hidden';
+            // disable submit button to prevent re-clicks
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function updateUploadModal(message) {
+            const msgEl = document.getElementById('uploadModalMessage');
+            if (msgEl) msgEl.textContent = message;
+        }
+
+        function hideUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            if (modal) modal.classList.remove('active');
+            if (modal) modal.setAttribute('aria-hidden','true');
+            document.body.style.overflow = '';
+            // re-enable submit button (only if allowed)
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
         }
 
         // Bengali to English digit mapping
@@ -776,13 +859,13 @@
             });
 
             if (!response.ok) {
-                throw new Error('ImgBB আপলোড ব্যর্থ হয়েছে: ' + response.statusText);
+                throw new Error('আপলোড ব্যর্থ হয়েছে: ' + response.statusText);
             }
 
             const data = await response.json();
             
             if (!data.success) {
-                throw new Error('ImgBB আপলোড ব্যর্থ হয়েছে: ' + (data.error?.message || 'Unknown error'));
+                throw new Error('আপলোড ব্যর্থ হয়েছে: ' + (data.error?.message || 'Unknown error'));
             }
 
             return data.data.url;
@@ -846,14 +929,17 @@
             try {
                 let photoUrl = null;
 
-                // Upload image if provided
+                // Show blocking modal and upload image if provided
                 if (registered === 'YES' && screenshot) {
-                    showStatus('ছবি আপলোড হচ্ছে...', 'info');
+                    showUploadModal('ছবি আপলোড হচ্ছে...');
                     photoUrl = await uploadToImgBB(screenshot);
+                } else {
+                    // still block UI while saving
+                    showUploadModal('সংরক্ষণ করা হচ্ছে...');
                 }
 
-                // Save to database
-                showStatus('ডাটাবেজে সংরক্ষণ হচ্ছে...', 'info');
+                // Update modal message while saving to database
+                updateUploadModal('ডাটাবেজে সংরক্ষণ হচ্ছে...');
                 
                 const dataToSave = {
                     officer_name: selectedOfficer.name,
@@ -870,6 +956,7 @@
 
                 if (error) throw error;
 
+                hideUploadModal();
                 showStatus('✅ সফলভাবে সংরক্ষণ করা হয়েছে!', 'success');
                 
                 // Reset form after 2 seconds
@@ -879,6 +966,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
+                hideUploadModal();
                 showStatus('ত্রুটি: ' + error.message, 'error');
             } finally {
                 setLoading(false);
