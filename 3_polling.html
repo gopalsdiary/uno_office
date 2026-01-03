@@ -1053,10 +1053,12 @@
       const noteEl = document.getElementById('gender-note');
       try {
         // Build robust male/female conditions (English variants only)
+        // Use conservative server-side conditions (exact matches) to avoid substring collisions
+        // (e.g., '%male%' would match 'female'). Fuzzy/variant values are handled by the
+        // client-side chunked fallback when needed.
         const maleConditions = [
           'gender.eq.Male',
           'gender.eq.male',
-          "gender.ilike.%male%",
           'gender.eq.M'
         ];
         const maleOr = maleConditions.join(',');
@@ -1064,7 +1066,6 @@
         const femaleConditions = [
           'gender.eq.Female',
           'gender.eq.female',
-          "gender.ilike.%female%",
           'gender.eq.F'
         ];
         const femaleOr = femaleConditions.join(',');
