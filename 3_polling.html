@@ -1088,18 +1088,32 @@
         let unknown = Math.max(0, total - male - female);
 
         // If the server-side total looks unexpectedly small (or counts don't add up),
-        // fetch all rows (up to 10k) and compute counts locally as a reliable fallback.
-        // This is acceptable for moderate table sizes (e.g., a few thousand rows).
-        const needFallback = total === 0 || total < (male + female) || total < 100 || (male + female + unknown) !== total;
+        // fetch rows in chunks (up to a safe cap) and compute counts locally as a reliable fallback.
+        // This avoids single-request caps that may limit results (~1000 rows).
+        const needFallback = total === 0 || total < (male + female) || total < 1700 || (male + female + unknown) !== total;
 
         if (needFallback) {
-          console.debug('loadGenderStats: falling back to fetching rows');
-          const { data: rows, error: rowsErr } = await supabaseClient
-            .from('polling_list')
-            .select('polling_iid, gender')
-            .range(0, 9999); // fetch up to 10k rows
+          console.debug('loadGenderStats: falling back to fetching rows in chunks');
 
-          if (rowsErr) throw rowsErr;
+          const CHUNK = 1000;
+          const MAX_STATS_FETCH = 20000; // safety cap
+          let from = 0;
+          const rows = [];
+
+          while (true) {
+            const res = await supabaseClient
+              .from('polling_list')
+              .select('polling_iid, gender')
+              .order('polling_iid', { ascending: true })
+              .range(from, from + CHUNK - 1);
+
+            if (res.error) throw res.error;
+            const chunk = res.data || [];
+            rows.push(...chunk);
+            if (chunk.length < CHUNK) break;
+            from += CHUNK;
+            if (rows.length >= MAX_STATS_FETCH) break;
+          }
 
           // Build a map of raw gender values for diagnosis and a robust normalization
           const unique = {};
@@ -1168,14 +1182,27 @@
       loadingEl.style.display = 'block';
       
       try {
-        const { data, error } = await supabaseClient
-          .from('polling_list')
-          .select('*')
-          .order('polling_iid', { ascending: true });
-        
-        if (error) throw error;
-        
-        allTableData = data || [];
+        const CHUNK = 1000;
+        const MAX_FETCH = 50000; // safety cap to avoid runaway downloads
+        let from = 0;
+        const rows = [];
+
+        while (true) {
+          const res = await supabaseClient
+            .from('polling_list')
+            .select('*')
+            .order('polling_iid', { ascending: true })
+            .range(from, from + CHUNK - 1);
+
+          if (res.error) throw res.error;
+          const chunk = res.data || [];
+          rows.push(...chunk);
+          if (chunk.length < CHUNK) break;
+          from += CHUNK;
+          if (rows.length >= MAX_FETCH) break;
+        }
+
+        allTableData = rows;
         renderEditableTable();
         loadingEl.style.display = 'none';
       } catch (err) {
@@ -1387,15 +1414,28 @@
         let data = [];
 
         if (filterNoMobile && searchTerm) {
-          // fetch all matches for the search, then filter client-side for missing mobile and paginate locally
-          const allRes = await supabaseClient
-            .from('polling_list')
-            .select('*')
-            .or(orQuery)
-            .order('polling_iid', { ascending: true })
-            .range(0, 9999);
-          if (allRes.error) throw allRes.error;
-          const allData = allRes.data || [];
+          // fetch all matches for the search in chunks, then filter client-side for missing mobile and paginate locally
+          const CHUNK = 1000;
+          const MAX_FETCH = 20000;
+          let fromAll = 0;
+          let allData = [];
+
+          while (true) {
+            const res = await supabaseClient
+              .from('polling_list')
+              .select('*')
+              .or(orQuery)
+              .order('polling_iid', { ascending: true })
+              .range(fromAll, fromAll + CHUNK - 1);
+
+            if (res.error) throw res.error;
+            const chunk = res.data || [];
+            allData = allData.concat(chunk);
+            if (chunk.length < CHUNK) break;
+            fromAll += CHUNK;
+            if (allData.length >= MAX_FETCH) break;
+          }
+
           const filteredAll = allData.filter(r => !r.mobile_number || String(r.mobile_number).trim() === '');
           totalRecords = filteredAll.length;
           data = filteredAll.slice(from, to + 1);

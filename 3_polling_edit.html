@@ -925,11 +925,13 @@
 
     // Pagination variables
     const PAGE_SIZE = 150; // smaller page for faster transfers
+    const CHUNK = 1000; // used for chunked full fetches
+    const MAX_FETCH = 50000; // safety cap for full fetches
     const ID_COLUMN = 'polling_iid';
     let currentPage = 1;
     let totalRecords = 0;
     let isSearchMode = false;
-    let searchTerm = '';
+    let searchTerm = ''; 
     
     // Table editing variables
     let allTableData = [];
@@ -1051,16 +1053,54 @@
       }
     }
     
-    // Load all table data for editing with pagination
+    // Load all table data for editing - supports paginated page fetch or full chunked fetch when page === 'all'
     async function loadAllTableData(page = 1) {
       const loadingEl = document.getElementById('loading');
       loadingEl.style.display = 'block';
-      
+
       try {
-        // Parallel fetch: count and data together for better performance
+        if (page === 'all') {
+          // Fetch entire table in chunks (use sparingly)
+          let from = 0;
+          const rows = [];
+
+          while (true) {
+            const res = await supabaseClient
+              .from('polling_list')
+              .select(SELECT_COLUMNS)
+              .order('polling_iid', { ascending: true })
+              .range(from, from + CHUNK - 1);
+
+            if (res.error) {
+              if (handleAuthError(res.error)) throw res.error;
+              throw res.error;
+            }
+
+            const chunk = res.data || [];
+            rows.push(...chunk);
+            if (chunk.length < CHUNK) break;
+            from += CHUNK;
+            if (rows.length >= MAX_FETCH) break; // safety stop
+          }
+
+          allTableData = rows;
+          totalRecords = rows.length;
+          resolvedColumns = buildColumnOrder(allTableData);
+          currentPage = 1;
+
+          requestAnimationFrame(() => {
+            renderEditableTable();
+            updatePagination();
+            loadingEl.style.display = 'none';
+          });
+
+          return;
+        }
+
+        // Default: fetch a single page
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
-        
+
         const [countResult, dataResult] = await Promise.all([
           supabaseClient
             .from('polling_list')
@@ -1071,15 +1111,15 @@
             .order('polling_iid', { ascending: true })
             .range(from, to)
         ]);
-        
+
         if (countResult.error) throw countResult.error;
         if (dataResult.error) throw dataResult.error;
-        
+
         totalRecords = countResult.count || 0;
         allTableData = dataResult.data || [];
         resolvedColumns = buildColumnOrder(allTableData);
         currentPage = page;
-        
+
         // Use requestAnimationFrame for smoother rendering
         requestAnimationFrame(() => {
           renderEditableTable();
