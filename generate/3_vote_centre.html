@@ -324,9 +324,16 @@
       
         
         <div class="controls">
+            <select id="areaSelect" class="centre-select" onchange="onAreaChange()">
+                <option value="">-- Select area --</option>
+                <option value="all">🔍 All areas</option>
+            </select>
+
             <select id="centreSelect" class="centre-select" onchange="onCentreChange()">
+                <option value="">-- Select centre --</option>
                 <option value="all">🔍 View all centres</option>
             </select>
+
             <button class="btn btn-success" id="saveBtn" onclick="saveAssignments()" style="display:none;">
                 💾 Save
             </button>
@@ -789,12 +796,17 @@
             return generatedData.filter(item => item.centre.vote_centre_code === selectedCentreCode);
         }
 
-        // Populate centre dropdown
-        function populateCentreDropdown() {
+        // Populate centre dropdown (filtered by selected area when provided)
+        function populateCentreDropdown(area = null) {
             const select = document.getElementById('centreSelect');
             if (!select) return;
             const options = ['<option value="">-- Select centre --</option>', '<option value="all">🔍 View all centres</option>'];
-            const sorted = [...generatedData].sort((a, b) => (a.centre.vote_centre_code || '').localeCompare(b.centre.vote_centre_code || ''));
+
+            const filtered = (area && area !== 'all')
+                ? generatedData.filter(d => (d.centre.vote_centre_area || 'Unknown') === area)
+                : generatedData.slice();
+
+            const sorted = filtered.sort((a, b) => (String(a.centre.vote_centre_code) || '').localeCompare(String(b.centre.vote_centre_code) || ''));
             sorted.forEach(item => {
                 const code = item.centre.vote_centre_code || '';
                 const name = item.centre.vote_centre_name || '';
@@ -804,6 +816,34 @@
             select.innerHTML = options.join('');
             select.value = selectedCentreCode || '';
         }
+
+        // Populate area dropdown based on available centres
+        function populateAreaDropdown() {
+            const areaSelect = document.getElementById('areaSelect');
+            if (!areaSelect) return;
+
+            const areas = new Set();
+            generatedData.forEach(d => {
+                const area = d.centre.vote_centre_area || 'Unknown';
+                areas.add(area);
+            });
+
+            const sorted = Array.from(areas).sort((a,b) => a.localeCompare(b));
+            const options = ['<option value="">-- Select area --</option>', '<option value="all">🔍 All areas</option>'];
+            sorted.forEach(a => options.push(`<option value="${a}">${a}</option>`));
+            areaSelect.innerHTML = options.join('');
+        }
+
+        // Handle area change
+        function onAreaChange() {
+            const areaSelect = document.getElementById('areaSelect');
+            const area = areaSelect ? areaSelect.value : null;
+            populateCentreDropdown(area);
+            // reset selected centre
+            selectedCentreCode = '';
+            renderAssignmentsAndStats();
+        }
+
 
         function onCentreChange() {
             const select = document.getElementById('centreSelect');
@@ -1210,13 +1250,54 @@
                         }
                         return a.person_number - b.person_number;
                     });
+                    // ensure centre has area/name info if available later
+                    data.centre.vote_centre_area = data.centre.vote_centre_area || null;
+                    data.centre.vote_centre_name = data.centre.vote_centre_name || null;
                 });
                 
                 console.log('🎨 Displaying centres...');
                 await loadOfficerPools();
                 selectedCentreCode = '';
+                await enrichCentresWithArea();
+                populateAreaDropdown();
                 populateCentreDropdown();
                 renderAssignmentsAndStats();
+
+                // Expose helper to load all areas/codes from DB separately
+                async function enrichCentresWithArea() {
+                    try {
+                        const codes = generatedData.map(d => d.centre.vote_centre_code).filter(Boolean);
+                        if (!codes || codes.length === 0) return;
+
+                        // Fetch vote centre rows that match codes
+                        const { data: centres, error } = await window.supabaseClient
+                            .from('vote_centre')
+                            .select('vote_centre_code, vote_centre_area, vote_centre_name')
+                            .in('vote_centre_code', codes);
+
+                        if (error) {
+                            console.warn('Could not fetch vote centre details:', error.message);
+                            return;
+                        }
+
+                        const map = new Map();
+                        (centres || []).forEach(c => map.set(String(c.vote_centre_code), c));
+
+                        generatedData.forEach(d => {
+                            const code = String(d.centre.vote_centre_code);
+                            const c = map.get(code);
+                            if (c) {
+                                d.centre.vote_centre_area = c.vote_centre_area || d.centre.vote_centre_area || 'Unknown';
+                                d.centre.vote_centre_name = d.centre.vote_centre_name || c.vote_centre_name || d.centre.vote_centre_name;
+                            } else {
+                                d.centre.vote_centre_area = d.centre.vote_centre_area || 'Unknown';
+                            }
+                        });
+
+                    } catch (err) {
+                        console.warn('enrichCentresWithArea failed:', err.message || err);
+                    }
+                }
                 
                 console.log('✅ Load complete!');
                 
