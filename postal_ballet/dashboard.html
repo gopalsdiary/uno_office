@@ -309,6 +309,7 @@
                         <th>নাম</th>
                         <th>ধরন</th>
                         <th>এলাকা</th>
+                        <th>আইডি</th>
                         <th>নিবন্ধন তথ্য</th>
                         <th>মন্তব্য</th>
                         <th>ছবি</th>
@@ -422,6 +423,7 @@
                 const assignTypeText = getAssignTypeText(item.assign_table);
                 const assignTypeBadge = getAssignTypeBadge(item.assign_table);
                 const formattedDate = formatDate(item.created_at);
+                const assignId = getAssignTableIid(item);
                 
                 return `
                     <tr>
@@ -429,6 +431,7 @@
                         <td><strong>${item.officer_name || '-'}</strong></td>
                         <td><span class="badge ${assignTypeBadge}">${assignTypeText}</span></td>
                         <td>${item.area || '-'}</td>
+                        <td>${assignId || '-'}</td>
                         <td>${item.postal_ballet_info_info || '-'}</td>
                         <td>${item.postal_ballet_comment || '-'}</td>
                         <td class="photo-cell">
@@ -478,6 +481,27 @@
             const minutes = String(date.getMinutes()).padStart(2, '0');
             
             return `${toBengaliNumber(day)}/${toBengaliNumber(month)}/${toBengaliNumber(year)} ${toBengaliNumber(hours)}:${toBengaliNumber(minutes)}`;
+        }
+
+        // Get assign_table_iid (from column or nested postal_ballet_info_info)
+        function getAssignTableIid(item) {
+            // direct column
+            if (item.assign_table_iid) return item.assign_table_iid;
+
+            const info = item.postal_ballet_info_info;
+            if (!info) return '-';
+
+            // if it's already an object
+            if (typeof info === 'object') return info.assign_table_iid || '-';
+
+            // try parse JSON if stored as string
+            try {
+                const parsed = JSON.parse(info);
+                return parsed.assign_table_iid || '-';
+            } catch (e) {
+                // not JSON: return string as-is
+                return info;
+            }
         }
 
         // Event listeners
