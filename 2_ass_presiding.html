@@ -890,11 +890,23 @@
       isSearchMode = false;
       loadPollingData(1);
     }
+
+    function toggleFilterNoMobile() {
+      filterNoMobile = !filterNoMobile;
+      const btn = document.getElementById('filter-no-mobile-btn');
+      btn.textContent = filterNoMobile ? '📵 No mobile: ON' : '📵 No mobile: OFF';
+      btn.style.background = filterNoMobile ? '#ef4444' : '#94a3b8';
+      // Clear any search and reload with filter applied
+      document.getElementById('search-input').value = '';
+      isSearchMode = false;
+      loadPollingData(1);
+    }
   </script>
   
   <div class="action-buttons">
     <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
     <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
+    <button id="filter-no-mobile-btn" class="edit-table-btn" onclick="toggleFilterNoMobile()" style="background:#94a3b8">📵 No mobile: OFF</button>
   </div>
   
   <div class="editable-table-wrapper" id="editable-table-wrapper">
@@ -956,6 +968,7 @@
     let totalRecords = 0;
     let isSearchMode = false;
     let searchTerm = '';
+    let filterNoMobile = false;
     
     // Table editing variables
     let allTableData = [];
@@ -974,15 +987,18 @@
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
+        let countQuery = supabaseClient.from('ass_presiding_list').select('*', { count: 'exact', head: true });
+        let dataQuery = supabaseClient.from('ass_presiding_list').select('*');
+
+        if (filterNoMobile) {
+          const mobileCond = 'mobile_number.is.null,mobile_number.eq.';
+          countQuery = countQuery.or(mobileCond);
+          dataQuery = dataQuery.or(mobileCond);
+        }
+
         const [countResult, dataResult] = await Promise.all([
-          supabaseClient
-            .from('ass_presiding_list')
-            .select('*', { count: 'exact', head: true }),
-          supabaseClient
-            .from('ass_presiding_list')
-            .select('*')
-            .order('ass_presiding_iid', { ascending: true })
-            .range(from, to)
+          countQuery,
+          dataQuery.order('ass_presiding_iid', { ascending: true }).range(from, to)
         ]);
 
         if (countResult.error) throw countResult.error;
@@ -1274,30 +1290,52 @@
             orConditions.push(`ass_presiding_iid.eq.${t}`);
           }
         });
-        const orQuery = orConditions.join(',');
+        let orQuery = orConditions.join(',');
+        const mobileCond = 'mobile_number.is.null,mobile_number.eq.';
+        if (filterNoMobile) {
+          orQuery = orQuery ? `${orQuery},${mobileCond}` : mobileCond;
+        }
 
         // Parallel fetch: count and data together for better performance
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
 
-        const [countResult, dataResult] = await Promise.all([
-          supabaseClient
-            .from('ass_presiding_list')
-            .select('*', { count: 'exact', head: true })
-            .or(orQuery),
-          supabaseClient
+        let countResult, dataResult;
+        let data = [];
+
+        if (filterNoMobile && searchTerm) {
+          // fetch all matches for the search, then filter client-side for missing mobile and paginate locally
+          const allRes = await supabaseClient
             .from('ass_presiding_list')
             .select('*')
             .or(orQuery)
             .order('ass_presiding_iid', { ascending: true })
-            .range(from, to)
-        ]);
+            .range(0, 9999);
+          if (allRes.error) throw allRes.error;
+          const allData = allRes.data || [];
+          const filteredAll = allData.filter(r => !r.mobile_number || String(r.mobile_number).trim() === '');
+          totalRecords = filteredAll.length;
+          data = filteredAll.slice(from, to + 1);
+        } else {
+          [countResult, dataResult] = await Promise.all([
+            supabaseClient
+              .from('ass_presiding_list')
+              .select('*', { count: 'exact', head: true })
+              .or(orQuery),
+            supabaseClient
+              .from('ass_presiding_list')
+              .select('*')
+              .or(orQuery)
+              .order('ass_presiding_iid', { ascending: true })
+              .range(from, to)
+          ]);
 
-        if (countResult.error) throw countResult.error;
-        if (dataResult.error) throw dataResult.error;
+          if (countResult.error) throw countResult.error;
+          if (dataResult.error) throw dataResult.error;
 
-        totalRecords = countResult.count || 0;
-        const data = dataResult.data;
+          totalRecords = countResult.count || 0;
+          data = dataResult.data;
+        }
 
         loadingEl.style.display = 'none';
 
