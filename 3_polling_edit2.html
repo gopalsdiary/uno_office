@@ -845,8 +845,8 @@
   <div class="action-buttons">
     <button class="add-new-btn" onclick="window.location.href='3_polling.html'">⬅️ Back</button>
     <div class="filter-checkbox">
-      <input type="checkbox" id="show-gender-only" onchange="toggleGenderFilter()">
-      <label for="show-gender-only">✓ Show no Gender</label>
+      <input type="checkbox" id="show-no-gender" onchange="toggleNoGenderFilter()">
+      <label for="show-no-gender">✓ Show no Gender</label>
     </div>
     <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update All</button>
 
@@ -937,7 +937,7 @@
     let allTableData = [];
     let modifiedRows = new Map();
     let isEditTableMode = false;
-    let showGenderOnly = false;
+    let showNoGender = false;
     const preferredColumns = [
       'polling_iid',
       'polling_name',
@@ -947,10 +947,16 @@
     let resolvedColumns = [];
     const genderOptions = ['Male', 'Female', 'Other'];
     
-    // Toggle gender filter
-    function toggleGenderFilter() {
-      showGenderOnly = document.getElementById('show-gender-only').checked;
-      renderEditableTable();
+    // Toggle 'Show no Gender' filter
+    async function toggleNoGenderFilter() {
+      showNoGender = document.getElementById('show-no-gender').checked;
+      if (showNoGender) {
+        // Fetch all rows with empty/null gender across the table (chunked)
+        await loadAllTableData('no-gender');
+      } else {
+        // Return to current page view
+        await loadAllTableData(currentPage);
+      }
     }
 
     async function loadPollingData(page = 1) {
@@ -1049,6 +1055,47 @@
       loadingEl.style.display = 'block';
 
       try {
+        if (page === 'no-gender') {
+          // Fetch rows where gender is null/empty in chunks
+          let from = 0;
+          const rows = [];
+
+          while (true) {
+            const res = await supabaseClient
+              .from('polling_list')
+              .select(SELECT_COLUMNS)
+              .or('gender.is.null,gender.eq.')
+              .order('polling_iid', { ascending: true })
+              .range(from, from + CHUNK - 1);
+
+            if (res.error) {
+              if (handleAuthError(res.error)) throw res.error;
+              throw res.error;
+            }
+
+            const chunk = res.data || [];
+            // Trim-filter to also capture whitespace-only values
+            const filtered = chunk.filter(r => r.gender === null || r.gender === undefined || String(r.gender).trim() === '');
+            rows.push(...filtered);
+            if (chunk.length < CHUNK) break;
+            from += CHUNK;
+            if (rows.length >= MAX_FETCH) break; // safety stop
+          }
+
+          allTableData = rows;
+          totalRecords = rows.length;
+          resolvedColumns = buildColumnOrder(allTableData);
+          currentPage = 1;
+
+          requestAnimationFrame(() => {
+            renderEditableTable();
+            updatePagination();
+            loadingEl.style.display = 'none';
+          });
+
+          return;
+        }
+
         if (page === 'all') {
           // Fetch entire table in chunks (use sparingly)
           let from = 0;
