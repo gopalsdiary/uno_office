@@ -140,6 +140,29 @@
       transform: translateY(0);
     }
     
+    .export-csv-btn {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      white-space: nowrap;
+      font-size: 15px;
+    }
+    
+    .export-csv-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+    }
+    
+    .export-csv-btn:active {
+      transform: translateY(0);
+    }
+    
     .update-btn {
       padding: 12px 28px;
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -907,6 +930,7 @@
     <button class="add-new-btn" onclick="addNew()">➕ Add New</button>
     <button class="edit-table-btn" onclick="toggleEditTable()">✏️ Edit Table</button>
     <button id="filter-no-mobile-btn" class="edit-table-btn" onclick="toggleFilterNoMobile()" style="background:#94a3b8">📵 No mobile: OFF</button>
+    <button class="export-csv-btn" onclick="exportTableToCSV()">📥 Export CSV</button>
   </div>
   
   <div class="editable-table-wrapper" id="editable-table-wrapper">
@@ -1256,6 +1280,90 @@
       } finally {
         updateBtn.textContent = '💾 Update';
         updateUpdateButton();
+      }
+    }
+
+    // CSV Export Function for ass_presiding_list table
+    async function exportTableToCSV() {
+      const exportBtn = document.querySelector('.export-csv-btn');
+      exportBtn.disabled = true;
+      exportBtn.textContent = '⏳ Exporting...';
+      
+      try {
+        const loadingEl = document.getElementById('loading');
+        loadingEl.style.display = 'block';
+        
+        // Fetch all data from ass_presiding_list table
+        const CHUNK = 1000;
+        const MAX_FETCH = 100000;
+        let from = 0;
+        const allData = [];
+        
+        while (true) {
+          const { data, error } = await supabaseClient
+            .from('ass_presiding_list')
+            .select('*')
+            .order('ass_presiding_iid', { ascending: true })
+            .range(from, from + CHUNK - 1);
+          
+          if (error) throw error;
+          const chunk = data || [];
+          allData.push(...chunk);
+          
+          if (chunk.length < CHUNK) break;
+          from += CHUNK;
+          if (allData.length >= MAX_FETCH) break;
+        }
+        
+        if (allData.length === 0) {
+          alert('No data to export');
+          loadingEl.style.display = 'none';
+          exportBtn.disabled = false;
+          exportBtn.textContent = '📥 Export CSV';
+          return;
+        }
+        
+        // Prepare CSV content
+        const columns = Object.keys(allData[0]);
+        const csvHeader = columns.map(col => `"${col}"`).join(',') + '\n';
+        
+        const csvRows = allData.map(row => {
+          return columns.map(col => {
+            let value = row[col];
+            if (value === null || value === undefined) {
+              return '""';
+            }
+            value = String(value).replace(/"/g, '""');
+            return `"${value}"`;
+          }).join(',');
+        }).join('\n');
+        
+        const csvContent = csvHeader + csvRows;
+        
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        const timestamp = new Date().toISOString().slice(0, 10);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `ass_presiding_list_${timestamp}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert(`✅ Exported ${allData.length} records successfully!`);
+        loadingEl.style.display = 'none';
+        
+      } catch (err) {
+        console.error('Error exporting CSV:', err);
+        alert('❌ Error exporting data: ' + err.message);
+        document.getElementById('loading').style.display = 'none';
+      } finally {
+        exportBtn.disabled = false;
+        exportBtn.textContent = '📥 Export CSV';
       }
     }
 
