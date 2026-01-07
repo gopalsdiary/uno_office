@@ -1353,6 +1353,31 @@
 
     // Search functionality with debouncing
     let searchDebounceTimer = null;
+    const SEARCH_CHUNK = 1000;
+    const MAX_SEARCH_FETCH = 20000;
+
+    function normalizeText(val) {
+      return (val ?? '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function scoreRowForSearch(row, fullQueryNorm, termListNorm) {
+      const name = normalizeText(row.presiding_name);
+      const mobile = normalizeText(row.mobile_number);
+      const idStr = normalizeText(row.presiding_iid != null ? String(row.presiding_iid) : '');
+
+      const termHits = termListNorm.reduce((acc, t) => {
+        return acc + (name.includes(t) ? 1 : 0) + (mobile.includes(t) ? 1 : 0);
+      }, 0);
+
+      let bucket = 6; // lower bucket number = higher priority
+      if (fullQueryNorm && name === fullQueryNorm) bucket = 0;
+      else if (fullQueryNorm && (mobile === fullQueryNorm || idStr === fullQueryNorm)) bucket = 1;
+      else if (fullQueryNorm && name.startsWith(fullQueryNorm)) bucket = 2;
+      else if (fullQueryNorm && mobile.startsWith(fullQueryNorm)) bucket = 3;
+      else if (termHits > 0) bucket = 4;
+
+      return { bucket, termHits };
+    }
     
     async function searchPolling(page = 1) {
       searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
@@ -1371,8 +1396,10 @@
       loadingEl.style.display = 'block';
 
       try {
-        // Build multi-term OR query (name, mobile, and exact id for numeric term)
         const terms = searchTerm.split(/\s+/).filter(Boolean);
+        const normalizedFullQuery = normalizeText(searchTerm);
+        const normalizedTerms = terms.map(t => normalizeText(t)).filter(Boolean);
+
         const orConditions = [];
         terms.forEach(term => {
           const t = term.replace(/%/g, '\\%').replace(/_/g, '\\_');
@@ -1384,28 +1411,44 @@
         });
         const orQuery = orConditions.join(',');
 
-        // Parallel fetch: count and data together for better performance
-        const from = (page - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
+        // Fetch all matches (bounded) so we can sort by relevance client-side
+        let fromAll = 0;
+        let allData = [];
 
-        const [countResult, dataResult] = await Promise.all([
-          supabaseClient
-            .from('presiding_list')
-            .select('*', { count: 'exact', head: true })
-            .or(orQuery),
-          supabaseClient
+        while (true) {
+          const res = await supabaseClient
             .from('presiding_list')
             .select('*')
             .or(orQuery)
             .order('presiding_iid', { ascending: true })
-            .range(from, to)
-        ]);
+            .range(fromAll, fromAll + SEARCH_CHUNK - 1);
 
-        if (countResult.error) throw countResult.error;
-        if (dataResult.error) throw dataResult.error;
+          if (res.error) throw res.error;
+          const chunk = res.data || [];
+          allData = allData.concat(chunk);
+          if (chunk.length < SEARCH_CHUNK) break;
+          fromAll += SEARCH_CHUNK;
+          if (allData.length >= MAX_SEARCH_FETCH) break;
+        }
 
-        totalRecords = countResult.count || 0;
-        const data = dataResult.data;
+        // Sort by relevance: exact match first, then prefix, then partial
+        const scoredData = allData
+          .map(row => ({ row, score: scoreRowForSearch(row, normalizedFullQuery, normalizedTerms) }))
+          .sort((a, b) => {
+            if (a.score.bucket !== b.score.bucket) return a.score.bucket - b.score.bucket;
+            if (a.score.termHits !== b.score.termHits) return b.score.termHits - a.score.termHits;
+            const aId = Number(a.row.presiding_iid) || Number.MAX_SAFE_INTEGER;
+            const bId = Number(b.row.presiding_iid) || Number.MAX_SAFE_INTEGER;
+            return aId - bId;
+          })
+          .map(item => item.row);
+
+        totalRecords = scoredData.length;
+
+        // Paginate after sorting by relevance
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE;
+        const pageData = scoredData.slice(from, to);
 
         loadingEl.style.display = 'none';
 
@@ -1415,7 +1458,7 @@
         const fragment = document.createDocumentFragment();
         const tempTbody = document.createElement('tbody');
 
-        if (!data || data.length === 0) {
+        if (!pageData || pageData.length === 0) {
           tableEl.style.display = 'none';
           emptyEl.textContent = 'No matches found.';
           emptyEl.style.display = 'block';
@@ -1424,7 +1467,7 @@
         }
 
         emptyEl.style.display = 'none';
-        renderTableRows(data, tempTbody, effectiveQuery);
+        renderTableRows(pageData, tempTbody, effectiveQuery);
         while (tempTbody.firstChild) {
           fragment.appendChild(tempTbody.firstChild);
         }
