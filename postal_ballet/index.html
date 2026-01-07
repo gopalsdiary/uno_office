@@ -401,6 +401,13 @@
                 </div>
             </div>
 
+            <!-- Mobile Number Input (shown only when officer has no mobile) -->
+            <div class="form-group" id="mobileNumberSection" style="display: none;">
+                <label for="mobileNumber">মোবাইল নম্বর: *</label>
+                <input type="tel" id="mobileNumber" placeholder="01XXXXXXXXX" maxlength="11" pattern="[0-9]{11}" inputmode="numeric">
+                <div style="font-size:12px;color:#64748b;margin-top:6px">অনুগ্রহ করে মোবাইল নম্বর ইংরেজি ডিজিট (0-9) ব্যবহার করে লিখুন।</div>
+            </div>
+
             <div class="image-upload-section" id="imageUploadSection">
                 <div class="form-group">
                     <label for="screenshot">নিবন্ধনের স্ক্রিনশট আপলোড করুন: *</label>
@@ -424,6 +431,10 @@
 
             <div class="status" id="alreadySubmitted" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; display: none; padding: 10px;">
                 ⚠️ আপনি আগেই তথ্য প্রদান করেছেন! পুনরায় তথ্য প্রদান করা যাবে না।
+            </div>
+
+            <div class="status" id="mobileOnlyNotice" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; display: none; padding: 10px; margin-top: 8px;">
+                ⚠️ আগেই তথ্য আছে কিন্তু মোবাইল নম্বর নেই — কেবল মোবাইল নম্বর আপডেট করতে পারবেন।
             </div>
 
             <div class="status" id="noSubmitNotice" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; display: none; padding: 10px; margin-top: 8px;">
@@ -454,6 +465,8 @@
         const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
 
         let selectedOfficer = null;
+        let existingPostalRecord = null; // existing saved row in postal_vote_data (if any)
+        let mobileOnlyMode = false; // when existing record exists but has no mobile_number
         let searchResultsData = [];
 
         // Show status message
@@ -745,13 +758,42 @@
 
                 if (data && data.length > 0) {
                     // Already submitted
-                    alreadySubmittedDiv.style.display = 'block';
-                    submitBtn.disabled = true;
-                    submitBtn.style.opacity = '0.5';
-                    submitBtn.style.cursor = 'not-allowed';
+                    existingPostalRecord = data[0];
+
+                    if (!existingPostalRecord.mobile_number && (!selectedOfficer.mobile || String(selectedOfficer.mobile).trim() === '')) {
+                        // existing record exists but mobile is missing => allow mobile-only update
+                        mobileOnlyMode = true;
+                        document.getElementById('mobileOnlyNotice').style.display = 'block';
+                        alreadySubmittedDiv.style.display = 'none';
+
+                        // ensure mobile field visible
+                        document.getElementById('mobileNumberSection').style.display = 'block';
+
+                        // Disable other inputs to prevent changing other data
+                        document.getElementById('imageUploadSection').style.display = 'none';
+                        document.querySelectorAll('input[name="registered"]').forEach(r => r.disabled = true);
+
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.style.cursor = 'pointer';
+                    } else {
+                        // existing record exists and mobile present => no re-submit allowed
+                        existingPostalRecord = data[0];
+                        mobileOnlyMode = false;
+                        document.getElementById('mobileOnlyNotice').style.display = 'none';
+                        alreadySubmittedDiv.style.display = 'block';
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                        submitBtn.style.cursor = 'not-allowed';
+                    }
                 } else {
                     // Not submitted yet
+                    existingPostalRecord = null;
+                    mobileOnlyMode = false;
+                    document.getElementById('mobileOnlyNotice').style.display = 'none';
                     alreadySubmittedDiv.style.display = 'none';
+                    // ensure radios enabled
+                    document.querySelectorAll('input[name="registered"]').forEach(r => r.disabled = false);
                     submitBtn.disabled = false;
                     submitBtn.style.opacity = '1';
                     submitBtn.style.cursor = 'pointer';
@@ -768,6 +810,17 @@
             
             // Populate officer info - mask mobile numbers in name
             document.getElementById('displayName').textContent = maskMobileNumber(selectedOfficer.name || 'N/A');
+            
+            // Show/hide mobile number input based on whether officer has mobile
+            const mobileNumberSection = document.getElementById('mobileNumberSection');
+            const mobileNumberInput = document.getElementById('mobileNumber');
+            if (!selectedOfficer.mobile || selectedOfficer.mobile.toString().trim() === '') {
+                mobileNumberSection.style.display = 'block';
+                mobileNumberInput.value = '';
+            } else {
+                mobileNumberSection.style.display = 'none';
+                mobileNumberInput.value = '';
+            }
             
             // Clear form
             document.querySelectorAll('input[name="registered"]').forEach(radio => radio.checked = false);
@@ -891,9 +944,24 @@
                 if (checkError) throw checkError;
 
                 if (existingData && existingData.length > 0) {
+                    // If existing record exists and has mobile_number already, block re-submission
+                    const ex = existingData[0];
+                    if (ex.mobile_number && String(ex.mobile_number).trim() !== '') {
+                        setLoading(false);
+                        showStatus('⚠️ আপনি আগেই তথ্য প্রদান করেছেন!', 'error');
+                        return;
+                    }
+
+                    // Existing record exists but mobile_number missing -> allow mobile-only update
+                    existingPostalRecord = ex;
+                    mobileOnlyMode = true;
                     setLoading(false);
-                    showStatus('⚠️ আপনি আগেই তথ্য প্রদান করেছেন!', 'error');
-                    return;
+                    // ensure mobile number input visible and other inputs disabled
+                    document.getElementById('mobileNumberSection').style.display = 'block';
+                    document.getElementById('mobileOnlyNotice').style.display = 'block';
+                    document.getElementById('imageUploadSection').style.display = 'none';
+                    document.querySelectorAll('input[name="registered"]').forEach(r => r.disabled = true);
+                    // continue to submit flow which will handle mobile-only update
                 }
             } catch (error) {
                 setLoading(false);
@@ -902,9 +970,9 @@
             }
             setLoading(false);
 
-            // Prevent submission when user selected NO
+            // Prevent submission when user selected NO (only applies when not in mobile-only mode)
             const reg = document.querySelector('input[name="registered"]:checked')?.value;
-            if (reg === 'NO') {
+            if (!mobileOnlyMode && reg === 'NO') {
                 showStatus('আপনি "না (NO)" নির্বাচন করেছেন — সাবমিট করা যাবে না।', 'error');
                 return;
             }
@@ -912,14 +980,35 @@
             const registered = document.querySelector('input[name="registered"]:checked')?.value;
             const comment = document.getElementById('comment').value.trim();
             const screenshot = document.getElementById('screenshot').files[0];
+            const mobileNumberInput = document.getElementById('mobileNumber');
+            const enteredMobile = mobileNumberInput.value.trim();
 
-            // Validation
-            if (!registered) {
+            // Validation (skip registration requirement in mobile-only mode)
+            if (!mobileOnlyMode && !registered) {
                 showStatus('অনুগ্রহ করে নিবন্ধনের তথ্য প্রদান করুন।', 'error');
                 return;
             }
 
-            if (registered === 'YES' && !screenshot) {
+            // Check if mobile number is required and provided
+            if ((!selectedOfficer.mobile || selectedOfficer.mobile.toString().trim() === '') && !enteredMobile) {
+                showStatus('অনুগ্রহ করে মোবাইল নম্বর প্রদান করুন।', 'error');
+                return;
+            }
+
+            // Validate mobile number format if entered (English digits only)
+            if (enteredMobile) {
+                // only allow ASCII digits
+                if (!/^[0-9]+$/.test(enteredMobile)) {
+                    showStatus('অনুগ্রহ করে মোবাইল নম্বরটি ইংরেজি সংখ্যা (0-9) ব্যবহার করে লিখুন।', 'error');
+                    return;
+                }
+                if (!/^01[3-9]\d{8}$/.test(enteredMobile)) {
+                    showStatus('সঠিক মোবাইল নম্বর প্রদান করুন (১১ ডিজিট, 01 দিয়ে শুরু)।', 'error');
+                    return;
+                }
+            }
+
+            if (!mobileOnlyMode && registered === 'YES' && !screenshot) {
                 showStatus('অনুগ্রহ করে নিবন্ধনের স্ক্রিনশট আপলোড করুন।', 'error');
                 return;
             }
@@ -929,25 +1018,63 @@
             try {
                 let photoUrl = null;
 
-                // Show blocking modal and upload image if provided
-                if (registered === 'YES' && screenshot) {
-                    showUploadModal('ছবি আপলোড হচ্ছে...');
-                    photoUrl = await uploadToImgBB(screenshot);
+                // Show blocking modal and upload image if provided (skip upload in mobile-only mode)
+                if (!mobileOnlyMode) {
+                    if (registered === 'YES' && screenshot) {
+                        showUploadModal('ছবি আপলোড হচ্ছে...');
+                        photoUrl = await uploadToImgBB(screenshot);
+                    } else {
+                        // still block UI while saving
+                        showUploadModal('সংরক্ষণ করা হচ্ছে...');
+                    }
                 } else {
-                    // still block UI while saving
+                    // mobile-only update: simple blocking message
                     showUploadModal('সংরক্ষণ করা হচ্ছে...');
                 }
 
                 // Update modal message while saving to database
                 updateUploadModal('ডাটাবেজে সংরক্ষণ হচ্ছে...');
-                
+
+                // If mobileOnlyMode is active, only update mobile_number on existing record
+                if (mobileOnlyMode && existingPostalRecord) {
+                    const mobileToSave = enteredMobile ? Number(enteredMobile) : null;
+                    // perform update
+                    const { data: updatedRow, error: updateError } = await supabaseClient
+                        .from('postal_vote_data')
+                        .update({ mobile_number: mobileToSave })
+                        .eq('iid', existingPostalRecord.iid)
+                        .select()
+                        .single();
+
+                    if (updateError) throw updateError;
+
+                    hideUploadModal();
+                    showStatus('✅ মোবাইল নম্বর সফলভাবে আপডেট হয়েছে!', 'success');
+
+                    // Reset form
+                    setTimeout(() => resetForm(), 1500);
+
+                    return;
+                }
+
+                // Normal insert flow
+                // Get mobile number - use entered mobile (must be English digits) or convert existing DB mobile to English before saving
+                let mobileToSave = null;
+                if (enteredMobile) {
+                    mobileToSave = Number(enteredMobile);
+                } else if (selectedOfficer.mobile) {
+                    const converted = convertBengaliToEnglish(selectedOfficer.mobile.toString().trim()).replace(/[^0-9]/g,'');
+                    mobileToSave = converted ? Number(converted) : null;
+                }
+
                 const dataToSave = {
                     officer_name: selectedOfficer.name,
                     assign_table: selectedOfficer.table,
                     assign_table_iid: selectedOfficer.iid.toString(),
                     postal_ballet_info_info: registered,
                     postal_ballet_comment: comment,
-                    photo_url: photoUrl
+                    photo_url: photoUrl,
+                    mobile_number: mobileToSave
                 };
 
                 const { data, error } = await supabaseClient
@@ -982,6 +1109,13 @@
             document.getElementById('comment').value = '';
             document.getElementById('screenshot').value = '';
             document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('mobileNumber').value = '';
+            document.getElementById('mobileNumberSection').style.display = 'none';
+            // reset mobile-only state and re-enable inputs
+            mobileOnlyMode = false;
+            existingPostalRecord = null;
+            document.getElementById('mobileOnlyNotice').style.display = 'none';
+            document.querySelectorAll('input[name="registered"]').forEach(r => r.disabled = false);
             selectedOfficer = null;
             searchResultsData = [];
             
