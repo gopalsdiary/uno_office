@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS Sending Panel</title>
-    <script src="../authentication.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
     <style>
         * {
             margin: 0;
@@ -548,7 +548,6 @@
                 <p> Management System</p>
                 <p> -</p>
                 <p> Error ম্যাসেজ হলে, যোগাযোগ করুন</p>
-                <p>আইপি White করতে হবে</p>
             </div>
 
             <div class="balance-section">
@@ -565,9 +564,13 @@
                     <span>🔄</span>
                     <span>Refresh Balance</span>
                 </button>
-                <button class="menu-item" onclick="window.location.href='#'">
+                <button class="menu-item" onclick="showSMSRecordsSection()">
                     <span>📜</span>
                     <span>Previous Messages</span>
+                </button>
+                <button class="menu-item" onclick="showOfficerDutySection()">
+                    <span>👮</span>
+                    <span>Officer Duty SMS</span>
                 </button>
                 
             </div>
@@ -578,8 +581,133 @@
             
 
         <div class="content">
-            <!-- Filter Section -->
-            <div class="filter-section">
+            <!-- Officer Duty Section -->
+            <div id="officerDutySection" style="display: block;">
+                <div class="content-header">
+                    <h2>👮 Officer Duty Assignment SMS</h2>
+                    <p>নির্বাচন অফিসারদের দায়িত্ব সম্পর্কে SMS পাঠান</p>
+                </div>
+
+                <!-- Officer Selection -->
+                <div class="filter-section">
+                    <h3>🔍 Select Officer</h3>
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label for="officerTypeSelect">Officer Type:</label>
+                            <select id="officerTypeSelect" onchange="loadOfficers()">
+                                <option value="">-- Select Officer Type --</option>
+                                <option value="presiding">Presiding Officer</option>
+                                <option value="ass_presiding">Assistant Presiding Officer</option>
+                                <option value="polling">Polling Officer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="officerSelect">Officer Name:</label>
+                            <select id="officerSelect" onchange="loadOfficerAssignment()">
+                                <option value="">-- Select Officer --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Officer Assignment Details -->
+                <div id="officerAssignmentDetails" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #ff8c00; margin-bottom: 15px;">📋 Assignment Details</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #ff8c00;">
+                            <div style="font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Officer Name</div>
+                            <div style="font-weight: 600; font-size: 1.1em;" id="detailOfficerName">-</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <div style="font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Vote Centre Name</div>
+                            <div style="font-weight: 600; font-size: 1.1em;" id="detailVoteCentre">-</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+                            <div style="font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Centre Code</div>
+                            <div style="font-weight: 600; font-size: 1.1em;" id="detailCentreCode">-</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <div style="font-size: 0.85em; color: #6c757d; margin-bottom: 5px;">Mobile Number</div>
+                            <div style="font-weight: 600; font-size: 1.1em;" id="detailMobile">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Section for Officer -->
+                <div class="message-section" id="officerMessageSection" style="display: none;">
+                    <h3>✉️ Compose Duty Assignment Message</h3>
+                    <div class="alert alert-info" style="margin-bottom: 15px; padding: 12px; background: #d1ecf1; border-left: 4px solid #0c5460; border-radius: 5px;">
+                        <strong>টেমপ্লেট:</strong> আপনার দায়িত্ব <strong id="msgVoteCentre">...</strong> ভোট কেন্দ্রে (<strong id="msgCentreCode">...</strong>) নির্ধারণ করা হয়েছে।
+                    </div>
+                    <div class="form-group">
+                        <label for="officerMessageText">Message:</label>
+                        <textarea id="officerMessageText" placeholder="আপনার দায়িত্ব ... ভোট কেন্দ্রে নির্ধারণ করা হয়েছে।" oninput="updateOfficerCharCount()" style="min-height: 100px;"></textarea>
+                        <div class="char-counter">
+                            <span id="officerCharCount">0</span> characters
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="sendOfficerDutySMS()" style="flex: 1;">
+                            📤 Send SMS
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetOfficerForm()">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SMS Records Section (Hidden by default) -->
+            <div id="smsRecordsSection" style="display: none;">
+                <div class="content-header">
+                    <h2>📜 Previous SMS Messages</h2>
+                    <p>সকল পাঠানো SMS এর তালিকা</p>
+                </div>
+
+                <div class="filter-section">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                        <button class="btn btn-primary" onclick="loadSMSRecords()">
+                            🔄 Refresh Records
+                        </button>
+                        <div style="flex: 1;"></div>
+                        <div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
+                            <strong>Total Records:</strong> <span id="totalSMSRecords">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="students-section">
+                    <h3>📊 SMS Records</h3>
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Showing all SMS messages sent through this system.
+                    </div>
+                    <div class="students-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SMS ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Table Name</th>
+                                    <th>Officer IID</th>
+                                    <th>Mobile Number</th>
+                                    <th>SMS Body</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="smsRecordsTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">
+                                        Click "Refresh Records" to load SMS history
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section (Hidden - Student features disabled) -->
+            <div class="filter-section" style="display: none;">
                 <h3>🔍 Filter Students</h3>
                 <div class="filter-row">
                     <div class="form-group">
@@ -611,8 +739,8 @@
                 </div>
             </div>
 
-            <!-- Message Section -->
-            <div class="message-section">
+            <!-- Message Section (Hidden - Student features disabled) -->
+            <div class="message-section" style="display: none;">
                 <h3>✉️ Compose Message</h3>
                 <div class="form-group">
                     <label for="messageText">Message:</label>
@@ -623,8 +751,8 @@
                 </div>
             </div>
 
-            <!-- Students Table Section -->
-            <div class="students-section">
+            <!-- Students Table Section (Hidden - Student features disabled) -->
+            <div class="students-section" style="display: none;">
                 <h3>👥 Students List</h3>
                 <div class="alert alert-info">
                     <strong>Note:</strong> Select students individually or use "Select All" to send SMS to entire class.
@@ -647,7 +775,7 @@
                         <tbody id="studentsTableBody">
                             <tr>
                                 <td colspan="7" style="text-align: center; padding: 40px;">
-                                    Please select a class and section to load students
+                                    Please select  and section to load  officer
                                 </td>
                             </tr>
                         </tbody>
@@ -655,8 +783,8 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
+            <!-- Action Buttons (Hidden - Student features disabled) -->
+            <div class="action-buttons" style="display: none;">
                 <button class="btn btn-primary" onclick="sendToSelected()">📤 Send to Selected</button>
             </div>
 
@@ -705,17 +833,20 @@
         const supabaseUrl = 'https://tschsyozvlneslqylqii.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
 
-        // Reuse a cached Supabase client to avoid multiple GoTrueClient instances
-        window.__supabaseClients = window.__supabaseClients || {};
-        const supabaseClient = window.__supabaseClients[supabaseUrl] || window.supabase.createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true
-            }
-        });
-        window.__supabaseClients[supabaseUrl] = supabaseClient;
+        // Reuse existing Supabase client from authentication.js to avoid multiple GoTrueClient instances
+        const supabaseClient = window.supabaseClient || (() => {
+            // Only create a new client if authentication.js hasn't created one
+            console.warn('⚠️ Creating new Supabase client. Authentication.js may not be loaded.');
+            return window.supabase.createClient(supabaseUrl, supabaseKey, {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true
+                }
+            });
+        })();
 
         let studentsData = [];
+        let smsRecordTableExists = false; // Track if sms_record table is available
 
         // Error code meanings
         const errorCodes = {
@@ -753,37 +884,55 @@
             }
         }
 
-        // Test Supabase connection
+        // Test Supabase connection (focus on officer tables)
         async function testSupabaseConnection() {
             try {
-                console.log('🔍 Testing Supabase connection...');
-                
-                // Test read from student_database
-                const { data: studentData, error: studentError } = await supabaseClient
-                    .from('student_database')
-                    .select('*')
-                    .limit(1);
-                
-                if (studentError) {
-                    console.error('❌ student_database connection failed:', studentError);
-                } else {
-                    console.log('✅ student_database connection successful');
+                console.log('🔍 Testing Supabase connection (officer tables)...');
+
+                let ok = true;
+
+                // Required tables for officer features
+                const requiredTables = ['centre_assignments', 'vote_centre'];
+                for (const t of requiredTables) {
+                    const { data, error } = await supabaseClient
+                        .from(t)
+                        .select('*')
+                        .limit(1);
+
+                    if (error) {
+                        console.error(`❌ ${t} check failed:`, error);
+                        ok = false;
+                    } else {
+                        console.log(`✅ ${t} exists and accessible`);
+                    }
                 }
-                
-                // Test if sended_message table exists
-                const { data: messageData, error: messageError } = await supabaseClient
-                    .from('sended_message')
-                    .select('*')
-                    .limit(1);
-                
-                if (messageError) {
-                    console.error('❌ sended_message table check failed:', messageError);
-                    console.warn('⚠️ Please ensure sended_message table exists in Supabase');
-                } else {
-                    console.log('✅ sended_message table exists and accessible');
+
+                // Optional tables (helpful to have)
+                const optionalTables = ['presiding_list', 'ass_presiding_list', 'polling_list', 'sms_record'];
+                for (const t of optionalTables) {
+                    const { data, error } = await supabaseClient
+                        .from(t)
+                        .select('*')
+                        .limit(1);
+
+                    if (error) {
+                        console.warn(`⚠️ ${t} check failed or missing:`, error);
+                        if (t === 'sms_record') {
+                            smsRecordTableExists = false;
+                        }
+                    } else {
+                        console.log(`✅ ${t} exists and accessible`);
+                        if (t === 'sms_record') {
+                            smsRecordTableExists = true;
+                        }
+                    }
                 }
-                
-                return true;
+
+                if (!ok) {
+                    console.warn('⚠️ Some required tables are missing. Officer features may not work correctly.');
+                }
+
+                return ok;
             } catch (error) {
                 console.error('❌ Supabase connection test failed:', error);
                 return false;
@@ -800,12 +949,18 @@
             
             if (connectionOk) {
                 console.log('✅ All systems ready!');
-                console.log('💡 Tip: All SMS messages will be automatically saved to Supabase "sended_message" table');
+                if (smsRecordTableExists) {
+                    console.log('💡 Tip: All SMS messages will be automatically saved to Supabase "sms_record" table');
+                } else {
+                    console.warn('⚠️ Note: sms_record table not found. SMS will be sent but not logged to database.');
+                    console.log('💡 To enable logging, create the table with:');
+                    console.log('   CREATE TABLE public.sms_record (sms_id bigint PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY, created_at timestamptz DEFAULT now(), table_name text, table_officer_iid numeric, mobile_number text, sms_body text);');
+                }
             } else {
                 console.warn('⚠️ Some database connections failed. Please check console for details.');
             }
             
-            await loadClasses();
+            // Student database not needed for Officer Duty SMS — skip loadClasses
             await checkBalance();
         });
 
@@ -1051,55 +1206,45 @@
             return Date.now() * 1000 + Math.floor(Math.random() * 1000);
         }
 
-        // Save message to Supabase
-        async function saveMessageToDatabase(iid, smsBody, fatherMobile, responseCode) {
+        // Save message to Supabase sms_record table (tolerates missing table)
+        async function saveMessageToDatabase(officerIid, smsBody, mobileNumber, tableName = null) {
+            const messageData = {
+                table_name: tableName,
+                table_officer_iid: officerIid,
+                mobile_number: mobileNumber,
+                sms_body: smsBody
+                // created_at will be auto-generated by database
+            };
+
+            console.log('💾 Saving to sms_record:', messageData);
+
             try {
-                const messageData = {
-                    message_id: generateMessageId(), // Generate unique message_id
-                    iid: iid,
-                    sms_body: smsBody,
-                    father_mobile: fatherMobile,
-                    response_code: responseCode,
-                    created_at: new Date().toISOString()
-                };
-                
-                console.log('💾 Saving to Supabase:', messageData);
-                
-                const { data, error } = await supabase
-                    .from('sended_message')
+                const { data, error } = await supabaseClient
+                    .from('sms_record')
                     .insert([messageData])
                     .select();
 
                 if (error) {
                     console.error('❌ Supabase Error:', error);
-                    console.error('❌ Error Details:', JSON.stringify(error, null, 2));
-                    
-                    // If it's a duplicate key error, try again with a new ID
-                    if (error.code === '23505') {
-                        console.log('🔄 Duplicate key detected, retrying with new ID...');
-                        await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
-                        messageData.message_id = generateMessageId();
-                        const { data: retryData, error: retryError } = await supabase
-                            .from('sended_message')
-                            .insert([messageData])
-                            .select();
-                        
-                        if (retryError) {
-                            console.error('❌ Retry failed:', retryError);
-                            throw retryError;
-                        } else {
-                            console.log('✅ Successfully saved on retry!');
-                            return retryData;
-                        }
+
+                    // Handle missing table gracefully (PGRST205)
+                    if (error.code === 'PGRST205' || (error.message && error.message.includes("Could not find the table"))) {
+                        console.warn('⚠️ sms_record table missing — message will not be persisted.');
+                        return null;
                     }
-                    
+
                     throw error;
-                } else {
-                    console.log('✅ Successfully saved to Supabase!');
-                    console.log('✅ Saved data:', data);
-                    return data;
                 }
+
+                console.log('✅ Successfully saved to sms_record!');
+                return data;
             } catch (error) {
+                // If table missing, tolerate and return null
+                if (error && (error.code === 'PGRST205' || (error.message && error.message.includes("Could not find the table")))) {
+                    console.warn('⚠️ sms_record table missing — message will not be persisted.');
+                    return null;
+                }
+
                 console.error('❌ Exception while saving:', error);
                 throw error;
             }
@@ -1385,6 +1530,436 @@
             const modal = document.getElementById('newMessageModal');
             if (event.target === modal) {
                 closeNewMessageModal();
+            }
+        }
+
+        // ===== OFFICER DUTY SMS FUNCTIONS =====
+        let currentOfficerData = null;
+        let allOfficersData = [];
+
+        // Show Officer Duty Section
+        function showOfficerDutySection() {
+            // Hide student section
+            document.querySelectorAll('.filter-section, .students-section, .message-section, .action-buttons').forEach(el => {
+                if (!el.id || el.id !== 'officerDutySection') {
+                    el.style.display = 'none';
+                }
+            });
+            // Show officer section
+            document.getElementById('officerDutySection').style.display = 'block';
+            
+            // Reset officer form
+            resetOfficerForm();
+        }
+
+        // Load Officers based on type
+        async function loadOfficers() {
+            const officerType = document.getElementById('officerTypeSelect').value;
+            const officerSelect = document.getElementById('officerSelect');
+            
+            // Clear officer select
+            officerSelect.innerHTML = '<option value="">-- Select Officer --</option>';
+            
+            if (!officerType) {
+                allOfficersData = [];
+                return;
+            }
+
+            try {
+                console.log(`🔍 Loading ${officerType} officers...`);
+                
+                // Get table name based on officer type
+                let tableName = '';
+                let nameField = '';
+                let iidField = '';
+                
+                if (officerType === 'presiding') {
+                    tableName = 'presiding_list';
+                    nameField = 'presiding_name';
+                    iidField = 'presiding_iid';
+                } else if (officerType === 'ass_presiding') {
+                    tableName = 'ass_presiding_list';
+                    nameField = 'ass_presiding_name';
+                    iidField = 'ass_presiding_iid';
+                } else if (officerType === 'polling') {
+                    tableName = 'polling_list';
+                    nameField = 'polling_name';
+                    iidField = 'polling_iid';
+                }
+
+                // Fetch officers from the respective table
+                const { data: officers, error } = await supabaseClient
+                    .from(tableName)
+                    .select(`${iidField}, ${nameField}, mobile_number`)
+                    .order(nameField, { ascending: true });
+
+                if (error) {
+                    console.error('Error loading officers:', error);
+                    alert('❌ Error loading officers: ' + error.message);
+                    return;
+                }
+
+                console.log(`✅ Loaded ${officers.length} officers`);
+                allOfficersData = officers.map(o => ({
+                    iid: o[iidField],
+                    name: o[nameField],
+                    mobile: o.mobile_number,
+                    type: officerType
+                }));
+
+                // Populate dropdown
+                allOfficersData.forEach(officer => {
+                    const option = document.createElement('option');
+                    option.value = officer.iid;
+                    option.textContent = officer.name + (officer.mobile ? ` (${officer.mobile})` : '');
+                    officerSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Load Officer Assignment Details
+        async function loadOfficerAssignment() {
+            const officerIid = document.getElementById('officerSelect').value;
+            const officerType = document.getElementById('officerTypeSelect').value;
+            
+            if (!officerIid || !officerType) {
+                document.getElementById('officerAssignmentDetails').style.display = 'none';
+                document.getElementById('officerMessageSection').style.display = 'none';
+                return;
+            }
+
+            try {
+                console.log(`🔍 Loading assignment for ${officerType} officer IID: ${officerIid}`);
+                
+                // Find officer in allOfficersData
+                const officer = allOfficersData.find(o => o.iid == officerIid);
+                
+                if (!officer) {
+                    alert('❌ Officer not found!');
+                    return;
+                }
+
+                // Fetch assignment from centre_assignments
+                const { data: assignments, error } = await supabaseClient
+                    .from('centre_assignments')
+                    .select('*')
+                    .eq('officer_type', officerType)
+                    .eq('officer_iid', officerIid)
+                    .limit(1);
+
+                if (error) {
+                    console.error('Error loading assignment:', error);
+                    alert('❌ Error loading assignment: ' + error.message);
+                    return;
+                }
+
+                if (!assignments || assignments.length === 0) {
+                    alert('⚠️ No assignment found for this officer!');
+                    document.getElementById('officerAssignmentDetails').style.display = 'none';
+                    document.getElementById('officerMessageSection').style.display = 'none';
+                    return;
+                }
+
+                const assignment = assignments[0];
+                
+                // Fetch vote centre details
+                const { data: centres, error: centreError } = await supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_name, vote_centre_location')
+                    .eq('vote_centre_code', assignment.vote_centre_code)
+                    .limit(1);
+
+                const centreName = (centres && centres.length > 0) ? centres[0].vote_centre_name : 'N/A';
+                const centreLocation = (centres && centres.length > 0) ? centres[0].vote_centre_location : '';
+
+                // Store current officer data
+                currentOfficerData = {
+                    officer: officer,
+                    assignment: assignment,
+                    centreName: centreName,
+                    centreLocation: centreLocation
+                };
+
+                // Display assignment details
+                document.getElementById('detailOfficerName').textContent = officer.name;
+                document.getElementById('detailVoteCentre').textContent = centreName;
+                document.getElementById('detailCentreCode').textContent = assignment.vote_centre_code;
+                document.getElementById('detailMobile').textContent = officer.mobile || 'N/A';
+
+                // Update message template
+                document.getElementById('msgVoteCentre').textContent = centreName;
+                document.getElementById('msgCentreCode').textContent = assignment.vote_centre_code;
+
+                // Prepare default message
+                const defaultMessage = `আপনার দায়িত্ব ${centreName} ভোট কেন্দ্রে (কেন্দ্র নং ${assignment.vote_centre_code}) নির্ধারণ করা হয়েছে।`;
+                document.getElementById('officerMessageText').value = defaultMessage;
+                updateOfficerCharCount();
+
+                // Show sections
+                document.getElementById('officerAssignmentDetails').style.display = 'block';
+                document.getElementById('officerMessageSection').style.display = 'block';
+
+                console.log('✅ Assignment loaded successfully');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Update Officer Message Character Count
+        function updateOfficerCharCount() {
+            const message = document.getElementById('officerMessageText').value;
+            document.getElementById('officerCharCount').textContent = message.length;
+        }
+
+        // Send Officer Duty SMS
+        async function sendOfficerDutySMS() {
+            if (!currentOfficerData) {
+                alert('❌ Please select an officer first!');
+                return;
+            }
+
+            const message = document.getElementById('officerMessageText').value.trim();
+            
+            if (!message) {
+                alert('❌ Please enter a message!');
+                return;
+            }
+
+            const mobile = currentOfficerData.officer.mobile;
+            
+            if (!mobile) {
+                alert('❌ Officer has no mobile number!');
+                return;
+            }
+
+            // Format mobile number
+            const formattedMobile = formatMobileNumber(mobile);
+
+            // Confirm before sending
+            if (!confirm(`Send SMS to ${currentOfficerData.officer.name}?\nMobile: ${formattedMobile}\n\nMessage: ${message}`)) {
+                return;
+            }
+
+            try {
+                // Show loading
+                const sendBtn = event.target;
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '⏳ Sending...';
+
+                // Send SMS
+                const result = await sendSMS(formattedMobile, message);
+
+                // Determine table name based on officer type
+                let tableName = '';
+                if (currentOfficerData.officer.type === 'presiding') {
+                    tableName = 'presiding_list';
+                } else if (currentOfficerData.officer.type === 'ass_presiding') {
+                    tableName = 'ass_presiding_list';
+                } else if (currentOfficerData.officer.type === 'polling') {
+                    tableName = 'polling_list';
+                }
+
+                // Check if error code is 1032 (IP Not whitelisted)
+                if (result.code === '1032') {
+                    const ipAddress = await getIPAddress();
+                    const messageToSave = `IP: ${ipAddress} | Original Message: ${message}`;
+                    console.log(`🔴 Error 1032: IP ${ipAddress} will be saved to sms_record table`);
+                    
+                    // Save to database with IP address
+                    try {
+                        await saveMessageToDatabase(
+                            currentOfficerData.officer.iid,
+                            messageToSave,
+                            formattedMobile,
+                            tableName
+                        );
+                    } catch (dbError) {
+                        console.error(`❌ Database save failed:`, dbError);
+                    }
+                } else {
+                    // Save to database normally
+                    try {
+                        await saveMessageToDatabase(
+                            currentOfficerData.officer.iid,
+                            message,
+                            formattedMobile,
+                            tableName
+                        );
+                    } catch (dbError) {
+                        console.error(`❌ Database save failed:`, dbError);
+                    }
+                }
+
+                // Show result
+                if (result.code === '202') {
+                    alert(`✅ SMS sent successfully to ${currentOfficerData.officer.name}!\n\n${result.message}`);
+                    // Reset form after successful send
+                    resetOfficerForm();
+                } else {
+                    alert(`❌ Failed to send SMS!\n\nError: ${result.message}`);
+                }
+
+                // Reset button
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📤 Send SMS';
+
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+                // Reset button
+                const sendBtn = event.target;
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📤 Send SMS';
+            }
+        }
+
+        // Reset Officer Form
+        function resetOfficerForm() {
+            document.getElementById('officerTypeSelect').value = '';
+            document.getElementById('officerSelect').innerHTML = '<option value="">-- Select Officer --</option>';
+            document.getElementById('officerMessageText').value = '';
+            document.getElementById('officerAssignmentDetails').style.display = 'none';
+            document.getElementById('officerMessageSection').style.display = 'none';
+            currentOfficerData = null;
+            allOfficersData = [];
+            updateOfficerCharCount();
+        }
+
+        // ===== SMS RECORDS VIEWING FUNCTIONS =====
+        
+        // Show SMS Records Section
+        function showSMSRecordsSection() {
+            // Hide all sections
+            document.getElementById('officerDutySection').style.display = 'none';
+            document.querySelectorAll('.filter-section, .students-section, .message-section, .action-buttons').forEach(el => {
+                if (!el.parentElement || el.parentElement.id !== 'smsRecordsSection') {
+                    el.style.display = 'none';
+                }
+            });
+            
+            // Show SMS records section
+            document.getElementById('smsRecordsSection').style.display = 'block';
+            
+            // Auto-load records
+            loadSMSRecords();
+        }
+
+        // Load SMS Records from Supabase
+        async function loadSMSRecords() {
+            const tbody = document.getElementById('smsRecordsTableBody');
+            const totalEl = document.getElementById('totalSMSRecords');
+            
+            // Show loading
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px;">
+                        <div class="loading" style="display: inline-block;"></div>
+                        Loading SMS records...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                console.log('🔍 Fetching SMS records from sms_record table...');
+                
+                const { data, error } = await supabaseClient
+                    .from('sms_record')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(500); // Limit to last 500 records
+
+                if (error) {
+                    console.error('❌ Error loading SMS records:', error);
+                    
+                    // Check if table doesn't exist
+                    if (error.code === 'PGRST205' || (error.message && error.message.includes('Could not find the table'))) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px; color: #dc3545;">
+                                    <strong>⚠️ Table "sms_record" not found</strong><br><br>
+                                    Please create the table first:<br>
+                                    <code style="background: #f8f9fa; padding: 10px; display: block; margin-top: 10px; text-align: left;">
+                                        CREATE TABLE public.sms_record (<br>
+                                        &nbsp;&nbsp;sms_id bigint PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY,<br>
+                                        &nbsp;&nbsp;created_at timestamptz DEFAULT now(),<br>
+                                        &nbsp;&nbsp;table_name text,<br>
+                                        &nbsp;&nbsp;table_officer_iid numeric,<br>
+                                        &nbsp;&nbsp;mobile_number text,<br>
+                                        &nbsp;&nbsp;sms_body text,<br>
+                                        &nbsp;&nbsp;sms_error text<br>
+                                        );
+                                    </code>
+                                </td>
+                            </tr>
+                        `;
+                        totalEl.textContent = '0';
+                        return;
+                    }
+                    
+                    throw error;
+                }
+
+                console.log(`✅ Loaded ${data.length} SMS records`);
+                
+                // Update total count
+                totalEl.textContent = data.length;
+
+                // Check if no records
+                if (data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #6c757d;">
+                                📭 No SMS records found<br>
+                                <small>Send some messages to see them here</small>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Render records
+                tbody.innerHTML = data.map(record => {
+                    const date = new Date(record.created_at);
+                    const formattedDate = date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB');
+                    
+                    return `
+                        <tr>
+                            <td>${record.sms_id || 'N/A'}</td>
+                            <td>${formattedDate}</td>
+                            <td>
+                                <span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">
+                                    ${record.table_name || 'N/A'}
+                                </span>
+                            </td>
+                            <td>${record.table_officer_iid || 'N/A'}</td>
+                            <td>${record.mobile_number || 'N/A'}</td>
+                            <td style="max-width: 300px; white-space: normal; word-wrap: break-word;">
+                                ${record.sms_body ? record.sms_body.substring(0, 100) + (record.sms_body.length > 100 ? '...' : '') : 'N/A'}
+                            </td>
+                            <td>
+                                ${record.sms_error 
+                                    ? `<span style="color: #dc3545; font-weight: 600;">❌ ${record.sms_error}</span>` 
+                                    : `<span style="color: #28a745;">✅ Success</span>`}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('❌ Failed to load SMS records:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #dc3545;">
+                            ❌ Error loading SMS records: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                totalEl.textContent = '0';
             }
         }
 
