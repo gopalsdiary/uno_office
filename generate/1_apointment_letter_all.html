@@ -339,23 +339,23 @@
 
             const content = `
                 <div class="letter">
-                <p style="text-align:right; font-size:16pt; margin-bottom:10px;">
+                <p style="text-align:right; font-size:16pt; margin-bottom:2px;">
                     <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
                 </p>
-                <p style="text-align:center; font-size:16pt; margin-bottom:5px;">
+                <p style="text-align:center; font-size:16pt; margin-bottom:2px;">
                     <span style="font-family:NikoshBAN;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন</span>
                 </p>
                 <p style="text-align:center; font-size:14pt; margin-bottom:10px;">
                     <u><span style="font-family:NikoshBAN;">প্রিজাইডিং অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র</span></u>
                 </p>
-                <p style="font-size:13pt; margin-bottom:5px;">
+                <p style="font-size:12pt; margin-bottom:5px;">
                     <span style="font-family:NikoshBAN;">জেলার নামঃ ফেনী, নির্বাচনী এলাকার নম্বর ও নামঃ ২৬৬, ফেনী-২</span>
                 </p>
                 <p style="font-size:12pt; margin-bottom:5px;">
                     <span style="font-family:NikoshBAN; color:#c00000;">ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'}</span>
                 </p>
                 ${boothInfo}
-                <p style="text-align:justify; font-size:10pt; margin-bottom:15px;">
+                <p style="text-align:justify; font-size:10pt; margin-bottom:5px;">
                     <span style="font-family:NikoshBAN;">গণপ্রতিনিধিত্ব আদেশ, 1972 এর অনুচ্ছেদ 9 এর দফা (1খ) কর্তৃক অর্পিত ক্ষমতাবলে, আমি মনিরা হক, জেলা প্রশাসক, ফেনী ও 266, ফেনী-2 নির্বাচনি এলাকার রিটার্নিং অফিসার নিম্নলিখিত ব্যক্তিগণকে উপরোল্লিখিত ভোটকেন্দ্রের জন্য এতদ্বারা প্রিজাইডিং অফিসার, প্রিজাইডিং অফিসারকে সহায়তা দানের জন্য সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসার হিসাবে নিয়োগ করিলাম:</span>
                 </p>
                 
@@ -371,43 +371,54 @@
                             <span style="font-family:Nikosh; font-size:10pt;">পোলিং অফিসারের নাম ও পদবী</span>
                         </td>
                         <td style="width:20%; border:0.75pt solid #000; padding:8pt; text-align:center;">
-                            <span style="font-family:Nikosh; font-size:7pt;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে দায়িত্ব পালন করবেন</span>
+                            <span style="font-family:Nikosh; font-size:9pt;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে দায়িত্ব পালন করবেন</span>
                         </td>
                     </tr>
                     <tr>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">১</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">২</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">৩</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">৪</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">১</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">২</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৩</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৪</span></td>
                     </tr>
                     ${tableRows}
                 </table>
                 
-                <p style="margin-top:20px;"><span style="font-family:NikoshBAN; font-size:14pt;">স্থান: </span></p>
-                <p><span style="font-family:NikoshBAN; font-size:14pt;">তারিখ: </span></p>
+                <p style="margin-top:1px;"><span style="font-family:NikoshBAN; font-size:12pt;">স্থান: </span></p>
+                <p><span style="font-family:NikoshBAN; font-size:12pt;">তারিখ: </span></p>
                 
-                <div style="text-align:right; margin-top:40px;">
-                    <p style="font-size:12pt; margin:0 0 6px;"><strong style="font-family:NikoshBAN;">মনিরা হক</strong></p>
-                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">জেলা প্রশাসক, ফেনী</span></p>
-                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">ও</span></p>
-                    <p style="font-size:10pt; margin:0;"><span style="font-family:NikoshBAN;">রিটার্নিং অফিসার, নির্বাচনী এলাকা 266, ফেনী-2</span></p>
-                </div>
+                <table style="width:100%; margin-top:2px; border-collapse:collapse; border:1px solid white;">
+                    <tr>
+                        <td style="width:50%; padding:10px; border-top:1px solid white; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white; vertical-align:middle; min-height:110px;">
+                            &nbsp;
+                        </td>
+                        <td style="width:50%; padding:10px; border-top:1px solid white; border-bottom:1px solid white; border-right:1px solid white; border-left:0; vertical-align:middle; min-height:110px;">
+                            <div style="display:flex; align-items:center; justify-content:center; height:100%;">
+                                <div style="text-align:center;">
+                                    <p style="font-size:12pt; margin:0 0 6px;"><strong style="font-family:NikoshBAN;">মনিরা হক</strong></p>
+                                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">জেলা প্রশাসক, ফেনী</span></p>
+                                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">ও</span></p>
+                                    <p style="font-size:10pt; margin:0;"><span style="font-family:NikoshBAN;">রিটার্নিং অফিসার, নির্বাচনী এলাকা 266, ফেনী-2</span></p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
                 
-                <div style="margin-top:50px; border-top:2px solid #000; padding-top:20px;">
+                <div style="margin-top:2px; border-top:2px solid #000; padding-top:20px;">
                     <p style="text-align:center; font-size:12pt; margin-bottom:10px;">
                         <span style="font-family:NikoshBAN;">প্রাপ্তি স্বীকার ও অংগীকারনামা</span>
                     </p>
-                    <p style="text-align:center; margin-bottom:15px;">
+                    <p style="text-align:center; margin-bottom:5px;">
                         <span style="font-family:NikoshBAN;">(এই অংশটুকু রিটার্নিং অফিসারকে ফেরত দিতে হবে)</span>
                     </p>
-                    <p style="text-align:justify; margin-bottom:30px;">
+                    <p style="text-align:justify; margin-bottom:20px;">
                         <span style="font-family:NikoshBAN;">আমি…………………………………উপরে বর্ণিত নিয়োগ গ্রহন করে অঙ্গীকার করছি যে, আমি আমার উপর অর্পিত দায়িত্ব সর্বপ্রকার দলীয়/গোষ্ঠীয়/ধর্মীয় প্রভাব হইতে মুক্ত থাকিয়া সততা ও ন্যায় নিষ্ঠার সাথে পালন করব।</span>
                     </p>
                     <div style="text-align:right; margin-top:40px;">
                         <p><span style="font-family:NikoshBAN;">……………………………………..</span></p>
                         <p><span style="font-family:NikoshBAN;">স্বাক্ষর ও জাতীয় পরিচিতি নম্বর</span></p>
                     </div>
-                    <p style="margin-top:30px;">
+                    <p style="margin-top:5px;">
                         <span style="font-family:NikoshBAN;">ভোটকেন্দ্রের নম্বর ও নামঃ ${centre.vote_centre_code || ''} - ${centre.vote_centre_name || ''}</span>
                     </p>
                 </div>

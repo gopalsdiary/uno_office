@@ -149,36 +149,71 @@
 			flex: 1;
 			padding: 56px 48px;
 			display: flex;
-			align-items: center;
+			flex-direction: column;
+			gap: 28px;
+			align-items: stretch;
 			justify-content: center;
 			background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 		}
 		
+		.button-section {
+			background: white;
+			border-radius: 18px;
+			padding: 28px;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+			border: 1px solid #e2e8f0;
+		}
+
+		.section-header {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			margin-bottom: 18px;
+		}
+
+		.section-eyebrow {
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			font-size: 12px;
+			font-weight: 800;
+			color: #64748b;
+		}
+
+		.section-title {
+			font-size: 20px;
+			font-weight: 800;
+			color: #0f172a;
+		}
+
+		.section-desc {
+			font-size: 14px;
+			color: #475569;
+		}
+
 		.btns { 
 			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-			gap: 24px;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: 18px;
 			width: 100%;
-			max-width: 800px;
 		}
 		
 		a.button { 
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			padding: 32px 28px;
+			padding: 20px 18px;
 			background: white;
-			color: #1f2937;
+			color: #0f172a;
 			text-decoration: none;
-			border-radius: 20px;
-			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-			font-size: 18px;
+			border-radius: 16px;
+			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+			font-size: 16px;
 			font-weight: 700;
 			transition: all 0.3s ease;
 			position: relative;
 			overflow: hidden;
 			text-align: center;
-			line-height: 1.5;
+			line-height: 1.45;
 			border: 2px solid transparent;
 		}
 		
@@ -198,35 +233,54 @@
 		}
 		
 		a.button:hover { 
-			transform: translateY(-8px) scale(1.02);
-			box-shadow: 0 12px 30px rgba(102, 126, 234, 0.3);
-			border-color: #667eea;
+			transform: translateY(-6px);
+			box-shadow: 0 14px 32px rgba(102, 126, 234, 0.25);
+			border-color: rgba(102, 126, 234, 0.8);
 		}
 		
 		a.button:active {
-			transform: translateY(-4px) scale(1.01);
+			transform: translateY(-2px);
 		}
 		
 		a.button.secondary { 
-			background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-			color: #475569;
+			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+			color: #1e293b;
 		}
 		
 		a.button.secondary:hover {
 			background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
 			border-color: #94a3b8;
-			box-shadow: 0 12px 30px rgba(100, 116, 139, 0.3);
+			box-shadow: 0 12px 28px rgba(100, 116, 139, 0.25);
 		}
 		
 		a.button.primary {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			color: white;
-			grid-column: 1 / -1;
 		}
-		
+
 		a.button.primary:hover {
 			background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-			box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+			box-shadow: 0 14px 32px rgba(102, 126, 234, 0.45);
+		}
+
+		a.button.success {
+			background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+			color: white;
+		}
+
+		a.button.success:hover {
+			background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+			box-shadow: 0 14px 32px rgba(16, 185, 129, 0.4);
+		}
+
+		a.button.warning {
+			background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+			color: #1f2937;
+		}
+
+		a.button.warning:hover {
+			background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+			box-shadow: 0 14px 32px rgba(245, 158, 11, 0.35);
 		}
 		
 		.icon {
@@ -298,20 +352,21 @@
 			
 			.main-content {
 				padding: 32px 24px;
+				gap: 20px;
+			}
+			
+			.button-section {
+				padding: 22px;
 			}
 			
 			.btns {
 				grid-template-columns: 1fr;
-				gap: 16px;
+				gap: 14px;
 			}
 			
 			a.button {
-				padding: 24px 20px;
-				font-size: 16px;
-			}
-			
-			a.button.primary {
-				grid-column: 1;
+				padding: 18px 16px;
+				font-size: 15px;
 			}
 			
 			.footer {
@@ -363,7 +418,7 @@
 			}
 			
 			a.button {
-				padding: 20px 16px;
+				padding: 16px 14px;
 				font-size: 15px;
 			}
 			
@@ -404,71 +459,94 @@
 
 		<!-- Main Content Section -->
 		<div class="main-content">
-			<div class="btns">
-				<a class="button secondary" href="1_presiding.html" title="প্রিজাইডিং অফিসার তালিকা">
-					<span class="icon">👨‍💼</span>
-					<span>প্রিজাইডিং অফিসার তালিকা</span>
-				</a>
-				<a class="button secondary" href="2_ass_presiding.html" title="সহ-প্রিজাইডিং অফিসার তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>সহ-প্রিজাইডিং অফিসার তালিকা</span>
-				</a>
-				<a class="button primary" href="3_polling.html">
-					<span class="icon">📋</span>
-					<span>Polling Officer List</span>
-				</a>
-				<a class="button secondary" href="4_vote_centre.html" title="Vote Centres">
-					<span class="icon">👨‍💻</span>
-					<span>Vote Centres</span>
-				</a>
-				<a class="button secondary" href="training_list.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>ট্রেনিং তালিকা</span>
-				</a>
-				<a class="button secondary" href="generate/2_centre_edit.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>1. Generate Duty List</span>
-				</a>
-				<a class="button secondary" href="generate/3_vote_centre.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>2. Edit Duty List</span>
-				</a>
-				<a class="button secondary" href="generate/4_duty_finding_mobile.html" title="Duty Finding">
-					<span class="icon">👨‍💻</span>
-					<span>3. Duty finding (Centre)</span>	
-				</a>
-				<a class="button secondary" href="generate/1_apointment_letter_all.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>4. Appointment Letter all</span>
-				</a>
-				-
-				<a class="button secondary" href="generate/6_fixed_assignment.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>Fixed Duty</span>
-				</a>
--
-				<a class="button secondary" href="generate/error_finding.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>Error finding</span>
-				</a>
-			-
-				<a class="button secondary" href="generate/5_duty_not_assigned.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>Duty Not assigned List</span>
-				</a>
+			<div class="button-section">
+				<div class="section-header">
+					<div class="section-eyebrow">Core Lists</div>
+					<div class="section-title">মূল অফিসার তালিকা</div>
+					<div class="section-desc">নির্বাচনী দায়িত্বের প্রধান তালিকাগুলো দ্রুত খুলুন।</div>
+				</div>
+				<div class="btns">
+					<a class="button secondary" href="1_presiding.html" title="প্রিজাইডিং অফিসার তালিকা">
+						<span class="icon">🏛️</span>
+						<span>প্রিজাইডিং অফিসার তালিকা</span>
+					</a>
+					<a class="button secondary" href="2_ass_presiding.html" title="সহ-প্রিজাইডিং অফিসার তালিকা">
+						<span class="icon">🧑‍💼</span>
+						<span>সহ-প্রিজাইডিং অফিসার তালিকা</span>
+					</a>
+					<a class="button primary" href="3_polling.html">
+						<span class="icon">📋</span>
+						<span>পোলিং অফিসার তালিকা</span>
+					</a>
+					<a class="button secondary" href="4_vote_centre.html" title="Vote Centres">
+						<span class="icon">🗺️</span>
+						<span>Vote Centres</span>
+					</a>
+					<a class="button secondary" href="training_list.html" title="ট্রেনিং তালিকা">
+						<span class="icon">🎯</span>
+						<span>ট্রেনিং তালিকা</span>
+					</a>
+				</div>
+			</div>
 
-				<a class="button secondary" href="call.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>Call</span>
-				</a>
-				<a class="button secondary" href="postal_ballet/dashboard.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>পোস্টাল ব্যালেট</span>
-				</a>
-				<a class="button secondary" href="postal_ballet/sms_api.html" title="ট্রেনিং তালিকা">
-					<span class="icon">👨‍💻</span>
-					<span>SMS</span>
-				</a>
+			<div class="button-section">
+				<div class="section-header">
+					<div class="section-eyebrow">Duty Pipeline</div>
+					<div class="section-title">ডিউটি তৈরি ও সমন্বয়</div>
+					<div class="section-desc">ডিউটি জেনারেশন থেকে অ্যাপয়েন্টমেন্ট লেটার পর্যন্ত এক জায়গায়।</div>
+				</div>
+				<div class="btns">
+					<a class="button success" href="generate/2_centre_edit.html" title="Generate Duty List">
+						<span class="icon">⚡</span>
+						<span>1. Generate Duty List</span>
+					</a>
+					<a class="button success" href="generate/3_vote_centre.html" title="Edit Duty List">
+						<span class="icon">✏️</span>
+						<span>2. Edit Duty List</span>
+					</a>
+					<a class="button primary" href="generate/4_duty_finding_mobile.html" title="Duty Finding">
+						<span class="icon">🔎</span>
+						<span>3. Duty finding (Centre)</span>	
+					</a>
+					<a class="button secondary" href="generate/1_apointment_letter_all.html" title="Appointment Letter">
+						<span class="icon">📨</span>
+						<span>4. Appointment Letter all</span>
+					</a>
+					<a class="button secondary" href="generate/6_fixed_assignment.html" title="Fixed Duty">
+						<span class="icon">📌</span>
+						<span>Fixed Duty</span>
+					</a>
+					<a class="button warning" href="generate/error_finding.html" title="Error finding">
+						<span class="icon">🩺</span>
+						<span>Error finding</span>
+					</a>
+					<a class="button secondary" href="generate/5_duty_not_assigned.html" title="Duty Not assigned List">
+						<span class="icon">⏳</span>
+						<span>Duty Not assigned List</span>
+					</a>
+				</div>
+			</div>
+
+			<div class="button-section">
+				<div class="section-header">
+					<div class="section-eyebrow">Support</div>
+					<div class="section-title">যোগাযোগ ও পোস্টাল</div>
+					<div class="section-desc">কল, পোস্টাল ব্যালেট ও SMS অপশন একজায়গায়।</div>
+				</div>
+				<div class="btns">
+					<a class="button secondary" href="call.html" title="Call">
+						<span class="icon">📞</span>
+						<span>Call</span>
+					</a>
+					<a class="button secondary" href="postal_ballet/dashboard.html" title="পোস্টাল ব্যালেট">
+						<span class="icon">✉️</span>
+						<span>পোস্টাল ব্যালেট</span>
+					</a>
+					<a class="button secondary" href="postal_ballet/sms_api.html" title="SMS">
+						<span class="icon">💬</span>
+						<span>SMS</span>
+					</a>
+				</div>
 			</div>
 		</div>
 
