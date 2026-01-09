@@ -195,6 +195,37 @@
             color: white;
         }
 
+        .photo-thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            display: inline-block;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .pagination-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #667eea;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .badge {
             padding: 5px 12px;
             border-radius: 15px;
@@ -320,6 +351,12 @@
                 </tbody>
             </table>
 
+            <div id="pagination" class="pagination" style="display:none;">
+                <button id="prevPage" class="pagination-btn">◀ পূর্ববর্তী</button>
+                <span id="pageInfo"></span>
+                <button id="nextPage" class="pagination-btn">পরবর্তী ▶</button>
+            </div>
+
             <div id="noData" class="no-data" style="display: none;">
                 কোনো ডাটা পাওয়া যায়নি
             </div>
@@ -369,6 +406,33 @@
         function toBengaliNumber(n) {
             const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
             return String(n).split('').map(digit => bengaliDigits[digit] || digit).join('');
+        }
+
+        // Pagination settings
+        let pageSize = 200; // items per page
+        let currentPage = 1;
+
+        function getTotalPages() {
+            return Math.max(1, Math.ceil(filteredData.length / pageSize));
+        }
+
+        function updatePaginationControls() {
+            const paginationEl = document.getElementById('pagination');
+            const pageInfoEl = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+
+            const totalPages = getTotalPages();
+            if (paginationEl) paginationEl.style.display = totalPages > 1 ? 'flex' : 'none';
+            if (pageInfoEl) pageInfoEl.textContent = `পৃষ্ঠা ${toBengaliNumber(currentPage)} / ${toBengaliNumber(totalPages)} (${toBengaliNumber(filteredData.length)})`;
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function changePage(delta) {
+            const totalPages = getTotalPages();
+            currentPage = Math.min(Math.max(1, currentPage + delta), totalPages);
+            displayData();
         }
 
         // Load data from Supabase
@@ -426,10 +490,13 @@
                 return matchesSearch && matchesType;
             });
 
+            // Reset to first page whenever filters change
+            currentPage = 1;
+            updatePaginationControls();
             displayData();
         }
 
-        // Display data in table
+        // Display data in table (with pagination)
         function displayData() {
             const tableBody = document.getElementById('tableBody');
             const loadingMessage = document.getElementById('loadingMessage');
@@ -441,21 +508,28 @@
             if (filteredData.length === 0) {
                 dataTable.style.display = 'none';
                 noData.style.display = 'block';
+                updatePaginationControls();
                 return;
             }
+
+            const total = filteredData.length;
+            const totalPages = getTotalPages();
+            const startIndex = (currentPage - 1) * pageSize;
+            const pageItems = filteredData.slice(startIndex, startIndex + pageSize);
 
             dataTable.style.display = 'table';
             noData.style.display = 'none';
 
-            tableBody.innerHTML = filteredData.map((item, index) => {
+            tableBody.innerHTML = pageItems.map((item, index) => {
                 const assignTypeText = getAssignTypeText(item.assign_table);
                 const assignTypeBadge = getAssignTypeBadge(item.assign_table);
                 const formattedDate = formatDate(item.created_at);
                 const assignId = getAssignTableIid(item);
+                const serial = startIndex + index + 1;
                 
                 return `
                     <tr>
-                        <td>${toBengaliNumber(index + 1)}</td>
+                        <td>${toBengaliNumber(serial)}</td>
                         <td><strong>${item.officer_name || '-'}</strong></td>
                         <td><span class="badge ${assignTypeBadge}">${assignTypeText}</span></td>
                         <td>${item.area || '-'}</td>
@@ -463,12 +537,15 @@
                         <td>${item.postal_ballet_info_info || '-'}</td>
                         <td>${item.postal_ballet_comment || '-'}</td>
                         <td class="photo-cell">
-                            ${item.photo_url ? `<a href="${item.photo_url}" target="_blank" class="photo-link">দেখুন</a>` : '-'}
+                            ${item.photo_url ? `<a href="${item.photo_url}" target="_blank"><img src="${item.photo_url}" loading="lazy" class="photo-thumb" alt="${(item.officer_name||'photo')}"></a>` : '-'}
                         </td>
                         <td class="date-cell">${formattedDate}</td>
                     </tr>
                 `;
             }).join('');
+
+            // Update pagination UI
+            updatePaginationControls();
         }
 
         // Get assignment type text
@@ -535,6 +612,12 @@
         // Event listeners
         document.getElementById('searchBox').addEventListener('input', applyFilters);
         document.getElementById('filterType').addEventListener('change', applyFilters);
+
+        // Pagination buttons (safely attach if present)
+        const prevBtnEl = document.getElementById('prevPage');
+        const nextBtnEl = document.getElementById('nextPage');
+        if (prevBtnEl) prevBtnEl.addEventListener('click', () => changePage(-1));
+        if (nextBtnEl) nextBtnEl.addEventListener('click', () => changePage(1));
 
         // Load data on page load
         window.addEventListener('DOMContentLoaded', loadData);
