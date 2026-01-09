@@ -293,7 +293,7 @@
                 tableRows = `
                     <tr>
                         <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? getOfficerName(presiding, 'presiding') : 'N/A'}</span></p>
+                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
                             ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
                         </td>
                         <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
@@ -309,24 +309,24 @@
                     tableRows += `
                         <tr>
                             ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? getOfficerName(presiding, 'presiding') : 'N/A'}</span></p>
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
                                 ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
                             </td>` : ''}
                             
                             <td style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
                                 <p style="margin:0; font-size:10pt;">
-                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${getOfficerName(assPres, 'ass_presiding')}</span>` : ''}
+                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
                                 </p>
                                 ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt;">${assPres.designation}</p>` : ''}
                             </td>
                             
                             <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">
-                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll1, 'polling')}</span>${poll1.designation ? `, ${poll1.designation}` : ''}</p>` : ''} 
-                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll2, 'polling')}</span>${poll2.designation ? `, ${poll2.designation}` : ''}</p>` : ''}
+                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll1, 'polling'))}</span>${poll1.designation ? `, ${poll1.designation}` : ''}</p>` : ''} 
+                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll2, 'polling'))}</span>${poll2.designation ? `, ${poll2.designation}` : ''}</p>` : ''}
                             </td>
                             
                             ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${firstAssPres ? getOfficerName(firstAssPres, 'ass_presiding') : ''}</span></p>
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${firstAssPres ? toBengaliNumber(getOfficerName(firstAssPres, 'ass_presiding')) : ''}</span></p>
                                 ${firstAssPres && firstAssPres.designation ? `<p style="margin:0; font-size:9pt;">${firstAssPres.designation}</p>` : ''}
                             </td>` : ''}
                         </tr>`;
