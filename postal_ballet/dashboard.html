@@ -337,6 +337,34 @@
         let allData = [];
         let filteredData = [];
 
+        // Fetch all data in batches to avoid Supabase default row caps (e.g., 1000)
+        async function fetchAllPostalVoteData(batchSize = 1000, progressCb) {
+            let all = [];
+            let from = 0;
+
+            while (true) {
+                const to = from + batchSize - 1;
+                const { data, error } = await supabaseClient
+                    .from('postal_vote_data')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(from, to);
+
+                if (error) throw error;
+
+                all = all.concat(data || []);
+
+                if (typeof progressCb === 'function') progressCb(all.length);
+
+                // If returned rows are less than batch size, we've fetched everything
+                if (!data || data.length < batchSize) break;
+
+                from += batchSize; // move to next batch
+            }
+
+            return all;
+        }
+
         // Bengali number conversion
         function toBengaliNumber(n) {
             const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
@@ -350,18 +378,18 @@
                 document.getElementById('dataTable').style.display = 'none';
                 document.getElementById('noData').style.display = 'none';
 
-                const { data, error } = await supabaseClient
-                    .from('postal_vote_data')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) {
+                try {
+                    allData = await fetchAllPostalVoteData(1000, (count) => {
+                        // show progress in loading message
+                        const loadingEl = document.getElementById('loadingMessage');
+                        if (loadingEl) loadingEl.textContent = 'ডাটা লোড হচ্ছে... (' + toBengaliNumber(count) + ')';
+                    });
+                } catch (error) {
                     console.error('Error loading data:', error);
-                    alert('ডাটা লোড করতে সমস্যা হয়েছে: ' + error.message);
+                    alert('ডাটা লোড করতে সমস্যা হয়েছে: ' + (error.message || error));
                     return;
                 }
 
-                allData = data || [];
                 updateStats();
                 applyFilters();
             } catch (err) {
