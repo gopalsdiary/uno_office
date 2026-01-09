@@ -253,7 +253,7 @@
                 tableRows = `
                     <tr>
                         <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? getOfficerName(presiding, 'presiding') : 'N/A'}</span></p>
+                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
                             ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
                         </td>
                         <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
@@ -269,25 +269,25 @@
                     tableRows += `
                         <tr>
                             ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? getOfficerName(presiding, 'presiding') : 'N/A'}</span></p>
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
                                 ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
                             </td>` : ''}
                             
                             <td style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
                                 <p style="margin:0; font-size:10pt;">
-                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${getOfficerName(assPres, 'ass_presiding')}</span>` : ''}
+                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
                                 </p>
                                 ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt;">${assPres.designation}</p>` : ''}
-                                ${assPres && assPres.gender ? `<p style="margin:0; font-size:8pt;">${assPres.gender}</p>` : ''}
+
                             </td>
                             
                             <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">
-                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll1, 'polling')}</span>${poll1.designation ? `, ${poll1.designation}` : ''}${poll1.gender ? ` (${poll1.gender})` : ''}</p>` : ''}
-                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${getOfficerName(poll2, 'polling')}</span>${poll2.designation ? `, ${poll2.designation}` : ''}${poll2.gender ? ` (${poll2.gender})` : ''}</p>` : ''}
+                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll1, 'polling'))}</span>${poll1.designation ? `, ${poll1.designation}` : ''}</p>` : ''}
+                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll2, 'polling'))}</span>${poll2.designation ? `, ${poll2.designation}` : ''}</p>` : ''}
                             </td>
                             
                             ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${firstAssPres ? getOfficerName(firstAssPres, 'ass_presiding') : ''}</span></p>
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${firstAssPres ? toBengaliNumber(getOfficerName(firstAssPres, 'ass_presiding')) : ''}</span></p>
                                 ${firstAssPres && firstAssPres.designation ? `<p style="margin:0; font-size:9pt;">${firstAssPres.designation}</p>` : ''}
                             </td>` : ''}
                         </tr>`;
@@ -296,7 +296,7 @@
             
             const content = `
                 <p style="text-align:right; font-size:16pt; margin-bottom:10px;">
-                    <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${centre.vote_centre_code || ''}</span></strong>
+                    <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
                 </p>
                 <p style="text-align:center; font-size:16pt; margin-bottom:5px;">
                     <span style="font-family:NikoshBAN;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন</span>
@@ -329,14 +329,14 @@
                             <span style="font-family:Nikosh; font-size:10pt;">পোলিং অফিসারের নাম ও পদবী</span>
                         </td>
                         <td style="width:20%; border:0.75pt solid #000; padding:8pt; text-align:center;">
-                            <span style="font-family:Nikosh; font-size:7pt;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে দায়িত্ব পালন করবেন</span>
+                            <span style="font-family:Nikosh; font-size:9pt;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে দায়িত্ব পালন করবেন</span>
                         </td>
                     </tr>
                     <tr>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">১</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">২</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">৩</span></td>
-                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:7pt;">৪</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">১</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">২</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৩</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৪</span></td>
                     </tr>
                     ${tableRows}
                 </table>
@@ -346,10 +346,10 @@
                 
                 <table style="width:100%; margin-top:2px; border-collapse:collapse; border:1px solid white;">
                     <tr>
-                        <td style="width:50%; padding:10px; border-top:1px solid white; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white; vertical-align:middle; min-height:110px;">
+                        <td style="width:50%; padding:5px; border-top:1px solid white; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white; vertical-align:middle; min-height:110px;">
                             &nbsp;
                         </td>
-                        <td style="width:50%; padding:10px; border-top:1px solid white; border-bottom:1px solid white; border-right:1px solid white; border-left:0; vertical-align:middle; min-height:110px;">
+                        <td style="width:50%; padding:5px; border-top:1px solid white; border-bottom:1px solid white; border-right:1px solid white; border-left:0; vertical-align:middle; min-height:110px;">
                             <div style="display:flex; align-items:center; justify-content:center; height:100%;">
                                 <div style="text-align:center;">
                                     <p style="font-size:12pt; margin:0 0 6px;"><strong style="font-family:NikoshBAN;">মনিরা হক</strong></p>
@@ -362,7 +362,7 @@
                     </tr>
                 </table>
                 
-                <div style="margin-top:2px; border-top:2px solid #000; padding-top:20px;">
+                <div style="margin-top:2px; border-top:2px solid #000; padding-top:5px;">
                     <p style="text-align:center; font-size:12pt; margin-bottom:10px;">
                         <span style="font-family:NikoshBAN;">প্রাপ্তি স্বীকার ও অংগীকারনামা</span>
                     </p>
@@ -372,12 +372,12 @@
                     <p style="text-align:justify; margin-bottom:20px;">
                         <span style="font-family:NikoshBAN;">আমি…………………………………উপরে বর্ণিত নিয়োগ গ্রহন করে অঙ্গীকার করছি যে, আমি আমার উপর অর্পিত দায়িত্ব সর্বপ্রকার দলীয়/গোষ্ঠীয়/ধর্মীয় প্রভাব হইতে মুক্ত থাকিয়া সততা ও ন্যায় নিষ্ঠার সাথে পালন করব।</span>
                     </p>
-                    <div style="text-align:right; margin-top:40px;">
+                    <div style="text-align:right; margin-top:25px;">
                         <p><span style="font-family:NikoshBAN;">……………………………………..</span></p>
                         <p><span style="font-family:NikoshBAN;">স্বাক্ষর ও জাতীয় পরিচিতি নম্বর</span></p>
                     </div>
                     <p style="margin-top:30px;">
-                        <span style="font-family:NikoshBAN;">ভোটকেন্দ্রের নম্বর ও নামঃ ${centre.vote_centre_code || ''} - ${centre.vote_centre_name || ''}</span>
+                        <span style="font-family:NikoshBAN;">ভোটকেন্দ্রের নম্বর ও নামঃ ${toBengaliNumber(centre.vote_centre_code || '')} - ${centre.vote_centre_name || ''}</span>
                     </p>
                 </div>
             `;
