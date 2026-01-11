@@ -1121,9 +1121,10 @@
                 return;
             }
             
-            // Navigate to appointment letter page with centre code as URL parameter
+            // Navigate to appointment letter page with centre code as URL parameter (open in new tab)
             const centreCode = assignment.centre.vote_centre_code;
-            window.location.href = '1_apointment_letter.html?code=' + encodeURIComponent(centreCode);
+            const win = window.open('1_apointment_letter.html?code=' + encodeURIComponent(centreCode), '_blank');
+            if (win) win.focus();
         }
 
         // Load assignments from database
