@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>পোলিং অফিসার প্যানেল </title>
+  <link rel="stylesheet" href="Clusterize_js/clusterize.css">
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'>U</text></svg>">
   <style>
     * {
@@ -210,10 +211,21 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
       margin-bottom: 20px;
       max-height: 600px;
+      overflow-y: auto;
     }
     
     .editable-table-wrapper.active {
       display: block;
+    }
+
+    /* Clusterize tuning for editable table */
+    .editable-table-wrapper.clusterize-scroll {
+      max-height: 600px;
+      border: 1px solid #e2e8f0;
+    }
+
+    #editable-tbody.clusterize-content {
+      outline: 0;
     }
     
     .editable-table {
@@ -938,7 +950,7 @@
   <div class="editable-table-wrapper" id="editable-table-wrapper">
     <table class="editable-table" id="editable-table">
       <thead id="editable-thead"></thead>
-      <tbody id="editable-tbody"></tbody>
+      <tbody id="editable-tbody" class="clusterize-content"></tbody>
     </table>
   </div>
   
@@ -979,7 +991,11 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="Clusterize_js/clusterize.js"></script>
   <script>
+    // Clusterize instance for editable table
+    let editableClusterize = null;
+
     // Supabase configuration (singleton pattern)
     if (!window.supabaseClient) {
       const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
@@ -1228,7 +1244,7 @@
         }
 
         allTableData = rows;
-        renderEditableTable();
+        renderEditableTable(allTableData);
         loadingEl.style.display = 'none';
       } catch (err) {
         console.error('Error loading all data:', err);
@@ -1237,17 +1253,12 @@
       }
     }
     
-    // Render editable table
-    function renderEditableTable() {
+    // Render editable table with virtualized rows
+    function renderEditableTable(data) {
       const thead = document.getElementById('editable-thead');
       const tbody = document.getElementById('editable-tbody');
+      const wrapper = document.getElementById('editable-table-wrapper');
       
-      if (allTableData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">No data available</td></tr>';
-        return;
-      }
-      
-      // Get column names from first row
       const columns = [
         'polling_iid',
         'polling_name',
@@ -1261,48 +1272,66 @@
         'previous_election',
         'comment'
       ];
-      
-      // Render header
+
+      // Render header once
       thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
-      
-      // Render rows
-      tbody.innerHTML = '';
-      allTableData.forEach((row, index) => {
-        const tr = document.createElement('tr');
-        tr.dataset.rowIndex = index;
-        
-        columns.forEach(col => {
-          const td = document.createElement('td');
-          
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">No data available</td></tr>';
+        wrapper.classList.add('active');
+        return;
+      }
+
+      // Build row HTML strings for Clusterize
+      const rows = data.map((row, index) => {
+        const cells = columns.map(col => {
           if (col === 'polling_iid') {
-            // Read-only for ID
-            td.textContent = row[col] || '';
-            td.style.fontWeight = '700';
-            td.style.color = '#111827';
-          } else {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = row[col] || '';
-            input.dataset.column = col;
-            input.dataset.rowIndex = index;
-            input.dataset.originalValue = row[col] || '';
-            input.addEventListener('input', onCellChange);
-            td.appendChild(input);
+            return `<td style="font-weight:700;color:#111827;" data-col="${col}">${row[col] ?? ''}</td>`;
           }
-          
-          tr.appendChild(td);
-        });
-        
-        tbody.appendChild(tr);
+          const val = row[col] ?? '';
+          const safeVal = String(val)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+          return `
+            <td data-col="${col}">
+              <input type="text"
+                     value="${safeVal}"
+                     data-column="${col}"
+                     data-row-index="${index}"
+                     data-original-value="${String(val)}" />
+            </td>`;
+        }).join('');
+        return `<tr data-row-index="${index}">${cells}</tr>`;
       });
+
+      if (!editableClusterize) {
+        editableClusterize = new Clusterize({
+          rows,
+          scrollId: 'editable-table-wrapper',
+          contentId: 'editable-tbody',
+          tag: 'tr',
+          rows_in_block: 30,
+          blocks_in_cluster: 4,
+          no_data_text: 'No data available'
+        });
+      } else {
+        editableClusterize.update(rows);
+      }
+
+      wrapper.classList.add('clusterize-scroll');
+      wrapper.classList.add('active');
     }
     
-    // Handle cell change
+    // Handle cell change (event delegation for virtualized rows)
     function onCellChange(event) {
       const input = event.target;
-      const rowIndex = parseInt(input.dataset.rowIndex);
+      if (input.tagName !== 'INPUT') return;
+
+      const rowIndex = parseInt(input.dataset.rowIndex, 10);
       const column = input.dataset.column;
-      const originalValue = input.dataset.originalValue;
+      const originalValue = input.dataset.originalValue ?? '';
       const newValue = input.value.trim();
       
       if (newValue !== originalValue) {
@@ -1338,6 +1367,9 @@
         updateBtn.classList.remove('pending');
       }
     }
+
+    // Delegate input changes on virtualized editable table
+    document.getElementById('editable-tbody').addEventListener('input', onCellChange);
     
     // Save all changes
     async function saveAllChanges() {
