@@ -286,23 +286,13 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="officerType">কর্মকর্তার ধরন *</label>
-                        <select id="officerType" required onchange="loadOfficers()">
-                            <option value="">-- নির্বাচন করুন --</option>
-                            <option value="presiding">প্রিজাইডিং অফিসার</option>
-                            <option value="ass_presiding">সহ-প্রিজাইডিং অফিসার</option>
-                            <option value="polling">পোলিং অফিসার</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="officerSearch">কর্মকর্তা Search *</label>
+                        <label for="officerSearch">নাম বা মোবাইল/ID দিয়ে খুঁজুন</label>
                         <div style="display: flex; gap: 10px;">
-                            <input type="text" id="officerSearch" placeholder="নাম বা ID দিয়ে খুঁজুন..." style="flex: 1;" onkeyup="handleSearchKeyup(event)">
-                            <button type="button" class="btn btn-primary" onclick="searchOfficers()" style="padding: 12px 20px;">🔍 Search</button>
+                            <input type="text" id="officerSearch" placeholder="নাম বা মোবাইল/ID লিখুন..." style="flex: 1;" onkeyup="handleSearchKeyup(event)">
+                            <button type="button" class="btn btn-primary" onclick="searchOfficers()" style="padding: 12px 20px;">🔍 খুঁজুন</button>
                         </div>
                         <input type="hidden" id="officerSelect" required>
-                        <div id="searchResults" style="max-height: 200px; overflow-y: auto; margin-top: 10px; border: 2px solid #ddd; border-radius: 8px; display: none; background: white;"></div>
+                        <div id="searchResults" style="max-height: 260px; overflow-y: auto; margin-top: 10px; border: 2px solid #ddd; border-radius: 8px; display: none; background: white;"></div>
                     </div>
 
                     <div class="form-group">
@@ -375,6 +365,7 @@
         let voteCentreData = {};
         let isEditMode = false;
         let allOfficers = [];
+        let searchResultsData = [];
         let selectedOfficer = null;
 
         // Helper function to show status
@@ -407,130 +398,138 @@
             return labels[type] || type;
         }
 
-        // Load officers based on selected type
-        async function loadOfficers() {
-            const officerType = document.getElementById('officerType').value;
-            
-            if (!officerType) {
-                document.getElementById('officerSearch').value = '';
-                document.getElementById('officerName').value = '';
-                document.getElementById('searchResults').style.display = 'none';
-                allOfficers = [];
-                selectedOfficer = null;
+
+
+        // Search officers across all tables (server-side, like postal_ballet)
+        async function searchOfficers() {
+            const searchTerm = document.getElementById('officerSearch').value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (!searchTerm) {
+                resultsContainer.style.display = 'none';
+                showStatus('অনুগ্রহ করে নাম বা মোবাইল লিখুন।', 'error');
                 return;
             }
 
             setLoading(true);
-            
+            searchResultsData = [];
+
             try {
-                let tableName, idField, nameField;
-                
-                if (officerType === 'presiding') {
-                    tableName = 'presiding_list';
-                    idField = 'presiding_iid';
-                    nameField = 'presiding_name';
-                } else if (officerType === 'ass_presiding') {
-                    tableName = 'ass_presiding_list';
-                    idField = 'ass_presiding_iid';
-                    nameField = 'ass_presiding_name';
-                } else if (officerType === 'polling') {
-                    tableName = 'polling_list';
-                    idField = 'polling_iid';
-                    nameField = 'polling_name';
+                // presiding
+                const { data: presidingData, error: presidingError } = await window.supabaseClient
+                    .from('presiding_list')
+                    .select('*')
+                    .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (presidingError) throw presidingError;
+                if (presidingData && presidingData.length) {
+                    presidingData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'presiding_list',
+                            iid: off.presiding_iid,
+                            name: off.presiding_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.presiding_designation || ''
+                        });
+                    });
                 }
 
-                // Fetch all data with pagination (bypass 1000 row limit)
-                const CHUNK = 1000;
-                const MAX_FETCH = 50000;
-                let from = 0;
-                let allData = [];
-
-                console.log(`📊 Loading officers from ${tableName}...`);
-
-                while (true) {
-                    const { data, error } = await window.supabaseClient
-                        .from(tableName)
-                        .select('*')
-                        .order(idField, { ascending: true })
-                        .range(from, from + CHUNK - 1);
-
-                    if (error) throw error;
-
-                    const chunk = data || [];
-                    allData.push(...chunk);
-                    
-                    console.log(`   Loaded chunk: ${chunk.length} rows, total: ${allData.length}`);
-                    
-                    if (chunk.length < CHUNK) break;
-                    from += CHUNK;
-                    if (allData.length >= MAX_FETCH) break;
+                // ass_presiding
+                const { data: assData, error: assError } = await window.supabaseClient
+                    .from('ass_presiding_list')
+                    .select('*')
+                    .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (assError) throw assError;
+                if (assData && assData.length) {
+                    assData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'ass_presiding_list',
+                            iid: off.ass_presiding_iid,
+                            name: off.ass_presiding_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.ass_presiding_designation || ''
+                        });
+                    });
                 }
 
-                console.log(`✅ Total ${allData.length} officers loaded from ${tableName}`);
+                // polling
+                const { data: pollData, error: pollError } = await window.supabaseClient
+                    .from('polling_list')
+                    .select('*')
+                    .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (pollError) throw pollError;
+                if (pollData && pollData.length) {
+                    pollData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'polling_list',
+                            iid: off.polling_iid,
+                            name: off.polling_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.polling_designation || ''
+                        });
+                    });
+                }
 
-                officerData = {};
-                allOfficers = [];
-                
-                allData.forEach(officer => {
-                    const id = officer[idField];
-                    const name = officer[nameField];
-                    officerData[id] = { ...officer, tableName, idField, nameField };
-                    allOfficers.push({ id, name, officer: { ...officer, tableName, idField, nameField } });
-                });
+                displaySearchResults();
 
-                document.getElementById('officerSearch').value = '';
-                document.getElementById('searchResults').style.display = 'none';
-                selectedOfficer = null;
-                showStatus(`✅ ${allOfficers.length} জন কর্মকর্তা লোড হয়েছে। এখন Search করুন।`, 'success');
-                
             } catch (error) {
-                console.error('Error loading officers:', error);
-                showStatus('❌ কর্মকর্তা লোড করতে সমস্যা হয়েছে', 'error');
+                console.error('Search error:', error);
+                showStatus('খোঁজার সময় ত্রুটি হয়েছে: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
         }
 
-        // Search officers
-        function searchOfficers() {
-            const searchTerm = document.getElementById('officerSearch').value.trim().toLowerCase();
+        // Display unified search results
+        function displaySearchResults() {
             const resultsContainer = document.getElementById('searchResults');
-            
-            if (!searchTerm || allOfficers.length === 0) {
-                resultsContainer.style.display = 'none';
-                return;
-            }
 
-            // Filter officers
-            const filtered = allOfficers.filter(item => {
-                const name = item.name.toLowerCase();
-                const id = String(item.id).toLowerCase();
-                return name.includes(searchTerm) || id.includes(searchTerm);
-            });
-
-            if (filtered.length === 0) {
+            if (searchResultsData.length === 0) {
                 resultsContainer.innerHTML = '<div style="padding: 12px; text-align: center; color: #999;">কোনো ফলাফল পাওয়া যায়নি</div>';
                 resultsContainer.style.display = 'block';
                 return;
             }
 
-            // Display results (max 50)
             let html = '';
-            filtered.slice(0, 50).forEach(item => {
+            searchResultsData.slice(0,50).forEach((item, idx) => {
                 html += `
-                    <div class="search-result-item" onclick="selectOfficer('${item.id}')">
+                    <div class="search-result-item" onclick="selectOfficerFromResults(${idx})">
                         <div class="search-result-name">${item.name}</div>
-                        <div class="search-result-id">ID: ${item.id}</div>
+                        <div class="search-result-id">ID: ${item.iid} | ${getOfficerTypeLabelByTable(item.table)}</div>
                     </div>
                 `;
             });
 
-            if (filtered.length > 50) {
-                html += '<div style="padding: 12px; text-align: center; color: #666; font-size: 14px;">আরও ' + (filtered.length - 50) + ' জন... আরও নির্দিষ্ট করে খুঁজুন</div>';
+            if (searchResultsData.length > 50) {
+                html += '<div style="padding: 12px; text-align: center; color: #666; font-size: 14px;">আরও ' + (searchResultsData.length - 50) + ' জন... আরও নির্দিষ্ট করে খুঁজুন</div>';
             }
 
             resultsContainer.innerHTML = html;
             resultsContainer.style.display = 'block';
+        }
+
+        function getOfficerTypeLabelByTable(table) {
+            if (table === 'presiding_list') return 'প্রিজাইডিং';
+            if (table === 'ass_presiding_list') return 'সহ-প্রিজাইডিং';
+            if (table === 'polling_list') return 'পোলিং';
+            return table;
+        }
+
+        // Select officer from unified results
+        function selectOfficerFromResults(index) {
+            const officer = searchResultsData[index];
+            if (!officer) return;
+
+            const short = (officer.table === 'presiding_list') ? 'presiding' : (officer.table === 'ass_presiding_list') ? 'ass_presiding' : (officer.table === 'polling_list') ? 'polling' : officer.table;
+            officer.type = short; // short name used for saving (e.g., 'presiding')
+            selectedOfficer = officer;
+
+            document.getElementById('officerSelect').value = officer.iid;
+            document.getElementById('officerName').value = officer.name || '';
+            document.getElementById('officerSearch').value = officer.name || '';
+            document.getElementById('searchResults').style.display = 'none';
         }
 
         // Handle Enter key in search box
@@ -631,15 +630,14 @@
             e.preventDefault();
             
             const requestId = document.getElementById('requestId').value;
-            const officerType = document.getElementById('officerType').value;
             const officerId = document.getElementById('officerSelect').value;
             const officerName = document.getElementById('officerName').value;
             const centreId = document.getElementById('voteCentreSelect').value;
             const centreCode = document.getElementById('voteCentreCode').value;
             const centreName = document.getElementById('voteCentreName').value;
 
-            if (!officerType || !officerId || !centreId) {
-                showStatus('⚠️ সকল আবশ্যক ফিল্ড পূরণ করুন', 'error');
+            if (!officerId || !centreId || !selectedOfficer || !selectedOfficer.type) {
+                showStatus('⚠️ অনুগ্রহ করে একটি কর্মকর্তা নির্বাচন করুন ও সমস্ত আবশ্যক ফিল্ড পূরণ করুন', 'error');
                 return;
             }
 
@@ -648,7 +646,7 @@
             try {
                 const dataToSave = {
                     officer_name: officerName,
-                    officer_table_name: officerType,
+                    officer_table_name: selectedOfficer.type,
                     officer_table_iid: officerId,
                     vote_centre_iid: centreId,
                     vote_centre_code: centreCode,
@@ -693,6 +691,7 @@
             document.getElementById('submitBtnText').textContent = '💾 সংরক্ষণ করুন';
             document.getElementById('officerSearch').value = '';
             document.getElementById('searchResults').style.display = 'none';
+            searchResultsData = [];
             allOfficers = [];
             selectedOfficer = null;
             isEditMode = false;
@@ -786,11 +785,7 @@
 
                 // Set form values
                 document.getElementById('requestId').value = data.request_id;
-                document.getElementById('officerType').value = data.officer_table_name;
-                
-                // Load officers for selected type
-                await loadOfficers();
-                
+
                 // Set officer and centre
                 document.getElementById('officerSelect').value = data.officer_table_iid;
                 document.getElementById('officerName').value = data.officer_name;
@@ -798,6 +793,9 @@
                 document.getElementById('voteCentreSelect').value = data.vote_centre_iid;
                 document.getElementById('voteCentreCode').value = data.vote_centre_code;
                 document.getElementById('voteCentreName').value = data.vote_centre_name;
+
+                // set selectedOfficer for compatibility (short type like 'presiding')
+                selectedOfficer = { iid: data.officer_table_iid, name: data.officer_name, type: data.officer_table_name };
 
                 // Update form title and button
                 document.getElementById('formTitle').textContent = 'এন্ট্রি সম্পাদনা করুন';

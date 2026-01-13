@@ -325,7 +325,86 @@
     .editable-table tr:hover {
       background: #e8f4f8 !important;
     }
+
+    /* Raw DB table styles */
+    .raw-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      overflow: auto;
+    }
+    .raw-table th, .raw-table td {
+      padding: 8px 10px;
+      border: 1px solid #e9ecef;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    .raw-table th {
+      background: #111827;
+      color: white;
+      font-weight: 600;
+    }
     
+    .raw-edit-field {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    
+    .raw-edit-field:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+      background: #f8f9ff;
+    }
+    
+    .raw-edit-field[type="number"] {
+      text-align: right;
+    }
+    
+    .raw-table textarea.raw-edit-field {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.4;
+    }
+    
+    .raw-actions {
+      width: 100px;
+      text-align: center;
+    }
+
+    .raw-update-btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, #6366f1 0%, #38bdf8 100%);
+      color: white;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .raw-update-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .raw-update-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Reuse modal .modal/.modal.show for row editor */
+
     .loading {
       padding: 40px 20px;
       text-align: center;
@@ -810,10 +889,12 @@
   
   <div class="action-buttons">
     <button class="add-new-btn" onclick="window.location.href='4_vote_centre.html'">⬅️ Back</button>
-    <button class="update-btn" id="update-btn" onclick="saveAllChanges()" disabled>💾 Update</button>
+    <button class="update-btn" id="bulk-update-btn" onclick="saveBulkUpdates()" disabled style="display:none;">💾 বাল্ক আপডেট</button>
   </div>
+
+
   
-  <div class="editable-table-wrapper active" id="editable-table-wrapper">
+  <div class="editable-table-wrapper" id="editable-table-wrapper" style="display:none;">
     <table class="editable-table" id="editable-table">
       <thead id="editable-thead"></thead>
       <tbody id="editable-tbody"></tbody>
@@ -836,6 +917,26 @@
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+
+  <!-- Raw table showing all vote_centre columns with per-row Update -->
+  <div id="rawTableContainer" style="margin-top:0;"></div>
+
+  <!-- Row edit modal -->
+  <div id="vc-row-modal" class="modal" onclick="if(event.target===this) closeVcRowModal()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Vote Centre Record</h2>
+        <button class="modal-close" onclick="closeVcRowModal()">Close</button>
+      </div>
+      <form id="vcRowForm">
+        <div id="vcRowFields"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-save" onclick="submitVcRowUpdate(event)">💾 Save</button>
+          <button type="button" class="btn btn-cancel" onclick="closeVcRowModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div class="pagination" id="pagination">
@@ -875,6 +976,7 @@
     
     // Table editing variables
     let allTableData = [];
+    let rawTableData = []; // cache for raw table view
     let modifiedRows = new Map();
     let isEditTableMode = false;
 
@@ -934,9 +1036,6 @@
         errorEl.style.display = 'block';
       }
     }
-
-    // Load data when page loads - directly load editable table
-    loadAllTableData();
     
     // Toggle edit table mode
     async function toggleEditTable() {
@@ -944,12 +1043,16 @@
       const wrapper = document.getElementById('editable-table-wrapper');
       const tableWrapper = document.querySelector('.table-wrapper');
       const pagination = document.getElementById('pagination');
+      const bulkBtn = document.getElementById('bulk-update-btn');
       
       if (isEditTableMode) {
         wrapper.classList.add('active');
         tableWrapper.style.display = 'none';
         pagination.style.display = 'none';
+        if (bulkBtn) bulkBtn.style.display = 'inline-block';
         await loadAllTableData();
+        await renderEditableTable();
+        updateBulkButton();
       } else {
         wrapper.classList.remove('active');
         tableWrapper.style.display = 'block';
@@ -957,7 +1060,8 @@
           pagination.style.display = 'flex';
         }
         modifiedRows.clear();
-        updateUpdateButton();
+        updateBulkButton();
+        if (bulkBtn) bulkBtn.style.display = 'none';
       }
     }
     
@@ -965,6 +1069,8 @@
     async function loadAllTableData(page = 1) {
       const loadingEl = document.getElementById('loading');
       loadingEl.style.display = 'block';
+      
+      console.log('loadAllTableData called, page:', page);
       
       try {
         // Get total count
@@ -974,6 +1080,7 @@
         
         if (countError) throw countError;
         totalRecords = count || 0;
+        console.log('Total records:', totalRecords);
         
         // Fetch paginated data
         const from = (page - 1) * PAGE_SIZE;
@@ -987,46 +1094,62 @@
         
         if (error) throw error;
         
+        console.log('Fetched data rows:', data ? data.length : 0);
+        
         allTableData = data || [];
         currentPage = page;
-        renderEditableTable();
-        updatePagination();
+        // Render raw table with all columns (async because we may query information_schema)
+        await displayRawTable(allTableData);
         loadingEl.style.display = 'none';
       } catch (err) {
         console.error('Error loading all data:', err);
-        alert('Error loading table data: ' + err.message);
         loadingEl.style.display = 'none';
+        alert('Error loading table data: ' + err.message);
       }
     }
     
-    // Render editable table
-    function renderEditableTable() {
+    // Render editable table (dynamic columns)
+    async function renderEditableTable() {
       const thead = document.getElementById('editable-thead');
       const tbody = document.getElementById('editable-tbody');
-      
+
       if (allTableData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:40px;">No data available</td></tr>';
         return;
       }
-      
-      // Define columns as per vote_centre table
-      const columns = [
-        'vote_centre_iid',
-        'vote_centre_code',
-        'vote_centre_name',
-        'voter_both_total',
-        'voter_both_male',
-        'voter_both_female',
-        'vote_centre_location',
-        'vote_centre_area',
-        'male_voter',
-        'female_voter',
-        'hizra_voter',
-        'total_voter',
-        'vote_centre_quality',
-        'comment'
-      ];
-      // Render header (friendly labels)
+
+      // Attempt to get columns from information_schema (fallbacks handled below)
+      let cols = [];
+      try {
+        const { data: colsInfo, error: colsError } = await supabaseClient
+          .from('information_schema.columns')
+          .select('column_name,ordinal_position')
+          .eq('table_name', 'vote_centre')
+          .eq('table_schema', 'public')
+          .order('ordinal_position', { ascending: true });
+        if (!colsError && Array.isArray(colsInfo) && colsInfo.length > 0) {
+          cols = colsInfo.map(c => c.column_name);
+        }
+      } catch (err) {
+        console.warn('Could not fetch schema for editable table:', err);
+      }
+
+      // If schema not available, use union of keys from rows
+      if (!cols || cols.length === 0) {
+        const set = new Set();
+        allTableData.forEach(r => Object.keys(r || {}).forEach(k => set.add(k)));
+        cols = Array.from(set);
+      }
+
+      // Preferred order as per schema
+      const preferred = ['vote_centre_iid','vote_centre_code','vote_centre_name','voter_both_total','voter_both_male','voter_both_female','vote_centre_location','vote_centre_area','male_voter','female_voter','hizra_voter','total_voter','vote_centre_quality','comment','vote_centre_condition'];
+      const originalCols = cols.slice();
+      const ordered = [];
+      preferred.forEach(p => { if (!ordered.includes(p)) ordered.push(p); });
+      originalCols.forEach(c => { if (!ordered.includes(c)) ordered.push(c); });
+      cols = ordered;
+
+      // Labels
       const labels = {
         vote_centre_iid: 'ID',
         vote_centre_code: 'Code',
@@ -1041,58 +1164,58 @@
         hizra_voter: 'Hizra Voters',
         total_voter: 'Total Voters',
         vote_centre_quality: 'Quality',
-        comment: 'Comment'
+        comment: 'Comment',
+        vote_centre_condition: 'Condition'
       };
-      thead.innerHTML = '<tr>' + columns.map(col => `<th>${labels[col] || col}</th>`).join('') + '</tr>';
-      
+
+      // Render header
+      thead.innerHTML = '<tr>' + cols.map(col => `<th>${labels[col] || col}</th>`).join('') + '</tr>';
+
       // Render rows
       tbody.innerHTML = '';
       allTableData.forEach((row, index) => {
         const tr = document.createElement('tr');
         tr.dataset.rowIndex = index;
-        
-        columns.forEach(col => {
+
+        cols.forEach(col => {
           const td = document.createElement('td');
 
           if (col === 'vote_centre_iid') {
-            // Read-only for ID
             td.textContent = row[col] || '';
             td.style.fontWeight = '700';
             td.style.color = '#111827';
-          } else if (['vote_centre_name','vote_centre_location','vote_centre_area','comment'].includes(col)) {
-            // use textarea for long text fields
-            const textarea = document.createElement('textarea');
-            textarea.rows = 2;
-            textarea.value = row[col] || '';
-            textarea.dataset.column = col;
-            textarea.dataset.rowIndex = index;
-            textarea.dataset.originalValue = row[col] || '';
-            textarea.addEventListener('input', onCellChange);
-            // auto-resize textarea
-            textarea.addEventListener('input', function() {
-              this.style.height = 'auto';
-              this.style.height = this.scrollHeight + 'px';
-            });
-            // initial resize
-            setTimeout(() => {
-              textarea.style.height = 'auto';
-              textarea.style.height = textarea.scrollHeight + 'px';
-            }, 0);
-            td.appendChild(textarea);
           } else {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = row[col] || '';
-            input.dataset.column = col;
-            input.dataset.rowIndex = index;
-            input.dataset.originalValue = row[col] || '';
-            input.addEventListener('input', onCellChange);
-            td.appendChild(input);
+            // Decide input type
+            const val = row[col];
+            const isLongText = ['vote_centre_name','vote_centre_location','vote_centre_area','comment'].includes(col) || (typeof val === 'string' && val.length > 200);
+            const isNumberish = /^(voter_|vote_|male_|female_|total_|voter_both_).*/i.test(col) || col.endsWith('_iid') || typeof val === 'number';
+
+            if (isLongText) {
+              const ta = document.createElement('textarea');
+              ta.rows = 2;
+              ta.value = val === null || val === undefined ? '' : val;
+              ta.dataset.column = col;
+              ta.dataset.rowIndex = index;
+              ta.dataset.originalValue = val === null || val === undefined ? '' : val;
+              ta.addEventListener('input', onCellChange);
+              ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
+              setTimeout(() => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }, 0);
+              td.appendChild(ta);
+            } else {
+              const input = document.createElement('input');
+              input.type = isNumberish ? 'number' : 'text';
+              input.value = val === null || val === undefined ? '' : val;
+              input.dataset.column = col;
+              input.dataset.rowIndex = index;
+              input.dataset.originalValue = val === null || val === undefined ? '' : val;
+              input.addEventListener('input', onCellChange);
+              td.appendChild(input);
+            }
           }
 
           tr.appendChild(td);
         });
-        
+
         tbody.appendChild(tr);
       });
     }
@@ -1123,68 +1246,328 @@
         }
       }
       
-      updateUpdateButton();
+      updateBulkButton();
     }
     
-    // Update the Update button state
-    function updateUpdateButton() {
-      const updateBtn = document.getElementById('update-btn');
-      
-      if (modifiedRows.size > 0) {
-        updateBtn.disabled = false;
-        updateBtn.classList.add('pending');
+    // Update the Bulk Update button state based on modifiedRows
+    function updateBulkButton() {
+      const btn = document.getElementById('bulk-update-btn');
+      if (!btn) return;
+      if (isEditTableMode) {
+        btn.style.display = 'inline-block';
+        if (modifiedRows.size > 0) {
+          btn.disabled = false;
+          btn.classList.add('pending');
+        } else {
+          btn.disabled = true;
+          btn.classList.remove('pending');
+        }
       } else {
-        updateBtn.disabled = true;
-        updateBtn.classList.remove('pending');
+        btn.style.display = 'none';
+        btn.disabled = true;
+        btn.classList.remove('pending');
       }
     }
-    
-    // Save all changes
-    async function saveAllChanges() {
-      if (modifiedRows.size === 0) return;
-      
-      const updateBtn = document.getElementById('update-btn');
-      updateBtn.disabled = true;
-      updateBtn.textContent = '⏳ Updating...';
-      
+
+    // Save all modified rows in bulk
+    async function saveBulkUpdates() {
+      if (modifiedRows.size === 0) {
+        alert('কোন পরিবর্তন নেই।');
+        return;
+      }
+
+      if (!confirm('আপনি নিশ্চিত যে সব পরিবর্তনগুলো একবারে সেভ করতে চান?')) return;
+
+      const btn = document.getElementById('bulk-update-btn');
+      const prevLabel = btn ? btn.textContent : 'Saving...';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ সেভ করা হচ্ছে...';
+      }
+
       try {
-        const updates = [];
-        
-        modifiedRows.forEach((changes, rowIndex) => {
+        const promises = [];
+        for (const [rowIndex, changes] of modifiedRows.entries()) {
           const row = allTableData[rowIndex];
-          const vote_centre_iid = row.vote_centre_iid;
+          if (!row || !row.vote_centre_iid) continue;
+          const id = row.vote_centre_iid;
+          const updateObj = { ...changes };
+          // normalize empty strings to null
+          Object.keys(updateObj).forEach(k => { if (updateObj[k] === '') updateObj[k] = null; });
+          promises.push(supabaseClient.from('vote_centre').update(updateObj).eq('vote_centre_iid', id));
+        }
+
+        const results = await Promise.all(promises);
+        for (const res of results) {
+          if (res.error) throw res.error;
+        }
+
+        alert('✅ সকল পরিবর্তন সফলভাবে সেভ হয়েছে।');
+        modifiedRows.clear();
+        updateBulkButton();
+        await loadAllTableData(currentPage);
+      } catch (err) {
+        console.error('Bulk save error:', err);
+        alert('বাল্ক সেভ ব্যর্থ: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.textContent = prevLabel;
+          btn.disabled = false;
+        }
+        updateBulkButton();
+      }
+    }
+
+    // Raw table: display all columns and per-row update
+    function escapeHtmlVc(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function displayRawTable(rows) {
+      rawTableData = rows || [];
+      const container = document.getElementById('rawTableContainer');
+      
+      console.log('displayRawTable called with', rawTableData.length, 'rows');
+      
+      if (!rawTableData || rawTableData.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#666; padding:12px;">No vote_centre records found.</p>';
+        return;
+      }
+
+      // Column order and labels from labels object
+      const columnLabels = {
+        vote_centre_iid: 'ID',
+        vote_centre_code: 'Code',
+        vote_centre_name: 'Name',
+        voter_both_total: 'Vote Booth',
+        voter_both_male: 'Vote booth (Male)',
+        voter_both_female: 'Vote booth (Female)',
+        vote_centre_location: 'Location',
+        vote_centre_area: 'Area',
+        male_voter: 'Male Voters',
+        female_voter: 'Female Voters',
+        hizra_voter: 'Hizra Voters',
+        total_voter: 'Total Voters',
+        vote_centre_quality: 'Quality',
+        comment: 'Comment',
+        vote_centre_condition: 'Condition'
+      };
+      
+      // Define column types based on schema
+      const textColumns = ['vote_centre_name', 'vote_centre_location', 'vote_centre_area', 'male_voter', 'female_voter', 'hizra_voter', 'total_voter', 'vote_centre_quality', 'comment', 'vote_centre_condition'];
+      const numericColumns = ['vote_centre_code', 'voter_both_total', 'voter_both_male', 'voter_both_female'];
+
+      // Get all columns from first row and organize by preferred order
+      const allCols = new Set();
+      rawTableData.forEach(r => Object.keys(r || {}).forEach(k => allCols.add(k)));
+      
+      // Sort: preferred columns first, then others alphabetically
+      const preferredOrder = Object.keys(columnLabels);
+      const cols = [];
+      preferredOrder.forEach(c => { 
+        if (allCols.has(c)) {
+          cols.push(c);
+          allCols.delete(c);
+        }
+      });
+      // Add remaining columns
+      Array.from(allCols).sort().forEach(c => cols.push(c));
+
+      console.log('Final columns order:', cols);
+
+      let html = '<table class="raw-table"><thead><tr>';
+      cols.forEach(c => html += `<th>${escapeHtmlVc(columnLabels[c] || c)}</th>`);
+      html += `<th class="raw-actions">Save</th></tr></thead><tbody>`;
+
+      rawTableData.forEach((row, rowIdx) => {
+        html += `<tr data-row-id="${row.vote_centre_iid}" data-row-idx="${rowIdx}">`;
+        cols.forEach(c => {
+          let v = row[c];
+          if (v === null || v === undefined) v = '';
+          else if (typeof v === 'object') v = JSON.stringify(v);
           
-          if (vote_centre_iid) {
-            updates.push(
-              supabaseClient
-                .from('vote_centre')
-                .update(changes)
-                .eq('vote_centre_iid', vote_centre_iid)
-            );
+          // Make ID read-only, others editable based on type
+          const isReadOnly = c === 'vote_centre_iid';
+          const isText = textColumns.includes(c);
+          const isNumeric = numericColumns.includes(c);
+          
+          if (isReadOnly) {
+            html += `<td style="font-weight:700; color:#111827;">${escapeHtmlVc(String(v))}</td>`;
+          } else if (isText) {
+            html += `<td><textarea class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" rows="3">${escapeHtmlVc(String(v))}</textarea></td>`;
+          } else if (isNumeric) {
+            html += `<td><input type="number" step="any" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
+          } else {
+            html += `<td><input type="text" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
           }
         });
+        const id = row.vote_centre_iid;
+        html += `<td style="text-align:center;"><button class="raw-update-btn" onclick="saveRawTableRow(${id}, ${rowIdx})">💾 Save</button></td>`;
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+
+      // Note about columns
+      const note = document.createElement('div');
+      note.style.marginTop = '8px';
+      note.style.color = '#666';
+      note.style.fontSize = '13px';
+      note.textContent = 'Total columns: ' + cols.length + ' | Total records: ' + rawTableData.length;
+      container.appendChild(note);
+    }
+    
+    // Save raw table row
+    async function saveRawTableRow(id, rowIdx) {
+      if (!id) return;
+      
+      const row = document.querySelector(`tr[data-row-id="${id}"]`);
+      if (!row) return;
+      
+      const fields = row.querySelectorAll('.raw-edit-field');
+      const updateObj = {};
+      let hasChanges = false;
+      
+      fields.forEach(field => {
+        const col = field.dataset.col;
+        const original = field.dataset.orig;
+        let newVal = field.value;
         
-        const results = await Promise.all(updates);
-        
-        // Check for errors
-        const errors = results.filter(r => r.error);
-        if (errors.length > 0) {
-          throw new Error(`Failed to update ${errors.length} row(s)`);
+        if (newVal !== original) {
+          hasChanges = true;
+          if (newVal === '') newVal = null;
+          updateObj[col] = newVal;
         }
+      });
+      
+      if (!hasChanges) {
+        alert('No changes made');
+        return;
+      }
+      
+      const saveBtn = row.querySelector('.raw-update-btn');
+      const origText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Saving...';
+      
+      try {
+        const { error } = await supabaseClient
+          .from('vote_centre')
+          .update(updateObj)
+          .eq('vote_centre_iid', id);
         
-        alert(`✅ Successfully updated ${modifiedRows.size} row(s)!`);
+        if (error) throw error;
         
-        // Reload editable data
-        modifiedRows.clear();
-        await loadAllTableData();
-        updateUpdateButton();
+        alert('✅ Saved successfully!');
+        
+        // Update original values
+        fields.forEach(field => {
+          field.dataset.orig = field.value;
+        });
+        
+        saveBtn.textContent = '💾 Save';
+        saveBtn.disabled = false;
+        
+        // Reload to show updated data
+        await loadAllTableData(currentPage);
         
       } catch (err) {
-        console.error('Error saving changes:', err);
-        alert('❌ Error saving changes: ' + err.message);
-      } finally {
-        updateBtn.textContent = '💾 Update';
-        updateUpdateButton();
+        console.error('Save error:', err);
+        alert('❌ Save failed: ' + err.message);
+        saveBtn.textContent = origText;
+        saveBtn.disabled = false;
+      }
+    }
+
+    // Open modal to edit one vote centre record
+    async function openVcRowModal(id) {
+      if (!id) return;
+      const modal = document.getElementById('vc-row-modal');
+      const fields = document.getElementById('vcRowFields');
+      fields.innerHTML = '';
+      try {
+        const { data, error } = await supabaseClient
+          .from('vote_centre')
+          .select('*')
+          .eq('vote_centre_iid', id)
+          .single();
+        if (error) throw error;
+        const rec = data || {};
+
+        Object.keys(rec).forEach(key => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'detail-row';
+          const label = document.createElement('div');
+          label.className = 'detail-label';
+          label.textContent = key;
+          const valueWrap = document.createElement('div');
+          if (key === 'vote_centre_iid' || key === 'created_at') {
+            const span = document.createElement('div');
+            span.className = 'detail-value';
+            span.textContent = rec[key] === null || rec[key] === undefined ? '' : rec[key];
+            valueWrap.appendChild(span);
+          } else if (typeof rec[key] === 'string' && rec[key].length > 200) {
+            const ta = document.createElement('textarea');
+            ta.className = 'detail-input';
+            ta.name = key;
+            ta.value = rec[key] || '';
+            valueWrap.appendChild(ta);
+          } else {
+            const inp = document.createElement('input');
+            inp.className = 'detail-input';
+            inp.name = key;
+            inp.value = rec[key] === null || rec[key] === undefined ? '' : rec[key];
+            valueWrap.appendChild(inp);
+          }
+          wrapper.appendChild(label);
+          wrapper.appendChild(valueWrap);
+          fields.appendChild(wrapper);
+        });
+
+        modal.dataset.editId = id;
+        modal.classList.add('show');
+      } catch (err) {
+        console.error('Open VC modal error:', err);
+        alert('Could not load record: ' + err.message);
+      }
+    }
+
+    function closeVcRowModal() {
+      const modal = document.getElementById('vc-row-modal');
+      modal.classList.remove('show');
+      delete modal.dataset.editId;
+      document.getElementById('vcRowFields').innerHTML = '';
+    }
+
+    async function submitVcRowUpdate(e) {
+      e.preventDefault();
+      const modal = document.getElementById('vc-row-modal');
+      const id = modal.dataset.editId;
+      if (!id) return;
+      const fieldsEl = document.getElementById('vcRowFields');
+      const inputs = fieldsEl.querySelectorAll('input[name], textarea[name]');
+      const updateObj = {};
+      inputs.forEach(inp => {
+        const k = inp.name;
+        let v = inp.value;
+        if (v === '') v = null;
+        updateObj[k] = v;
+      });
+
+      try {
+        const { error } = await supabaseClient
+          .from('vote_centre')
+          .update(updateObj)
+          .eq('vote_centre_iid', id);
+        if (error) throw error;
+        alert('✅ Updated successfully');
+        closeVcRowModal();
+        await loadAllTableData(currentPage);
+      } catch (err) {
+        console.error('VC update error:', err);
+        alert('Update failed: ' + err.message);
       }
     }
 
@@ -1518,7 +1901,7 @@
           }
         }
         modifiedRows.clear();
-        updateUpdateButton();
+        updateBulkButton();
         loadAllTableData(currentPage + 1);
         window.scrollTo(0, 0);
       }
@@ -1532,12 +1915,19 @@
           }
         }
         modifiedRows.clear();
-        updateUpdateButton();
+        updateBulkButton();
         loadAllTableData(currentPage - 1);
         window.scrollTo(0, 0);
       }
     }
   </script>
   <script src="authentication.js"></script>
+  <script>
+    // Auto-load data when page is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Page loaded, starting data load...');
+      loadAllTableData(1);
+    });
+  </script>
 </body>
 </html>
