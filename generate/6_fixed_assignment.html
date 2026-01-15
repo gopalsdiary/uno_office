@@ -316,6 +316,11 @@
                         <label for="voteCentreName">কেন্দ্রের নাম</label>
                         <input type="text" id="voteCentreName" readonly>
                     </div>
+
+                    <div class="form-group" id="commentGroup">
+                        <label for="requestComment">অনুরোধ/মন্তব্য *</label>
+                        <textarea id="requestComment" required rows="3" placeholder="মন্তব্য লিখুন..." style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"></textarea>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -340,13 +345,14 @@
                         <th>কর্মকর্তার ধরন</th>
                         <th>কেন্দ্র কোড</th>
                         <th>কেন্দ্রের নাম</th>
+                        <th>Ref/মন্তব্য *</th>
                         <th>তারিখ</th>
                         <th>কার্যক্রম</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
+                        <td colspan="8" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
                     </tr>
                 </tbody>
             </table>
@@ -529,6 +535,9 @@
             document.getElementById('officerSelect').value = officer.iid;
             document.getElementById('officerName').value = officer.name || '';
             document.getElementById('officerSearch').value = officer.name || '';
+            // clear existing comment so user must provide one
+            document.getElementById('requestComment').value = '';
+            document.getElementById('requestComment').focus();
             document.getElementById('searchResults').style.display = 'none';
         }
 
@@ -546,9 +555,12 @@
             if (!officer) return;
 
             selectedOfficer = officer;
+
             document.getElementById('officerSelect').value = officer.id;
             document.getElementById('officerName').value = officer.name;
             document.getElementById('officerSearch').value = officer.name;
+            document.getElementById('requestComment').value = '';
+            document.getElementById('requestComment').focus();
             document.getElementById('searchResults').style.display = 'none';
         }
 
@@ -635,9 +647,16 @@
             const centreId = document.getElementById('voteCentreSelect').value;
             const centreCode = document.getElementById('voteCentreCode').value;
             const centreName = document.getElementById('voteCentreName').value;
+            const requestComment = document.getElementById('requestComment').value.trim();
 
             if (!officerId || !centreId || !selectedOfficer || !selectedOfficer.type) {
                 showStatus('⚠️ অনুগ্রহ করে একটি কর্মকর্তা নির্বাচন করুন ও সমস্ত আবশ্যক ফিল্ড পূরণ করুন', 'error');
+                return;
+            }
+
+            if (!requestComment) {
+                showStatus('⚠️ অনুগ্রহ করে অনুরোধ/মন্তব্য বক্সটি পূরণ করুন', 'error');
+                document.getElementById('requestComment').focus();
                 return;
             }
 
@@ -650,7 +669,8 @@
                     officer_table_iid: officerId,
                     vote_centre_iid: centreId,
                     vote_centre_code: centreCode,
-                    vote_centre_name: centreName
+                    vote_centre_name: centreName,
+                    request_comment: requestComment
                 };
 
                 if (isEditMode && requestId) {
@@ -691,6 +711,7 @@
             document.getElementById('submitBtnText').textContent = '💾 সংরক্ষণ করুন';
             document.getElementById('officerSearch').value = '';
             document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('requestComment').value = '';
             searchResultsData = [];
             allOfficers = [];
             selectedOfficer = null;
@@ -700,7 +721,7 @@
         // Load table data
         async function loadTableData() {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
 
             try {
                 // Fetch all data with pagination
@@ -733,7 +754,7 @@
                 console.log(`✅ Total ${allData.length} records loaded from request_table`);
 
                 if (!allData || allData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
                     return;
                 }
 
@@ -747,6 +768,7 @@
                             <td>${getOfficerTypeLabel(row.officer_table_name)}</td>
                             <td>${row.vote_centre_code || ''}</td>
                             <td>${row.vote_centre_name || ''}</td>
+                            <td>${(row.request_comment && row.request_comment.length>100) ? row.request_comment.substring(0,100) + '...' : (row.request_comment || '')}</td>
                             <td>${date}</td>
                             <td>
                                 <div class="action-btns">
@@ -766,7 +788,7 @@
 
             } catch (error) {
                 console.error('Error loading table data:', error);
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
             }
         }
 
@@ -796,6 +818,9 @@
 
                 // set selectedOfficer for compatibility (short type like 'presiding')
                 selectedOfficer = { iid: data.officer_table_iid, name: data.officer_name, type: data.officer_table_name };
+
+                document.getElementById('requestComment').value = data.request_comment || '';
+                document.getElementById('commentGroup').style.display = 'block';
 
                 // Update form title and button
                 document.getElementById('formTitle').textContent = 'এন্ট্রি সম্পাদনা করুন';
