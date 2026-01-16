@@ -279,10 +279,15 @@
         if (!url) return null;
         try {
             const decoded = decodeURIComponent(url);
+            // @lat,lng pattern
             const atMatch = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
             if (atMatch) return [parseFloat(atMatch[1]), parseFloat(atMatch[2])];
+
+            // Google "!3d...!4d..." format
             const bangMatch = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
             if (bangMatch) return [parseFloat(bangMatch[1]), parseFloat(bangMatch[2])];
+
+            // query=lat,lng or q=lat,lng
             const queryMatch = decoded.match(/[?&]query=([^&]+)/);
             if (queryMatch) {
                 const q = decodeURIComponent(queryMatch[1]);
@@ -291,7 +296,6 @@
                     return [lat, lng];
                 }
             }
-            // Also consider 'q=' parameter (common in Google Maps short links)
             const qParam = decoded.match(/[?&]q=([^&]+)/);
             if (qParam) {
                 const q = decodeURIComponent(qParam[1]);
@@ -300,6 +304,31 @@
                     return [lat, lng];
                 }
             }
+
+            // center=lat,lng (staticmap or static endpoints)
+            const centerParam = decoded.match(/[?&]center=([^&]+)/);
+            if (centerParam) {
+                const c = decodeURIComponent(centerParam[1]).replace(/\+/g, ' ');
+                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
+                    const [lat, lng] = c.split(',').map(Number);
+                    return [lat, lng];
+                }
+            }
+
+            // ll=lat,lng
+            const llParam = decoded.match(/[?&]ll=([^&]+)/);
+            if (llParam) {
+                const c = decodeURIComponent(llParam[1]);
+                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
+                    const [lat, lng] = c.split(',').map(Number);
+                    return [lat, lng];
+                }
+            }
+
+            // /place/lat,lng pattern
+            const placeMatch = decoded.match(/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (placeMatch) return [parseFloat(placeMatch[1]), parseFloat(placeMatch[2])];
+
         } catch (e) {
             return null;
         }
@@ -450,11 +479,32 @@
                     coords = extractLatLngFromUrl(locationUrl);
 
                     if (!coords && locationUrl && locationUrl.trim()) {
-                        if (locationUrl.includes('goo.gl') || locationUrl.includes('maps.app.goo.gl')) {
+                        // Try to extract coords from the URL directly (handles many Google link shapes)
+                        coords = extractLatLngFromUrl(locationUrl);
+                        if (!coords && (locationUrl.includes('goo.gl') || locationUrl.includes('maps.app.goo.gl'))) {
                             const expandedUrl = await expandShortUrl(locationUrl);
                             if (expandedUrl) {
                                 coords = extractLatLngFromUrl(expandedUrl);
                                 if (coords) console.log('Extracted coords from expanded URL for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+                            }
+                        }
+
+                        // If we found coords from URL and DB doesn't already have them, save to DB
+                        if (coords && (!centre.location_latitude_longitude || !centre.location_latitude_longitude.trim())) {
+                            const coordsStr = `${coords[0]},${coords[1]}`;
+                            try {
+                                const { data: upData, error: upErr } = await supabaseClient
+                                    .from('vote_centre')
+                                    .update({ location_latitude_longitude: coordsStr })
+                                    .eq('vote_centre_iid', centre.vote_centre_iid);
+                                if (!upErr) {
+                                    centre.location_latitude_longitude = coordsStr; // update in-memory record
+                                    console.log('Saved extracted coords to DB for', centre.vote_centre_iid, coordsStr);
+                                } else {
+                                    console.warn('Failed to save extracted coords for', centre.vote_centre_iid, upErr);
+                                }
+                            } catch (e) {
+                                console.warn('Error saving extracted coords for', centre.vote_centre_iid, e);
                             }
                         }
                     }
