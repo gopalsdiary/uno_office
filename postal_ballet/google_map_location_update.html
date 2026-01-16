@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Map Location - Vote Centres</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a.map-link {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #4285F4;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        a.map-link:hover {
+            background-color: #3367d6;
+        }
+
+        .error {
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+            background: #ffe6e6;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .url-input, .coord-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: border-color 0.2s;
+        }
+
+        .url-input:focus, .coord-input:focus {
+            outline: none;
+            border-color: #4285F4;
+        }
+
+        .url-input.saving, .coord-input.saving {
+            border-color: #ffc107;
+            background-color: #fff9e6;
+        }
+
+        .url-input.success, .coord-input.success {
+            border-color: #28a745;
+            background-color: #e8f5e9;
+        }
+
+        .url-input.error-input, .coord-input.error-input {
+            border-color: #dc3545;
+            background-color: #ffe6e6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Vote Centre Locations</h1>
+    <div id="status" class="loading">Loading data...</div>
+    <div id="table-container"></div>
+</div>
+
+<script>
+    // Supabase Configuration from instructions
+    const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+    
+    // Initialize Supabase client
+    const supabaseClient = window.supabaseClient || (window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+
+    // Function to fetch data and render table
+    async function loadVoteCentres() {
+        const statusDiv = document.getElementById('status');
+        const tableContainer = document.getElementById('table-container');
+
+        try {
+            // Fetch relevant columns from public.vote_centre (including coordinates)
+            const { data, error } = await supabaseClient
+                .from('vote_centre')
+                .select('vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, location_url, location_latitude_longitude')
+                .order('vote_centre_code', { ascending: true });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data || data.length === 0) {
+                statusDiv.innerHTML = 'No vote centres found.';
+                return;
+            }
+
+            // Generate Table HTML
+            let tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Centre Code</th>
+                            <th>Centre Name</th>
+                            <th>Location</th>
+                            <th>Area</th>
+                            <th>Location URL</th>
+                            <th>Coordinates</th>
+                            <th>Map Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(centre => {
+                const iid = centre.vote_centre_iid || '';
+                const code = centre.vote_centre_code || '';
+                const name = centre.vote_centre_name || '';
+                const location = centre.vote_centre_location || '';
+                const area = centre.vote_centre_area || '';
+                const locationUrl = centre.location_url || '';
+
+                // Create search query combining Name, Location, and Area
+                // Filter out empty strings to avoid extra commas
+                const locationParts = [name, location, area].filter(part => part && part.trim() !== '');
+                const query = locationParts.join(', ');
+                const encodedQuery = encodeURIComponent(query);
+                
+                // Google Maps Search URL
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+                // Prefer explicit location_url if provided
+                const finalMapHref = (locationUrl && locationUrl.trim()) ? locationUrl : mapUrl;
+
+                tableHtml += `
+                    <tr>
+                        <td>${code}</td>
+                        <td>${name}</td>
+                        <td>${location}</td>
+                        <td>${area}</td>
+                        <td>
+                            <input 
+                                type="text" 
+                                class="url-input" 
+                                data-iid="${iid}" 
+                                value="${locationUrl}"
+                                placeholder="Enter Google Maps URL"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                type="text"
+                                class="coord-input"
+                                data-iid="${iid}"
+                                value="${centre.location_latitude_longitude || ''}"
+                                placeholder="lat,lng (e.g. 23.8153,90.4117)"
+                            />
+                        </td>
+                        <td>
+                            <a href="${finalMapHref}" target="_blank" class="map-link">
+                                Open Map
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `
+                    </tbody>
+                </table>
+            `;
+
+            tableContainer.innerHTML = tableHtml;
+            statusDiv.style.display = 'none';
+
+            // Attach event listeners to all URL and coordinate inputs
+            attachUrlInputListeners();
+            attachCoordInputListeners();
+
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            statusDiv.className = 'error';
+            statusDiv.innerHTML = `Error loading data: ${err.message}`;
+        }
+    }
+
+    // Function to update location_url in database
+    async function updateLocationUrl(iid, newUrl, inputElement) {
+        // Add saving state
+        inputElement.classList.remove('success', 'error-input');
+        inputElement.classList.add('saving');
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('vote_centre')
+                .update({ location_url: newUrl })
+                .eq('vote_centre_iid', iid);
+
+            if (error) {
+                throw error;
+            }
+
+            // Show success state
+            inputElement.classList.remove('saving');
+            inputElement.classList.add('success');
+            
+            // Remove success state after 2 seconds
+            setTimeout(() => {
+                inputElement.classList.remove('success');
+            }, 2000);
+
+        } catch (err) {
+            console.error('Error updating location_url:', err);
+            
+            // Show error state
+            inputElement.classList.remove('saving');
+            inputElement.classList.add('error-input');
+            
+            // Remove error state after 3 seconds
+            setTimeout(() => {
+                inputElement.classList.remove('error-input');
+            }, 3000);
+            
+            alert('Failed to update: ' + err.message);
+        }
+    }
+
+    // Function to attach event listeners to URL inputs
+    function attachUrlInputListeners() {
+        const urlInputs = document.querySelectorAll('.url-input');
+        
+        urlInputs.forEach(input => {
+            let timeoutId;
+            
+            input.addEventListener('input', function() {
+                // Clear previous timeout
+                clearTimeout(timeoutId);
+                
+                // Set new timeout to update after 1 second of no typing
+                timeoutId = setTimeout(() => {
+                    const iid = this.getAttribute('data-iid');
+                    const newUrl = this.value.trim();
+                    updateLocationUrl(iid, newUrl, this);
+                }, 1000);
+            });
+            
+            // Also update on blur (when user clicks away)
+            input.addEventListener('blur', function() {
+                clearTimeout(timeoutId);
+                const iid = this.getAttribute('data-iid');
+                const newUrl = this.value.trim();
+                updateLocationUrl(iid, newUrl, this);
+            });
+        });
+    }
+
+    // Function to update location_latitude_longitude in database
+    async function updateCoordinates(iid, newCoords, inputElement) {
+        // Add saving state
+        inputElement.classList.remove('success', 'error-input');
+        inputElement.classList.add('saving');
+
+        // Allow clearing coordinates (empty string), otherwise validate format lat,lng
+        if (newCoords && newCoords.length > 0) {
+            const coordRegex = /^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/;
+            if (!coordRegex.test(newCoords)) {
+                inputElement.classList.remove('saving');
+                inputElement.classList.add('error-input');
+                setTimeout(() => {
+                    inputElement.classList.remove('error-input');
+                }, 3000);
+                alert('Invalid coordinate format. Use: lat,lng (e.g. 23.8153,90.4117)');
+                return;
+            }
+        }
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('vote_centre')
+                .update({ location_latitude_longitude: newCoords })
+                .eq('vote_centre_iid', iid);
+
+            if (error) {
+                throw error;
+            }
+
+            // Show success state
+            inputElement.classList.remove('saving');
+            inputElement.classList.add('success');
+            
+            // Remove success state after 2 seconds
+            setTimeout(() => {
+                inputElement.classList.remove('success');
+            }, 2000);
+
+        } catch (err) {
+            console.error('Error updating location_latitude_longitude:', err);
+            
+            // Show error state
+            inputElement.classList.remove('saving');
+            inputElement.classList.add('error-input');
+            
+            // Remove error state after 3 seconds
+            setTimeout(() => {
+                inputElement.classList.remove('error-input');
+            }, 3000);
+            
+            alert('Failed to update coordinates: ' + err.message);
+        }
+    }
+
+    // Function to attach event listeners to coordinate inputs
+    function attachCoordInputListeners() {
+        const coordInputs = document.querySelectorAll('.coord-input');
+        
+        coordInputs.forEach(input => {
+            let timeoutId;
+            
+            input.addEventListener('input', function() {
+                // Clear previous timeout
+                clearTimeout(timeoutId);
+                
+                // Set new timeout to update after 1 second of no typing
+                timeoutId = setTimeout(() => {
+                    const iid = this.getAttribute('data-iid');
+                    const newCoords = this.value.trim();
+                    updateCoordinates(iid, newCoords, this);
+                }, 1000);
+            });
+            
+            // Also update on blur (when user clicks away)
+            input.addEventListener('blur', function() {
+                clearTimeout(timeoutId);
+                const iid = this.getAttribute('data-iid');
+                const newCoords = this.value.trim();
+                updateCoordinates(iid, newCoords, this);
+            });
+        });
+    }
+
+
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadVoteCentres);
+</script>
+
+</body>
+</html>

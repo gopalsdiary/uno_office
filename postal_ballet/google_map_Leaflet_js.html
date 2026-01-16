@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Map Location - Vote Centres</title>
+    <link rel="stylesheet" href="leaflet/dist/leaflet.css">
+    <script src="leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            padding: 20px;
+        }
+
+        #map {
+            height: 420px;
+            border-radius: 10px;
+            margin-top: 16px;
+            border: 1px solid rgba(15,23,42,0.06);
+            box-shadow: 0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+        }
+
+        /* Card styles for mobile-friendly layout */
+        .card-grid {
+            display: grid;
+            /* Single-column layout so each card occupies its own row on desktop */
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+            align-items: stretch;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid rgba(15,23,42,0.04);
+            /* stronger, multi-layered shadow for consistent elevation */
+            box-shadow: 0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+            display: flex;
+            flex-direction: column;
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 44px rgba(15,23,42,0.14), 0 6px 18px rgba(15,23,42,0.08);
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            margin: 0 0 6px 0;
+            color: #1f2937;
+        }
+
+        .card-meta {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            line-height: 1.35;
+        }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end; /* align actions to the right */
+        }
+
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: #ff7a00; /* orange */
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 6px 12px rgba(255,122,0,0.16);
+        }
+
+        .map-link:hover { background-color: #e05b00; }
+
+        /* Filter row styles */
+        .filter-row {
+            display: none; /* shown after data loads */
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .area-select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #e6e6e6;
+            background: white;
+            font-weight: 600;
+        }
+
+        .area-badge {
+            color: #6b7280;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .area-badge { margin-left: 0; }
+        }
+
+        .error {
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+            background: #ffe6e6;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .card-grid { gap: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            #map { height: 300px; }
+        }
+
+        /* Custom numbered marker styles */
+        .numbered-marker {
+            background-color: #2563eb;
+            border: 3px solid white;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+            width: 36px;
+            height: 36px;
+        }
+
+        .numbered-marker:hover {
+            background-color: #1e40af;
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Vote Centre Locations</h1>
+    <div id="status" class="loading">Loading data...</div>
+    <div class="filter-row" style="display:none;">
+        <label for="areaFilter" style="font-weight:600; margin-right:8px;">Filter by Area:</label>
+        <select id="areaFilter" class="area-select">
+            <option value="">All areas</option>
+        </select>
+        <span id="resultCount" class="area-badge"></span>
+    </div>
+    <div id="map"></div>
+    <div id="table-container"></div>
+</div>
+
+<script>
+    // Supabase Configuration from instructions
+    const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+    
+    // Initialize Supabase client
+    const supabaseClient = window.supabaseClient || (window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+    let voteData = []; // holds fetched vote centre records for filtering
+    let map;
+    let markerLayer;
+    const geoCache = new Map();
+    let lastGeocodingTime = 0;
+
+    // Delay utility for rate limiting
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Extract main location name from detailed address (removes ward numbers, street details)
+    function extractMainLocation(text) {
+        if (!text) return '';
+        // Remove patterns like "ওয়ার্ড নং-১", numbers with slashes, parentheses content
+        let cleaned = text
+            .replace(/ওয়ার্ড\s*নং?[-\s]*\d+/gi, '') // Remove ward numbers
+            .replace(/\d+নং?\s*ওয়ার্ড/gi, '') // Remove ward mentions
+            .replace(/[-–—]\d+/g, '') // Remove dash-numbers like -197, -331
+            .replace(/\([^)]*\)/g, '') // Remove parentheses content
+            .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
+            .trim();
+        // Extract first meaningful part (usually city/municipality name)
+        const parts = cleaned.split(/[,،]/); // Split by comma (English or Bengali)
+        return parts[0]?.trim() || cleaned;
+    }
+
+    // Function to fetch data and render table
+    async function loadVoteCentres() {
+        const statusDiv = document.getElementById('status');
+        const tableContainer = document.getElementById('table-container');
+
+        try {
+            // Fetch relevant columns from public.vote_centre
+            const { data, error } = await supabaseClient
+                .from('vote_centre')
+                .select('vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, location_url')
+                .order('vote_centre_code', { ascending: true });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data || data.length === 0) {
+                statusDiv.innerHTML = 'No vote centres found.';
+                return;
+            }
+
+            // Store data and initialize UI
+            voteData = data;
+            initMap();
+            populateAreaFilter(data);
+            renderCards(data);
+            // show filter row
+            const filterRow = document.querySelector('.filter-row');
+            if (filterRow) filterRow.style.display = 'flex';
+            statusDiv.style.display = 'none';
+
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            statusDiv.className = 'error';
+            statusDiv.innerHTML = `Error loading data: ${err.message}`;
+        }
+    }
+
+    function initMap() {
+        if (map) return;
+        map = L.map('map', { scrollWheelZoom: false });
+        map.setView([23.0150, 91.3967], 12); // Feni, Bangladesh
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        markerLayer = L.layerGroup().addTo(map);
+    }
+
+    function extractLatLngFromUrl(url) {
+        if (!url) return null;
+        try {
+            const decoded = decodeURIComponent(url);
+            const atMatch = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (atMatch) return [parseFloat(atMatch[1]), parseFloat(atMatch[2])];
+            const bangMatch = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            if (bangMatch) return [parseFloat(bangMatch[1]), parseFloat(bangMatch[2])];
+            const queryMatch = decoded.match(/[?&]query=([^&]+)/);
+            if (queryMatch) {
+                const q = decodeURIComponent(queryMatch[1]);
+                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
+                    const [lat, lng] = q.split(',').map(Number);
+                    return [lat, lng];
+                }
+            }
+            // Also consider 'q=' parameter (common in Google Maps short links)
+            const qParam = decoded.match(/[?&]q=([^&]+)/);
+            if (qParam) {
+                const q = decodeURIComponent(qParam[1]);
+                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
+                    const [lat, lng] = q.split(',').map(Number);
+                    return [lat, lng];
+                }
+            }
+        } catch (e) {
+            return null;
+        }
+        return null;
+    }
+
+    // Parse plain "lat,lng" strings stored in database
+    function parseLatLngString(text) {
+        if (!text) return null;
+        const m = text.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+        if (m) return [parseFloat(m[1]), parseFloat(m[2])];
+        return null;
+    }
+
+    // Expand shortened URLs (like goo.gl) by following redirects
+    async function expandShortUrl(shortUrl) {
+        if (!shortUrl) return null;
+        
+        // Check cache first
+        const cacheKey = `expand:${shortUrl}`;
+        if (geoCache.has(cacheKey)) return geoCache.get(cacheKey);
+        
+        // Rate limiting for proxy requests (100ms delay)
+        await delay(100);
+        
+        try {
+            // Use corsproxy.io which is more reliable
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(shortUrl)}`;
+            const response = await fetch(proxyUrl, {
+                method: 'GET',
+                redirect: 'follow'
+            });
+            
+            // Try to get final URL from response.url first
+            let finalUrl = response.url || '';
+
+            // If proxy didn't follow to a final URL (still contains proxy prefix), parse the response body
+            if (finalUrl && finalUrl.includes('corsproxy.io/?')) {
+                const body = await response.text();
+
+                // Look for common Google Maps targets in the HTML (canonical, og:url, direct links)
+                const mapMatch = body.match(/https?:\/\/[^\s"'<>]*google\.com\/maps[^\s"'<>]*/i)
+                               || body.match(/https?:\/\/maps\.app\.goo\.gl\/[^\s"'<>]*/i)
+                               || body.match(/https?:\/\/maps\.google\.com\/[^\s"'<>]*/i);
+
+                if (mapMatch && mapMatch[0]) {
+                    finalUrl = mapMatch[0];
+                } else {
+                    // Check meta og:url
+                    const og = body.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)["']/i);
+                    if (og && og[1]) finalUrl = og[1];
+                }
+            }
+
+            // Clean up any proxy prefix if present
+            if (finalUrl.startsWith('https://corsproxy.io/?')) {
+                finalUrl = decodeURIComponent(finalUrl.replace('https://corsproxy.io/?', ''));
+            }
+
+            // If finalUrl is still the shortUrl, give up and cache null
+            if (!finalUrl || finalUrl === shortUrl) {
+                console.warn('Could not expand short URL (no final URL found):', shortUrl);
+                geoCache.set(cacheKey, null);
+                return null;
+            }
+
+            console.log('Expanded URL:', shortUrl, '->', finalUrl);
+            geoCache.set(cacheKey, finalUrl);
+            return finalUrl;
+        } catch (e) {
+            console.error('Failed to expand URL:', shortUrl, e);
+            geoCache.set(cacheKey, null);
+            return null;
+        }
+    }
+
+    async function geocodeQuery(query) {
+        if (!query) return null;
+        const key = `q:${query}`;
+        if (geoCache.has(key)) return geoCache.get(key);
+        
+        // Rate limiting: wait at least 300ms between requests
+        const now = Date.now();
+        const timeSinceLastRequest = now - lastGeocodingTime;
+        if (timeSinceLastRequest < 300) {
+            await delay(300 - timeSinceLastRequest);
+        }
+        lastGeocodingTime = Date.now();
+
+        try {
+            // Add Feni, Bangladesh context to improve geocoding
+            const queryWithContext = query.includes('Feni, Bangladesh') ? query : `${query}, Feni, Bangladesh`;
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(queryWithContext)}`;
+            console.log('Geocoding:', queryWithContext);
+            
+            const res = await fetch(url, {
+                headers: {
+                    'User-Agent': 'VoteCentreMap/1.0'
+                }
+            });
+            const json = await res.json();
+            
+            if (json && json[0]) {
+                const lat = parseFloat(json[0].lat);
+                const lng = parseFloat(json[0].lon);
+                const coords = [lat, lng];
+                console.log('✓ Found coordinates:', coords, 'for', query);
+                geoCache.set(key, coords);
+                return coords;
+            } else {
+                console.warn('✗ No coordinates found for:', query);
+            }
+        } catch (e) {
+            console.error('Geocoding error for', query, ':', e);
+        }
+        geoCache.set(key, null);
+        return null;
+    }
+
+    async function renderMarkers(data) {
+        if (!map || !markerLayer) return;
+        markerLayer.clearLayers();
+        const bounds = [];
+        let successCount = 0;
+        let failCount = 0;
+
+        console.log(`Rendering ${data.length} markers...`);
+
+        // Process all markers in parallel batches for faster loading
+        const batchSize = 10; // Process 10 markers at a time
+        
+        for (let batchStart = 0; batchStart < data.length; batchStart += batchSize) {
+            const batch = data.slice(batchStart, batchStart + batchSize);
+            
+            await Promise.all(batch.map(async (centre, batchIndex) => {
+                const i = batchStart + batchIndex;
+                const name = centre.vote_centre_name || '';
+                const location = centre.vote_centre_location || '';
+                const area = centre.vote_centre_area || '';
+                const locationUrl = centre.location_url || '';
+
+                // Priority 1: explicit coordinates stored in DB (format: "lat,lng")
+                let coords = parseLatLngString(centre.location_latitude_longitude);
+                if (coords) {
+                    console.log('Using saved coordinates for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+                } else {
+                    // Priority 2: extract coordinates from location_url (including expanding short URLs)
+                    coords = extractLatLngFromUrl(locationUrl);
+
+                    if (!coords && locationUrl && locationUrl.trim()) {
+                        if (locationUrl.includes('goo.gl') || locationUrl.includes('maps.app.goo.gl')) {
+                            const expandedUrl = await expandShortUrl(locationUrl);
+                            if (expandedUrl) {
+                                coords = extractLatLngFromUrl(expandedUrl);
+                                if (coords) console.log('Extracted coords from expanded URL for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+                            }
+                        }
+                    }
+
+                    // NOTE: Custom geocoding/search fallback has been disabled on request.
+                    // We will NOT call geocodeQuery() if neither stored coords nor location_url provide coordinates.
+                }
+
+                if (coords && coords.length === 2) {
+                    const [lat, lng] = coords;
+                    bounds.push([lat, lng]);
+                    const mapHref = (locationUrl && locationUrl.trim()) ? locationUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`;
+                    const popupHtml = `
+                        <strong>${name || '-'} </strong><br>
+                        <span>Code: ${centre.vote_centre_code || '-'}</span><br>
+                        <span>Location: ${location || '-'}</span><br>
+                        <span>Area: ${area || '-'}</span><br>
+                        <a href="${mapHref}" target="_blank">Open in Google Maps</a>
+                    `;
+                    
+                    // Create custom numbered marker
+                    const markerNumber = centre.vote_centre_code || (i + 1);
+                    const customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div class="numbered-marker">${markerNumber}</div>`,
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 18],
+                        popupAnchor: [0, -18]
+                    });
+                    
+                    L.marker([lat, lng], { icon: customIcon })
+                        .addTo(markerLayer)
+                        .bindPopup(popupHtml);
+                    successCount++;
+                } else {
+                    // No coordinates available (no DB coords and no usable location_url)
+                    console.warn('No coordinates for centre', centre.vote_centre_code || centre.vote_centre_iid, 'location_url=', locationUrl ? 'present' : 'absent');
+                    failCount++;
+                }
+            }));
+            
+            // Update map bounds progressively after each batch
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
+        console.log(`Map markers: ${successCount} shown, ${failCount} failed`);
+
+        if (bounds.length === 0) {
+            // Fallback to Feni, Bangladesh center if no markers
+            map.setView([23.0150, 91.3967], 12);
+        }
+    }
+
+    // Populate area dropdown with unique areas
+    function populateAreaFilter(data) {
+        const sel = document.getElementById('areaFilter');
+        if (!sel) return;
+        // compute unique areas (use 'Unknown' for empty)
+        const areas = Array.from(new Set(data.map(d => (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown')));
+        areas.sort((a,b) => a.localeCompare(b));
+        // clear existing (except All areas)
+        sel.innerHTML = '<option value="">All areas</option>';
+        areas.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a === 'Unknown' ? 'Unknown' : a;
+            sel.appendChild(opt);
+        });
+        sel.addEventListener('change', function() {
+            renderCards(voteData, this.value);
+        });
+    }
+
+    // Render cards, optionally filter by area
+    function renderCards(data, areaFilter = '') {
+        const tableContainer = document.getElementById('table-container');
+        const resultCount = document.getElementById('resultCount');
+        if (!tableContainer) return;
+        const filtered = data.filter(d => {
+            const area = (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown';
+            return !areaFilter || areaFilter === '' ? true : area === areaFilter;
+        });
+        let html = '<div class="card-grid">';
+        filtered.forEach(centre => {
+            const code = centre.vote_centre_code || '';
+            const name = centre.vote_centre_name || '';
+            const location = centre.vote_centre_location || '';
+            const area = centre.vote_centre_area || '';
+            const locationUrl = centre.location_url || '';
+            const locationParts = [name, location, area].filter(part => part && part.trim() !== '');
+            const query = locationParts.join(', ');
+            const encodedQuery = encodeURIComponent(query);
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+            const finalMapHref = locationUrl && locationUrl.trim() ? locationUrl : mapUrl;
+            html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <a href="${finalMapHref}" target="_blank" class="map-link">Open Map</a>\n                        </div>\n                    </article>`;
+        });
+        html += '</div>';
+        tableContainer.innerHTML = html;
+        renderMarkers(filtered);
+        if (resultCount) resultCount.textContent = `${filtered.length} centre(s)`;
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadVoteCentres);
+</script>
+
+</body>
+</html>
