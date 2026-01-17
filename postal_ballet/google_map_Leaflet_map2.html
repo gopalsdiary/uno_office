@@ -718,13 +718,14 @@
             opt.textContent = a === 'Unknown' ? 'Unknown' : a;
             sel.appendChild(opt);
         });
-        sel.addEventListener('change', function() {
-            renderCards(voteData, this.value);
+        sel.addEventListener('change', async function() {
+            // When area changes, render only centres for that area and ensure map updates
+            await renderCards(voteData, this.value);
         });
     }
 
     // Render cards, optionally filter by area
-    function renderCards(data, areaFilter = '') {
+    async function renderCards(data, areaFilter = '') {
         const tableContainer = document.getElementById('table-container');
         const resultCount = document.getElementById('resultCount');
         if (!tableContainer) return;
@@ -748,7 +749,8 @@
         });
         html += '</div>';
         tableContainer.innerHTML = html;
-        renderMarkers(filtered);
+        // Wait for markers to be rendered and bounds adjusted
+        await renderMarkers(filtered);
         if (resultCount) resultCount.textContent = `${filtered.length} centre(s)`;
     }
 
