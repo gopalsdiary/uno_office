@@ -183,6 +183,9 @@
 
         /* Custom numbered marker styles */
         .numbered-marker {
+            position: absolute; /* required for iOS Safari */
+            left: 0;
+            top: 0;
             background-color: #2563eb;
             border: 3px solid white;
             border-radius: 50%;
@@ -197,12 +200,20 @@
             height: 36px;
             pointer-events: auto; /* ensure touch interactions work */
             z-index: 2; /* place above tile layers */
+            -webkit-transform: translate(-50%, -50%) scale(1); /* iOS Safari needs webkit prefix */
             transform: translate(-50%, -50%) scale(1); /* center marker on its coordinate */
+            -webkit-user-select: none; /* prevent selection on iOS */
+            user-select: none;
+            cursor: pointer;
         }
 
-        .numbered-marker:hover {
-            background-color: #1e40af;
-            transform: translate(-50%, -50%) scale(1.15);
+        /* Desktop hover only - avoid on touch devices */
+        @media (hover: hover) and (pointer: fine) {
+            .numbered-marker:hover {
+                background-color: #1e40af;
+                -webkit-transform: translate(-50%, -50%) scale(1.15);
+                transform: translate(-50%, -50%) scale(1.15);
+            }
         }
 
         /* Locate button */
@@ -220,6 +231,22 @@
             box-shadow: 0 6px 12px rgba(6,182,212,0.12);
         }
         .locate-btn[disabled] { opacity: 0.6; cursor: default; }
+
+        /* Near by area button */
+        .nearby-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-left: 8px;
+            background-color: #8b5cf6; /* purple */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(139,92,246,0.12);
+        }
+        .nearby-btn[disabled] { opacity: 0.6; cursor: default; }
 
         /* User location marker */
         .user-marker {
@@ -272,6 +299,8 @@
         <span id="resultCount" class="area-badge"></span>
         <!-- Locate Me button -->
         <button id="locateBtn" class="locate-btn" title="Find my location">Locate Me</button>
+        <!-- Near by area button -->
+        <button id="nearbyBtn" class="nearby-btn" title="Show nearby centers">Near by area</button>
     </div>
     <div id="map"></div>
     <!-- Nearby centres panel (overlay) -->
@@ -557,7 +586,58 @@
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('locateBtn');
         if (btn) btn.addEventListener('click', locateUser);
+
+        const nearbyBtn = document.getElementById('nearbyBtn');
+        if (nearbyBtn) nearbyBtn.addEventListener('click', showNearbyArea);
     });
+
+    // Show nearby area: get user location and show all nearby centres within a radius
+    async function showNearbyArea() {
+        const btn = document.getElementById('nearbyBtn');
+        if (!btn) return;
+        if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+        btn.disabled = true; btn.textContent = 'Getting location...';
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const radiusMeters = 5000; // 5km radius
+            await ensureMapReady();
+
+            // filter centres within radius
+            const nearby = [];
+            voteData.forEach(c => {
+                const coords = parseLatLngString(c.location_latitude_longitude) || extractLatLngFromUrl(c.location_url) || null;
+                if (coords && coords.length === 2) {
+                    const d = distanceMeters(lat, lng, coords[0], coords[1]);
+                    if (d <= radiusMeters) nearby.push({ ...c, distance: d });
+                }
+            });
+
+            if (nearby.length === 0) {
+                alert('No centres found within 5 km.');
+                btn.disabled = false; btn.textContent = 'Near by area';
+                return;
+            }
+
+            // Sort by distance and render only nearby centres
+            nearby.sort((a, b) => a.distance - b.distance);
+            const panel = document.getElementById('nearbyPanel');
+            if (panel) {
+                const items = nearby.map(item => `<li><strong>${item.vote_centre_name || '-'} </strong><br><small>${item.vote_centre_location || ''} — ${Math.round(item.distance)} m</small></li>`).join('');
+                panel.innerHTML = `<h3>Nearby centres (${nearby.length})</h3><ul class="nearby-list">${items}</ul>`;
+                panel.style.display = 'block';
+            }
+
+            // render only nearby markers on map
+            await renderMarkers(nearby);
+
+            btn.disabled = false; btn.textContent = 'Near by area';
+        }, (err) => {
+            alert('Geolocation error: ' + (err.message || err.code));
+            btn.disabled = false; btn.textContent = 'Near by area';
+        }, { enableHighAccuracy: true, timeout: 15000 });
+    }
 
     function extractLatLngFromUrl(url) {
         if (!url) return null;
@@ -832,26 +912,6 @@
                     marker._centreCode = centre.vote_centre_code || '';
                     markerLayer.push(marker);
                     successCount++;
-
-                    // Debugging: check marker element visibility/position on mobile
-                    try {
-                        const mEl = el; // element used for marker
-                        setTimeout(() => {
-                            try {
-                                const cs = window.getComputedStyle(mEl);
-                                const rect = mEl.getBoundingClientRect();
-                                console.debug('Marker debug:', { code: markerNumber, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect, inMap: map.getContainer().contains(mEl) });
-                                // If marker has no size or is offscreen, highlight it for visual debugging
-                                if ((rect.width === 0 && rect.height === 0) || cs.visibility === 'hidden' || cs.opacity === '0') {
-                                    mEl.style.outline = '3px solid magenta';
-                                    mEl.style.background = 'red';
-                                    mEl.style.width = '36px';
-                                    mEl.style.height = '36px';
-                                    console.warn('Potentially invisible marker highlighted:', markerNumber);
-                                }
-                            } catch (e) { console.warn('Marker debug inner error', e); }
-                        }, 80);
-                    } catch (e) { console.warn('Marker debug error', e); }
                 } else {
                     // No coordinates available (no DB coords and no usable location_url)
                     console.warn('No coordinates for centre', centre.vote_centre_code || centre.vote_centre_iid, 'location_url=', locationUrl ? 'present' : 'absent');
