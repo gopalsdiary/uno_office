@@ -556,7 +556,17 @@
 
             btn.disabled = false; btn.textContent = 'Locate Me';
         }, (err) => {
-            alert('Geolocation error: ' + (err.message || err.code));
+            let msg = 'Location error';
+            if (err.code === 1) {
+                msg = 'Location permission denied.\n\nPlease enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari';
+            } else if (err.code === 2) {
+                msg = 'Location unavailable. Please check if location services are enabled on your device.';
+            } else if (err.code === 3) {
+                msg = 'Location request timed out. Please try again.';
+            } else {
+                msg = 'Geolocation error: ' + (err.message || err.code);
+            }
+            alert(msg);
             btn.disabled = false; btn.textContent = 'Locate Me';
         }, { enableHighAccuracy: true, timeout: 15000 });
     }
@@ -634,7 +644,17 @@
 
             btn.disabled = false; btn.textContent = 'Near by area';
         }, (err) => {
-            alert('Geolocation error: ' + (err.message || err.code));
+            let msg = 'Location error';
+            if (err.code === 1) {
+                msg = 'Location permission denied.\n\nTo use this feature, please enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari\n\nThen refresh this page and try again.';
+            } else if (err.code === 2) {
+                msg = 'Location unavailable. Please check if location services are enabled on your device.';
+            } else if (err.code === 3) {
+                msg = 'Location request timed out. Please try again.';
+            } else {
+                msg = 'Geolocation error: ' + (err.message || err.code);
+            }
+            alert(msg);
             btn.disabled = false; btn.textContent = 'Near by area';
         }, { enableHighAccuracy: true, timeout: 15000 });
     }
