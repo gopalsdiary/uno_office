@@ -7,9 +7,6 @@
     <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js" integrity="sha512-xcHCGC5tQ0SHlRX8Anbz6oy/OullASJkEhb4gjkneVpGE3/QGYejf14CUO5n5q5paiHfRFTa9HKgByxzidw2Bw==" crossorigin="anonymous"></script>
-    <script>if(typeof JSZip==='undefined'){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js';s.crossOrigin='anonymous';document.head.appendChild(s);}</script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,6 +17,7 @@
         }
 
         .container {
+            position: relative; /* allow overlay panels positioned relative to container */
             max-width: 1200px;
             margin: 0 auto;
             background: white;
@@ -41,15 +39,23 @@
             padding: 20px;
         }
 
+        /* Full-bleed map: stretches edge-to-edge across viewport while content stays centered */
         #map {
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw; /* pull to left edge */
+            margin-right: -50vw; /* pull to right edge */
+            width: 100vw; /* full viewport width */
             height: 75vh; /* larger by default */
             min-height: 420px;
             max-height: 90vh;
-            border-radius: 10px;
+            border-radius: 0; /* remove rounding for edge-to-edge */
             margin-top: 16px;
-            border: 1px solid rgba(15,23,42,0.06);
-            box-shadow: 0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+            border: 0; /* remove border to avoid double edges */
+            box-shadow: none; /* optional: remove outer shadow so it blends with page */
             transition: height 200ms ease;
+            overflow: hidden;
         }
 
         /* Fullscreen support: when the container goes fullscreen, make map occupy full viewport */
@@ -189,12 +195,68 @@
             box-shadow: 0 4px 12px rgba(37,99,235,0.4);
             width: 36px;
             height: 36px;
+            pointer-events: auto; /* ensure touch interactions work */
+            z-index: 2; /* place above tile layers */
+            transform: translate(-50%, -50%) scale(1); /* center marker on its coordinate */
         }
 
         .numbered-marker:hover {
             background-color: #1e40af;
-            transform: scale(1.15);
+            transform: translate(-50%, -50%) scale(1.15);
         }
+
+        /* Locate button */
+        .locate-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-left: 8px;
+            background-color: #06b6d4; /* teal */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(6,182,212,0.12);
+        }
+        .locate-btn[disabled] { opacity: 0.6; cursor: default; }
+
+        /* User location marker */
+        .user-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #10b981; /* green */
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.36);
+            transform: translate(-50%, -50%);
+        }
+
+        /* Accuracy circle overlay (resized in JS) */
+        .accuracy-circle {
+            background: rgba(14,165,233,0.12);
+            border: 2px solid rgba(14,165,233,0.22);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Nearby centres overlay */
+        .nearby-panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(2,6,23,0.14);
+            max-width: 320px;
+            z-index: 20;
+            font-size: 0.95rem;
+        }
+        .nearby-panel h3 { margin: 0 0 8px 0; font-size: 1rem; }
+        .nearby-list { margin: 8px 0 0 12px; padding: 0; }
+        .nearby-list li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -208,38 +270,13 @@
             <option value="">All areas</option>
         </select>
         <span id="resultCount" class="area-badge"></span>
-
-        <!-- Export controls -->
-        <div class="export-controls" style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-            <label for="exportScale" style="font-weight:600; margin-right:6px;">Export:</label>
-            <select id="exportScale" class="area-select" style="width:88px;">
-                <option value="1">1× (standard)</option>
-                <option value="2">2× (retina)</option>
-                <option value="3">3×</option>
-                <option value="4">4×</option>
-                <option value="10" selected>10× (very high-res)</option>
-            </select>
-            <button id="exportMapBtn" class="map-link" style="background:#2563eb;">Export PNG</button>
-            <div id="exportStatus" style="display:none; margin-left:8px; font-weight:600; color:#374151;">Preparing export…</div>
-            
-            <!-- Locate / Tile package export -->
-            <button id="locateBtn" class="map-link" style="background:#f59e0b; margin-left:8px;">Locate Me</button>
-            <div id="locateStatus" style="display:none; margin-left:8px; font-weight:600; color:#374151;">Locating…</div>
-
-            <label for="tileZoom" style="font-weight:600; margin-left:12px; margin-right:6px;">Tiles (zoom):</label>
-            <select id="tileZoom" class="area-select" style="width:84px;">
-                <option value="12">12</option>
-                <option value="13" selected>13</option>
-                <option value="14">14</option>
-                <option value="15">15</option>
-                <option value="16">16</option>
-            </select>
-            <button id="exportTilesBtn" class="map-link" style="background:#10b981;">Export Tiles (ZIP)</button>
-            <div id="exportTilesStatus" style="display:none; margin-left:8px; font-weight:600; color:#374151;">Preparing tiles…</div> 
-        </div>
+        <!-- Locate Me button -->
+        <button id="locateBtn" class="locate-btn" title="Find my location">Locate Me</button>
     </div>
     <div id="map"></div>
-    <div id="nearbyContainer" style="display:none; margin-top:12px;"></div>
+    <!-- Nearby centres panel (overlay) -->
+    <aside id="nearbyPanel" class="nearby-panel" style="display:none;"></aside>
+
     <div id="table-container"></div>
 </div>
 
@@ -392,6 +429,10 @@
         }
         markerLayer = []; // Store markers in array
 
+        // Ensure the map resizes correctly when the viewport size changes (for full-bleed)
+        window.addEventListener('resize', () => { try { if (map && map.resize) map.resize(); } catch (e) {} });
+        map.on('load', () => { try { if (map && map.resize) setTimeout(() => map.resize(), 100); } catch(e){} });
+
         // Listen for general map errors and source data events to help debug tiles
         map.on('error', (e) => {
             console.warn('Map error:', e && e.error ? e.error.message || e.error : e);
@@ -409,6 +450,114 @@
             setTimeout(() => { if (map && map.resize) map.resize(); }, 200);
         });
     }
+
+    // Helper: wait for the map to be ready before adding DOM markers (fixes mobile timing issues)
+    async function ensureMapReady() {
+        if (!map) return;
+        try {
+            if (typeof map.loaded === 'function' && map.loaded()) return;
+            if (typeof map.isStyleLoaded === 'function' && map.isStyleLoaded()) return;
+            await new Promise(resolve => {
+                let done = false;
+                const onDone = () => { if (!done) { done = true; resolve(); } };
+                if (map && map.once) map.once('load', onDone);
+                // Safety timeout: avoid hanging if 'load' didn't fire
+                setTimeout(onDone, 3000);
+            });
+        } catch (e) {
+            console.warn('ensureMapReady error:', e);
+        }
+    }
+
+    // Geolocation: place a user marker, draw an accuracy circle and show nearby centres
+    let userMarker = null;
+    let accuracyOverlay = null;
+
+    function distanceMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371000; // meters
+        const toRad = (d) => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function getPixelRadiusForAccuracy(lat, lng, meters) {
+        // approximate degrees for small distances
+        const latShift = meters / 111320; // degrees latitude per meter
+        const p1 = map.project([lng, lat]);
+        const p2 = map.project([lng, lat + latShift]);
+        return Math.abs(p2.y - p1.y);
+    }
+
+    async function locateUser() {
+        const btn = document.getElementById('locateBtn');
+        if (!btn) return;
+        if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+        btn.disabled = true; btn.textContent = 'Locating...';
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const acc = pos.coords.accuracy || 0;
+            await ensureMapReady();
+
+            // remove old markers/overlays
+            try { if (userMarker) userMarker.remove(); } catch(e){}
+            try { if (accuracyOverlay && accuracyOverlay.marker) accuracyOverlay.marker.remove(); } catch(e){}
+
+            // create / add user marker
+            const el = document.createElement('div'); el.className = 'user-marker';
+            userMarker = new maplibregl.Marker(el).setLngLat([lng, lat]).addTo(map);
+
+            // create accuracy circle as a DOM marker sized in pixels
+            const pixelRadius = Math.max(6, Math.round(getPixelRadiusForAccuracy(lat, lng, acc)));
+            const accEl = document.createElement('div'); accEl.className = 'accuracy-circle';
+            accEl.style.width = `${pixelRadius * 2}px`;
+            accEl.style.height = `${pixelRadius * 2}px`;
+            const accMarker = new maplibregl.Marker({ element: accEl, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
+            accuracyOverlay = { el: accEl, marker: accMarker };
+
+            // center map and zoom in
+            try { map.flyTo({ center: [lng, lat], zoom: 15 }); } catch(e) { map.setCenter([lng, lat]); }
+
+            // show nearest centres
+            showNearestCenters(lat, lng, 6);
+
+            btn.disabled = false; btn.textContent = 'Locate Me';
+        }, (err) => {
+            alert('Geolocation error: ' + (err.message || err.code));
+            btn.disabled = false; btn.textContent = 'Locate Me';
+        }, { enableHighAccuracy: true, timeout: 15000 });
+    }
+
+    function showNearestCenters(lat, lng, n = 5) {
+        const panel = document.getElementById('nearbyPanel');
+        if (!panel) return;
+        const list = [];
+        voteData.forEach(c => {
+            const coords = parseLatLngString(c.location_latitude_longitude) || extractLatLngFromUrl(c.location_url) || null;
+            if (coords && coords.length === 2) {
+                const d = distanceMeters(lat, lng, coords[0], coords[1]);
+                list.push({ centre: c, d });
+            }
+        });
+        list.sort((a,b) => a.d - b.d);
+        if (list.length === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        const items = list.slice(0, n).map(item => `<li><strong>${item.centre.vote_centre_name || '-'} </strong><br><small>${item.centre.vote_centre_location || ''} — ${Math.round(item.d)} m</small></li>`).join('');
+        panel.innerHTML = `<h3>Nearby centres</h3><ul class="nearby-list">${items}</ul>`;
+        panel.style.display = 'block';
+    }
+
+    // attach listener to locate button (button exists above script)
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('locateBtn');
+        if (btn) btn.addEventListener('click', locateUser);
+    });
 
     function extractLatLngFromUrl(url) {
         if (!url) return null;
@@ -585,6 +734,7 @@
 
     async function renderMarkers(data) {
         if (!map) return;
+        await ensureMapReady();
         
         // Remove existing markers
         markerLayer.forEach(marker => marker.remove());
@@ -754,468 +904,9 @@
         if (resultCount) resultCount.textContent = `${filtered.length} centre(s)`;
     }
 
-    // High-resolution export: captures map canvas and redraws crisp marker overlays
-    // Fetch tile image helper (returns Image or null on failure)
-    function loadTileImage(url) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(null);
-            img.src = url;
-        });
-    }
-
-    function tile2lon(x, z) { return (x / Math.pow(2, z)) * 360 - 180; }
-    function tile2lat(y, z) {
-        const n = Math.PI - (2 * Math.PI * y) / Math.pow(2, z);
-        return (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
-    }
-
-    // Wait for the map to report 'idle' (all visible tiles and sources loaded) or timeout
-    function waitForMapIdle(timeoutMs = 15000) {
-        return new Promise((resolve) => {
-            if (!map) return resolve(false);
-            let done = false;
-            const onIdle = () => { if (!done) { done = true; cleanup(); resolve(true); } };
-            const cleanup = () => { map.off('idle', onIdle); clearTimeout(timer); };
-            const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(false); } }, timeoutMs);
-            try {
-                map.once('idle', onIdle);
-            } catch (e) {
-                // If 'idle' event not available, fallback to short delay and hope tiles load
-                setTimeout(() => { cleanup(); resolve(false); }, Math.min(timeoutMs, 2000));
-            }
-        });
-    }
-
-    // Haversine distance (meters)
-    function distanceMeters(lat1, lon1, lat2, lon2) {
-        function toRad(deg){return deg * Math.PI / 180;}
-        const R = 6371000; // meters
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
-    let userMarker = null;
-    let userAccuracyCircle = null;
-
-    async function locateUser(options={enableHighAccuracy:true, timeout:15000, maximumAge:0}){
-        const btn = document.getElementById('locateBtn');
-        const statusEl = document.getElementById('locateStatus');
-        if (!('geolocation' in navigator)) {
-            alert('Geolocation not supported by this browser.');
-            return;
-        }
-        btn.disabled = true; btn.style.opacity = 0.6;
-        statusEl.style.display = 'inline-block'; statusEl.textContent = 'Locating…';
-
-        const onSuccess = (pos) => {
-            const lat = pos.coords.latitude; const lng = pos.coords.longitude; const acc = pos.coords.accuracy || 0;
-            statusEl.textContent = `Located: ${lat.toFixed(5)}, ${lng.toFixed(5)} (±${Math.round(acc)}m)`;
-
-            // Add or move user marker
-            if (userMarker) { userMarker.setLngLat([lng, lat]); }
-            else {
-                const el = document.createElement('div');
-                el.style.width = '18px'; el.style.height = '18px'; el.style.borderRadius='50%'; el.style.background='#ef4444'; el.style.border='3px solid white';
-                userMarker = new maplibregl.Marker({element: el}).setLngLat([lng, lat]).addTo(map);
-            }
-
-            // accuracy circle (as geojson layer)
-            if (userAccuracyCircle) { map.removeLayer('user-accuracy'); map.removeSource('user-accuracy'); userAccuracyCircle=null; }
-            try {
-                const circle = turf.circle([lng, lat], acc/1000, {steps: 32, units: 'kilometers'});
-                map.addSource('user-accuracy', { type: 'geojson', data: circle });
-                map.addLayer({ id: 'user-accuracy', type: 'fill', source: 'user-accuracy', paint: { 'fill-color': '#ef4444', 'fill-opacity': 0.08, 'fill-outline-color': '#ef4444' } });
-                userAccuracyCircle = true;
-            } catch (e) {
-                // turf may not be available; ignore
-            }
-
-            // center map (if not already near)
-            map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14) });
-
-            // Show nearest centres
-            showNearestCenters(lat, lng, 6);
-
-            btn.disabled = false; btn.style.opacity = 1;
-            setTimeout(()=>{statusEl.style.display='none';}, 5000);
-        };
-
-        const onError = (err) => {
-            console.warn('Geolocation error:', err);
-            alert('Failed to get location: ' + (err && err.message ? err.message : err));
-            btn.disabled = false; btn.style.opacity = 1;
-            statusEl.style.display = 'none';
-        };
-
-        navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
-    }
-
-    // Show nearest vote centres (n) in nearbyContainer and highlight on the map
-    function showNearestCenters(lat, lng, n=6){
-        if (!markerLayer || markerLayer.length===0) return;
-        const entries = [];
-        for (const m of markerLayer) {
-            try {
-                const ll = m.getLngLat();
-                const d = distanceMeters(lat, lng, ll.lat, ll.lng);
-                entries.push({ marker: m, lat: ll.lat, lng: ll.lng, dist: d, el: m.getElement() });
-            } catch(e){ }
-        }
-        entries.sort((a,b)=>a.dist-b.dist);
-        const top = entries.slice(0, n);
-
-        const panel = document.getElementById('nearbyContainer');
-        panel.innerHTML = '';
-        const list = document.createElement('div');
-        list.className = 'card';
-        list.style.padding='12px';
-        list.style.maxHeight='220px';
-        list.style.overflow='auto';
-        list.innerHTML = `<h3 style="margin:0 0 8px 0; font-size:1rem;">Nearest ${top.length} centres</h3>`;
-        top.forEach((t, i) => {
-            const item = document.createElement('div');
-            item.style.borderTop = i===0 ? 'none' : '1px solid rgba(0,0,0,0.06)';
-            item.style.padding = '8px 0';
-            const name = (t.marker && t.marker._centreName) ? t.marker._centreName : 'Centre';
-            const distanceText = t.dist > 1000 ? (t.dist/1000).toFixed(2)+' km' : Math.round(t.dist)+' m';
-            item.innerHTML = `<strong>${name || 'Centre'}</strong><div style="color:#6b7280; font-size:0.9rem;">${distanceText}</div>`;
-            item.style.cursor = 'pointer';
-            item.addEventListener('click', () => {
-                map.flyTo({center:[t.lng,t.lat], zoom:16});
-                if (typeof t.marker.togglePopup === 'function') {
-                    t.marker.togglePopup();
-                } else if (t.marker.getPopup && typeof t.marker.getPopup === 'function') {
-                    try { t.marker.getPopup().addTo(map); } catch (e) {}
-                }
-            });
-            list.appendChild(item);
-        });
-        panel.appendChild(list);
-        panel.style.display='block';
-    }
 
 
-    async function exportMapHighRes(scale = 10) {
-        if (!map) return alert('Map not initialized');
-        scale = Math.max(1, Math.min(10, Number(scale) || 10));
 
-        // Use CSS pixel size of map container (map.project uses CSS pixels)
-        const width = map.getContainer().clientWidth;
-        const height = map.getContainer().clientHeight;
-
-        // Create export canvas at higher pixel density
-        const exportCanvas = document.createElement('canvas');
-        exportCanvas.width = Math.round(width * scale);
-        exportCanvas.height = Math.round(height * scale);
-        const ctx = exportCanvas.getContext('2d');
-        ctx.scale(scale, scale);
-
-        const currentZoom = map.getZoom();
-        // Choose exportZoom higher than current to capture more detail. Add extra zoom based on scale.
-        const extraZoom = Math.min(6, Math.ceil(Math.log2(scale))); // conservative extra zoom
-        const exportZoom = Math.max(0, Math.min(19, Math.floor(currentZoom) + extraZoom));
-        const z = exportZoom;
-
-        const bounds = map.getBounds();
-        const nw = bounds.getNorthWest();
-        const se = bounds.getSouthEast();
-
-        // world pixel at zoom z
-        function lonToWorldX(lon, z) { return ((lon + 180) / 360) * (256 * Math.pow(2, z)); }
-        function latToWorldY(lat, z) {
-            const rad = lat * Math.PI / 180;
-            const n = Math.log(Math.tan(rad) + 1 / Math.cos(rad));
-            return (1 - n / Math.PI) / 2 * (256 * Math.pow(2, z));
-        }
-
-        // compute world pixel for NW corner at exportZoom
-        const worldNWx = lonToWorldX(nw.lng, z);
-        const worldNWy = latToWorldY(nw.lat, z);
-
-        // helper to convert tile x,y at zoom z to pixel position in CSS pixels relative to top-left of viewport
-        const scaleZoomFactor = Math.pow(2, z - currentZoom);
-        function tilePixelPos(x, y) {
-            const tileWorldX = x * 256;
-            const tileWorldY = y * 256;
-            const px = (tileWorldX - worldNWx) / scaleZoomFactor;
-            const py = (tileWorldY - worldNWy) / scaleZoomFactor;
-            const pw = 256 / scaleZoomFactor;
-            const ph = 256 / scaleZoomFactor;
-            return { px, py, pw, ph };
-        }
-
-        // tile index helpers at zoom z
-        function lon2tile(lon, z) { return Math.floor(((lon + 180) / 360) * Math.pow(2, z)); }
-        function lat2tile(lat, z) {
-            const rad = (lat * Math.PI) / 180;
-            return Math.floor((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * Math.pow(2, z));
-        }
-
-        const xMin = lon2tile(nw.lng, z) - 1;
-        const xMax = lon2tile(se.lng, z) + 1;
-        const yMin = lat2tile(nw.lat, z) - 1;
-        const yMax = lat2tile(se.lat, z) + 1;
-
-        // choose tile provider with CORS-friendly tiles
-        const tileTemplates = [
-            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-        ];
-
-        const tilePromises = [];
-        for (let x = xMin; x <= xMax; x++) {
-            for (let y = yMin; y <= yMax; y++) {
-                const maxTiles = Math.pow(2, z);
-                const xWrapped = ((x % maxTiles) + maxTiles) % maxTiles;
-                const subdomain = ((xWrapped + y) % 3 + 3) % 3; // pick a/b/c
-                const url = tileTemplates[subdomain].replace('{z}', z).replace('{x}', xWrapped).replace('{y}', y);
-                const pos = tilePixelPos(x, y);
-
-                tilePromises.push((async () => {
-                    const img = await loadTileImage(url);
-                    return { img, pos, url };
-                })());
-            }
-        }
-
-        // Draw background so transparent areas are not checkerboard in exported PNG
-        ctx.fillStyle = '#f0e6dc';
-        ctx.fillRect(0, 0, width, height);
-
-        const results = await Promise.all(tilePromises);
-        let drawnTiles = 0;
-        for (const r of results) {
-            if (r.img) {
-                try {
-                    ctx.drawImage(r.img, r.pos.px, r.pos.py, r.pos.pw, r.pos.ph);
-                    drawnTiles++;
-                } catch (e) {
-                    console.warn('Failed to draw tile', r.url, e);
-                }
-            }
-        }
-
-        if (drawnTiles === 0) {
-            console.warn('No tiles fetched during export; markers will be drawn over plain background.');
-            // As fallback try to draw map canvas scaled (may be blurry)
-            try {
-                const mapCanvas = map.getCanvas();
-                ctx.drawImage(mapCanvas, 0, 0, width, height);
-            } catch (e) {
-                console.warn('Fallback draw of map canvas failed:', e);
-            }
-        }
-
-        // Draw crisp markers (vector) on top
-        for (const marker of markerLayer) {
-            try {
-                const ll = marker.getLngLat();
-                const p = map.project([ll.lng, ll.lat]); // CSS pixels
-                const radius = 18;
-                const x = p.x;
-                const y = p.y;
-
-                ctx.beginPath();
-                ctx.fillStyle = 'rgba(37,99,235,0.18)';
-                ctx.arc(x, y, radius + 6, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.fillStyle = '#ffffff';
-                ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.fillStyle = '#2563eb';
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                const label = (marker.getElement && marker.getElement().textContent) ? marker.getElement().textContent.trim() : '';
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '700 13px / 1 Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(label, x, y + 1);
-            } catch (e) {
-                console.warn('Failed to draw marker during export:', e);
-            }
-        }
-
-        // Trigger download and wait for blob creation
-        await new Promise((resolve, reject) => {
-            exportCanvas.toBlob(blob => {
-                if (!blob) return reject(new Error('Export failed: could not create image.'));
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `vote_centres_map_${scale}x_z${z}.png`;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => { URL.revokeObjectURL(url); a.remove(); resolve(); }, 2000);
-            }, 'image/png', 1);
-        });
-    }
-
-    // Helper: fetch a URL and return blob (null on failure)
-    async function fetchTileBlob(url) {
-        try {
-            const res = await fetch(url, { mode: 'cors' });
-            if (!res.ok) return null;
-            const blob = await res.blob();
-            return blob;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    // Export tiles for current view at a single zoom level into a zip. Limits total tiles to avoid runaway downloads.
-    async function exportTilesZip(zoom) {
-        if (!map) return alert('Map not initialized');
-        zoom = Math.max(0, Math.min(19, Number(zoom) || Math.round(map.getZoom())));
-
-        const bounds = map.getBounds();
-        const nw = bounds.getNorthWest();
-        const se = bounds.getSouthEast();
-
-        function lon2tile(lon, z) { return Math.floor(((lon + 180) / 360) * Math.pow(2, z)); }
-        function lat2tile(lat, z) {
-            const rad = (lat * Math.PI) / 180;
-            return Math.floor((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * Math.pow(2, z));
-        }
-
-        const xMin = lon2tile(nw.lng, zoom) - 0;
-        const xMax = lon2tile(se.lng, zoom) + 0;
-        const yMin = lat2tile(nw.lat, zoom) - 0;
-        const yMax = lat2tile(se.lat, zoom) + 0;
-
-        // compute total tiles
-        const tileCount = Math.max(0, (xMax - xMin + 1) * (yMax - yMin + 1));
-        const MAX_TILES = 2500; // safety limit
-        if (tileCount > MAX_TILES) {
-            if (!confirm(`This export will download ${tileCount} tiles (zoom ${zoom}). This may be large. Continue?`)) return;
-        }
-
-        const statusEl = document.getElementById('exportTilesStatus');
-        const btn = document.getElementById('exportTilesBtn');
-        statusEl.style.display = 'inline-block';
-        btn.disabled = true; btn.style.opacity = 0.6;
-        statusEl.textContent = `Collecting ${tileCount} tiles…`;
-
-        const zip = new JSZip();
-        const folder = zip.folder(`tiles_z${zoom}`);
-
-        // simple tile templates (Carto) — CORS-friendly
-        const tileTemplates = [
-            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-        ];
-
-        let fetched = 0;
-        const tasks = [];
-        for (let x = xMin; x <= xMax; x++) {
-            for (let y = yMin; y <= yMax; y++) {
-                const maxTiles = Math.pow(2, zoom);
-                const xWrapped = ((x % maxTiles) + maxTiles) % maxTiles;
-                const subdomain = ((xWrapped + y) % 3 + 3) % 3;
-                const url = tileTemplates[subdomain].replace('{z}', zoom).replace('{x}', xWrapped).replace('{y}', y);
-                const path = `${zoom}/${xWrapped}/${y}.png`;
-                tasks.push({ url, path });
-            }
-        }
-
-        // Limit concurrency
-        const CONCURRENCY = 8;
-        async function worker(list) {
-            for (const t of list) {
-                const blob = await fetchTileBlob(t.url);
-                if (blob) {
-                    folder.file(t.path, blob);
-                }
-                fetched++;
-                statusEl.textContent = `Downloading tiles… ${fetched}/${tileCount}`;
-            }
-        }
-
-        // Split tasks into batches
-        const batches = [];
-        for (let i = 0; i < tasks.length; i += CONCURRENCY) batches.push(tasks.slice(i, i + CONCURRENCY));
-        for (const b of batches) {
-            await Promise.all(b.map(t => worker([t])));
-        }
-
-        statusEl.textContent = 'Creating ZIP file…';
-        const blob = await zip.generateAsync({ type: 'blob' }, (meta) => {
-            statusEl.textContent = `Zipping: ${Math.round(meta.percent)}%`;
-        });
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `tiles_z${zoom}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); statusEl.style.display = 'none'; btn.disabled = false; btn.style.opacity = 1; }, 2000);
-    }
-
-    // Wire export UI (waits for map to finish loading tiles)
-    document.addEventListener('click', async (e) => {
-        if (e.target && e.target.id === 'exportMapBtn') {
-            const btn = e.target;
-            const scaleSel = document.getElementById('exportScale');
-            const statusEl = document.getElementById('exportStatus');
-            const scale = scaleSel ? parseInt(scaleSel.value, 10) : 2;
-
-            // UI: disable while exporting
-            btn.disabled = true; btn.style.opacity = 0.6;
-            statusEl.style.display = 'inline-block';
-            statusEl.textContent = 'Waiting for map tiles to finish loading…';
-
-            const idle = await waitForMapIdle(20000); // wait up to 20s
-            if (!idle) {
-                statusEl.textContent = 'Map still loading — proceeding with export (tiles may be missing)...';
-                console.warn('Export proceeded after timeout waiting for idle.');
-            } else {
-                statusEl.textContent = 'Map ready — exporting…';
-            }
-
-            try {
-                await exportMapHighRes(scale);
-                statusEl.textContent = 'Export complete';
-            } catch (err) {
-                console.error('Export failed:', err);
-                statusEl.textContent = 'Export failed';
-                alert('Export failed: ' + (err && err.message ? err.message : err));
-            } finally {
-                setTimeout(() => { statusEl.style.display = 'none'; btn.disabled = false; btn.style.opacity = 1; }, 1200);
-            }
-        }
-
-        if (e.target && e.target.id === 'exportTilesBtn') {
-            const zoomSel = document.getElementById('tileZoom');
-            const zoom = zoomSel ? parseInt(zoomSel.value, 10) : Math.round(map.getZoom());
-            await exportTilesZip(zoom);
-        }
-
-        if (e.target && e.target.id === 'locateBtn') {
-            // start geolocation flow
-            const btn = e.target;
-            const statusEl = document.getElementById('locateStatus');
-            try {
-                await locateUser({ enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-            } catch (err) {
-                console.error('Locate failed', err);
-                alert('Locate failed: ' + (err && err.message ? err.message : err));
-            }
-        }
-    });
 
     // Load data on page load
     document.addEventListener('DOMContentLoaded', loadVoteCentres);
