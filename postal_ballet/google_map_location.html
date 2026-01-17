@@ -99,6 +99,16 @@
 
         .map-link:hover { background-color: #e05b00; }
 
+        /* Disabled state for map link button when location URL is missing */
+        .map-link.disabled, .map-link[disabled] {
+            background-color: #d1d5db; /* grey */
+            color: #6b7280;
+            box-shadow: none;
+            cursor: not-allowed;
+            text-decoration: none;
+            pointer-events: none;
+        }
+
         /* Filter row styles */
         .filter-row {
             display: none; /* shown after data loads */
@@ -241,9 +251,13 @@
             const locationParts = [name, location, area].filter(part => part && part.trim() !== '');
             const query = locationParts.join(', ');
             const encodedQuery = encodeURIComponent(query);
-            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
-            const finalMapHref = locationUrl && locationUrl.trim() ? locationUrl : mapUrl;
-            html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <a href="${finalMapHref}" target="_blank" class="map-link">Open Map</a>\n                        </div>\n                    </article>`;
+            const finalMapHref = (locationUrl && locationUrl.toString().trim()) ? locationUrl.toString().trim() : '';
+            // If location_url is missing, show a disabled button instead of a working link
+            if (finalMapHref) {
+                html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <a href="${finalMapHref}" target="_blank" class="map-link">Open Map</a>\n                        </div>\n                    </article>`;
+            } else {
+                html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <button class="map-link disabled" disabled title="No location URL available">Open Map</button>\n                        </div>\n                    </article>`;
+            }
         });
         html += '</div>';
         tableContainer.innerHTML = html;
