@@ -832,6 +832,26 @@
                     marker._centreCode = centre.vote_centre_code || '';
                     markerLayer.push(marker);
                     successCount++;
+
+                    // Debugging: check marker element visibility/position on mobile
+                    try {
+                        const mEl = el; // element used for marker
+                        setTimeout(() => {
+                            try {
+                                const cs = window.getComputedStyle(mEl);
+                                const rect = mEl.getBoundingClientRect();
+                                console.debug('Marker debug:', { code: markerNumber, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect, inMap: map.getContainer().contains(mEl) });
+                                // If marker has no size or is offscreen, highlight it for visual debugging
+                                if ((rect.width === 0 && rect.height === 0) || cs.visibility === 'hidden' || cs.opacity === '0') {
+                                    mEl.style.outline = '3px solid magenta';
+                                    mEl.style.background = 'red';
+                                    mEl.style.width = '36px';
+                                    mEl.style.height = '36px';
+                                    console.warn('Potentially invisible marker highlighted:', markerNumber);
+                                }
+                            } catch (e) { console.warn('Marker debug inner error', e); }
+                        }, 80);
+                    } catch (e) { console.warn('Marker debug error', e); }
                 } else {
                     // No coordinates available (no DB coords and no usable location_url)
                     console.warn('No coordinates for centre', centre.vote_centre_code || centre.vote_centre_iid, 'location_url=', locationUrl ? 'present' : 'absent');
