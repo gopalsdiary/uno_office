@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,13 +18,14 @@
         }
 
         .container {
-            position: relative; /* allow overlay panels positioned relative to container */
+            position: relative;
+            /* allow overlay panels positioned relative to container */
             max-width: 1200px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -44,29 +46,41 @@
             position: relative;
             left: 50%;
             right: 50%;
-            margin-left: -50vw; /* pull to left edge */
-            margin-right: -50vw; /* pull to right edge */
-            width: 100vw; /* full viewport width */
-            height: 75vh; /* larger by default */
+            margin-left: -50vw;
+            /* pull to left edge */
+            margin-right: -50vw;
+            /* pull to right edge */
+            width: 100vw;
+            /* full viewport width */
+            height: 75vh;
+            /* larger by default */
             min-height: 420px;
             max-height: 90vh;
-            border-radius: 0; /* remove rounding for edge-to-edge */
+            border-radius: 0;
+            /* remove rounding for edge-to-edge */
             margin-top: 16px;
-            border: 0; /* remove border to avoid double edges */
-            box-shadow: none; /* optional: remove outer shadow so it blends with page */
+            border: 0;
+            /* remove border to avoid double edges */
+            box-shadow: none;
+            /* optional: remove outer shadow so it blends with page */
             transition: height 200ms ease;
             overflow: hidden;
         }
 
         /* Fullscreen support: when the container goes fullscreen, make map occupy full viewport */
-        .container:-webkit-full-screen, .container:-moz-full-screen, .container:fullscreen {
+        .container:-webkit-full-screen,
+        .container:-moz-full-screen,
+        .container:fullscreen {
             width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
             border-radius: 0;
         }
-        .container:-webkit-full-screen #map, .container:-moz-full-screen #map, .container:fullscreen #map {
+
+        .container:-webkit-full-screen #map,
+        .container:-moz-full-screen #map,
+        .container:fullscreen #map {
             height: 100vh;
             max-height: none;
             min-height: 0;
@@ -89,9 +103,9 @@
             background: #fff;
             border-radius: 10px;
             padding: 16px;
-            border: 1px solid rgba(15,23,42,0.04);
+            border: 1px solid rgba(15, 23, 42, 0.04);
             /* stronger, multi-layered shadow for consistent elevation */
-            box-shadow: 0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
             transition: transform 160ms ease, box-shadow 160ms ease;
@@ -99,7 +113,7 @@
 
         .card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 18px 44px rgba(15,23,42,0.14), 0 6px 18px rgba(15,23,42,0.08);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14), 0 6px 18px rgba(15, 23, 42, 0.08);
         }
 
         .card-title {
@@ -119,26 +133,31 @@
             margin-top: auto;
             display: flex;
             gap: 8px;
-            justify-content: flex-end; /* align actions to the right */
+            justify-content: flex-end;
+            /* align actions to the right */
         }
 
         .map-link {
             display: inline-flex;
             align-items: center;
             padding: 8px 12px;
-            background-color: #ff7a00; /* orange */
+            background-color: #ff7a00;
+            /* orange */
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
-            box-shadow: 0 6px 12px rgba(255,122,0,0.16);
+            box-shadow: 0 6px 12px rgba(255, 122, 0, 0.16);
         }
 
-        .map-link:hover { background-color: #e05b00; }
+        .map-link:hover {
+            background-color: #e05b00;
+        }
 
         /* Filter row styles */
         .filter-row {
-            display: none; /* shown after data loads */
+            display: none;
+            /* shown after data loads */
             align-items: center;
             gap: 12px;
             margin-top: 12px;
@@ -159,8 +178,15 @@
         }
 
         @media (max-width: 480px) {
-            .filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
-            .area-badge { margin-left: 0; }
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .area-badge {
+                margin-left: 0;
+            }
         }
 
         .error {
@@ -173,19 +199,24 @@
         }
 
         @media (max-width: 480px) {
-            .container { padding: 12px; }
-            .card-grid { gap: 10px; }
+            .container {
+                padding: 12px;
+            }
+
+            .card-grid {
+                gap: 10px;
+            }
         }
 
         @media (max-width: 480px) {
-            #map { height: 300px; }
+            #map {
+                height: 300px;
+            }
         }
 
         /* Custom numbered marker styles */
         .numbered-marker {
-            position: absolute; /* required for iOS Safari */
-            left: 0;
-            top: 0;
+            position: absolute;
             background-color: #2563eb;
             border: 3px solid white;
             border-radius: 50%;
@@ -195,24 +226,46 @@
             justify-content: center;
             font-weight: 700;
             font-size: 13px;
-            box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
             width: 36px;
             height: 36px;
-            pointer-events: auto; /* ensure touch interactions work */
-            z-index: 2; /* place above tile layers */
-            -webkit-transform: translate(-50%, -50%) scale(1); /* iOS Safari needs webkit prefix */
-            transform: translate(-50%, -50%) scale(1); /* center marker on its coordinate */
-            -webkit-user-select: none; /* prevent selection on iOS */
+            pointer-events: auto;
+            z-index: 2;
             user-select: none;
             cursor: pointer;
+            /* Transition for hover effect */
+            transition: transform 0.2s ease, background-color 0.2s;
+            transform-origin: bottom center;
         }
 
-        /* Desktop hover only - avoid on touch devices */
+        /* Triangle pointer at the bottom */
+        .numbered-marker::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            /* Position below the circle */
+            left: 50%;
+            margin-left: -8px;
+            /* Center horizontally (half of width) */
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 11px solid #2563eb;
+            /* Color matches background */
+            filter: drop-shadow(0 2px 2px rgba(37, 99, 235, 0.2));
+        }
+
+        /* Desktop hover only */
         @media (hover: hover) and (pointer: fine) {
             .numbered-marker:hover {
                 background-color: #1e40af;
-                -webkit-transform: translate(-50%, -50%) scale(1.15);
-                transform: translate(-50%, -50%) scale(1.15);
+                transform: scale(1.15);
+                z-index: 10;
+            }
+
+            .numbered-marker:hover::after {
+                border-top-color: #1e40af;
             }
         }
 
@@ -222,15 +275,20 @@
             align-items: center;
             padding: 8px 12px;
             margin-left: 8px;
-            background-color: #06b6d4; /* teal */
+            background-color: #06b6d4;
+            /* teal */
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 12px rgba(6,182,212,0.12);
+            box-shadow: 0 6px 12px rgba(6, 182, 212, 0.12);
         }
-        .locate-btn[disabled] { opacity: 0.6; cursor: default; }
+
+        .locate-btn[disabled] {
+            opacity: 0.6;
+            cursor: default;
+        }
 
         /* Near by area button */
         .nearby-btn {
@@ -238,31 +296,37 @@
             align-items: center;
             padding: 8px 12px;
             margin-left: 8px;
-            background-color: #8b5cf6; /* purple */
+            background-color: #8b5cf6;
+            /* purple */
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 12px rgba(139,92,246,0.12);
+            box-shadow: 0 6px 12px rgba(139, 92, 246, 0.12);
         }
-        .nearby-btn[disabled] { opacity: 0.6; cursor: default; }
+
+        .nearby-btn[disabled] {
+            opacity: 0.6;
+            cursor: default;
+        }
 
         /* User location marker */
         .user-marker {
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #10b981; /* green */
+            background: #10b981;
+            /* green */
             border: 3px solid white;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.36);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.36);
             transform: translate(-50%, -50%);
         }
 
         /* Accuracy circle overlay (resized in JS) */
         .accuracy-circle {
-            background: rgba(14,165,233,0.12);
-            border: 2px solid rgba(14,165,233,0.22);
+            background: rgba(14, 165, 233, 0.12);
+            border: 2px solid rgba(14, 165, 233, 0.22);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
@@ -276,638 +340,668 @@
             background: #ffffff;
             padding: 12px;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(2,6,23,0.14);
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.14);
             max-width: 320px;
             z-index: 20;
             font-size: 0.95rem;
         }
-        .nearby-panel h3 { margin: 0 0 8px 0; font-size: 1rem; }
-        .nearby-list { margin: 8px 0 0 12px; padding: 0; }
-        .nearby-list li { margin-bottom: 8px; }
+
+        .nearby-panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .nearby-list {
+            margin: 8px 0 0 12px;
+            padding: 0;
+        }
+
+        .nearby-list li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Vote Centre Locations</h1>
-    <div id="status" class="loading">Loading data...</div>
-    <div class="filter-row" style="display:none;">
-        <label for="areaFilter" style="font-weight:600; margin-right:8px;">Filter by Area:</label>
-        <select id="areaFilter" class="area-select">
-            <option value="">All areas</option>
-        </select>
-        <span id="resultCount" class="area-badge"></span>
-        <!-- Locate Me button -->
-        <button id="locateBtn" class="locate-btn" title="Find my location">Locate Me</button>
-        <!-- Near by area button -->
-        <button id="nearbyBtn" class="nearby-btn" title="Show nearby centers">Near by area</button>
+    <div class="container">
+        <h1>Vote Centre Locations</h1>
+        <div id="status" class="loading">Loading data...</div>
+        <div class="filter-row" style="display:none;">
+            <label for="areaFilter" style="font-weight:600; margin-right:8px;">Filter by Area:</label>
+            <select id="areaFilter" class="area-select">
+                <option value="">All areas</option>
+            </select>
+            <span id="resultCount" class="area-badge"></span>
+            <!-- Locate Me button -->
+            <button id="locateBtn" class="locate-btn" title="Find my location">Locate Me</button>
+            <!-- Near by area button -->
+            <button id="nearbyBtn" class="nearby-btn" title="Show nearby centers">Near by area</button>
+        </div>
+        <div id="map"></div>
+        <!-- Nearby centres panel (overlay) -->
+        <aside id="nearbyPanel" class="nearby-panel" style="display:none;"></aside>
+
+        <div id="table-container"></div>
     </div>
-    <div id="map"></div>
-    <!-- Nearby centres panel (overlay) -->
-    <aside id="nearbyPanel" class="nearby-panel" style="display:none;"></aside>
 
-    <div id="table-container"></div>
-</div>
+    <script>
+        // Supabase Configuration from instructions
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
 
-<script>
-    // Supabase Configuration from instructions
-    const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
-    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
-    
-    // Initialize Supabase client
-    const supabaseClient = window.supabaseClient || (window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
-    let voteData = []; // holds fetched vote centre records for filtering
-    let map;
-    let markerLayer;
-    const geoCache = new Map();
-    let lastGeocodingTime = 0;
+        // Initialize Supabase client
+        const supabaseClient = window.supabaseClient || (window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
+        let voteData = []; // holds fetched vote centre records for filtering
+        let map;
+        let markerLayer;
+        const geoCache = new Map();
+        let lastGeocodingTime = 0;
 
-    // Delay utility for rate limiting
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    // Extract main location name from detailed address (removes ward numbers, street details)
-    function extractMainLocation(text) {
-        if (!text) return '';
-        // Remove patterns like "ওয়ার্ড নং-১", numbers with slashes, parentheses content
-        let cleaned = text
-            .replace(/ওয়ার্ড\s*নং?[-\s]*\d+/gi, '') // Remove ward numbers
-            .replace(/\d+নং?\s*ওয়ার্ড/gi, '') // Remove ward mentions
-            .replace(/[-–—]\d+/g, '') // Remove dash-numbers like -197, -331
-            .replace(/\([^)]*\)/g, '') // Remove parentheses content
-            .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
-            .trim();
-        // Extract first meaningful part (usually city/municipality name)
-        const parts = cleaned.split(/[,،]/); // Split by comma (English or Bengali)
-        return parts[0]?.trim() || cleaned;
-    }
-
-    // Function to fetch data and render table
-    async function loadVoteCentres() {
-        const statusDiv = document.getElementById('status');
-        const tableContainer = document.getElementById('table-container');
-
-        try {
-            // Fetch relevant columns from public.vote_centre
-            const { data, error } = await supabaseClient
-                .from('vote_centre')
-                .select('vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, location_url')
-                .order('vote_centre_code', { ascending: true });
-
-            if (error) {
-                throw error;
-            }
-
-            if (!data || data.length === 0) {
-                statusDiv.innerHTML = 'No vote centres found.';
-                return;
-            }
-
-            // Store data and initialize UI
-            voteData = data;
-            initMap();
-            populateAreaFilter(data);
-            renderCards(data);
-            // show filter row
-            const filterRow = document.querySelector('.filter-row');
-            if (filterRow) filterRow.style.display = 'flex';
-            statusDiv.style.display = 'none';
-
-        } catch (err) {
-            console.error('Error fetching data:', err);
-            statusDiv.className = 'error';
-            statusDiv.innerHTML = `Error loading data: ${err.message}`;
+        // Delay utility for rate limiting
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
-    }
 
-    function initMap() {
-        if (map) return;
-
-        // Use a minimal inline style with OSM raster tiles so roads and labels are always visible
-        const osmRasterStyle = {
-            version: 8,
-            name: 'Raster multi-source base',
-            sources: {
-                // Fallback base (Carto Light) — generally CORS-friendly
-                'carto': {
-                    type: 'raster',
-                    tiles: [
-                        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                    ],
-                    scheme: 'xyz',
-                    tileSize: 256,
-                    minzoom: 0,
-                    maxzoom: 20,
-                    attribution: '© Carto, © OpenStreetMap contributors'
-                },
-                // Primary base (OpenStreetMap tiles)
-                'osm': {
-                    type: 'raster',
-                    tiles: [
-                        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                    ],
-                    scheme: 'xyz',
-                    tileSize: 256,
-                    minzoom: 0,
-                    maxzoom: 19,
-                    attribution: '© OpenStreetMap contributors'
-                }
-            },
-            layers: [
-                // Background color so we never see a transparent checkerboard
-                {
-                    id: 'background-fill',
-                    type: 'background',
-                    paint: { 'background-color': '#f0e6dc' }
-                },
-                // Carto as the fallback basemap (drawn first)
-                {
-                    id: 'carto-raster-layer',
-                    type: 'raster',
-                    source: 'carto'
-                },
-                // OSM tiles on top — if they fail to load the Carto layer shows through
-                {
-                    id: 'osm-raster-layer',
-                    type: 'raster',
-                    source: 'osm'
-                }
-            ]
-        };
-
-        map = new maplibregl.Map({
-            container: 'map',
-            style: osmRasterStyle,
-            center: [91.3967, 23.0150], // Feni, Bangladesh [lng, lat]
-            zoom: 12,
-            scrollZoom: false
-        });
-
-        map.addControl(new maplibregl.NavigationControl());
-        map.addControl(new maplibregl.AttributionControl({ compact: true }));
-        try {
-            const containerEl = document.querySelector('.container');
-            map.addControl(new maplibregl.FullscreenControl({ container: containerEl }));
-        } catch (e) {
-            console.warn('FullscreenControl not available:', e);
+        // Extract main location name from detailed address (removes ward numbers, street details)
+        function extractMainLocation(text) {
+            if (!text) return '';
+            // Remove patterns like "ওয়ার্ড নং-১", numbers with slashes, parentheses content
+            let cleaned = text
+                .replace(/ওয়ার্ড\s*নং?[-\s]*\d+/gi, '') // Remove ward numbers
+                .replace(/\d+নং?\s*ওয়ার্ড/gi, '') // Remove ward mentions
+                .replace(/[-–—]\d+/g, '') // Remove dash-numbers like -197, -331
+                .replace(/\([^)]*\)/g, '') // Remove parentheses content
+                .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
+                .trim();
+            // Extract first meaningful part (usually city/municipality name)
+            const parts = cleaned.split(/[,،]/); // Split by comma (English or Bengali)
+            return parts[0]?.trim() || cleaned;
         }
-        markerLayer = []; // Store markers in array
 
-        // Ensure the map resizes correctly when the viewport size changes (for full-bleed)
-        window.addEventListener('resize', () => { try { if (map && map.resize) map.resize(); } catch (e) {} });
-        map.on('load', () => { try { if (map && map.resize) setTimeout(() => map.resize(), 100); } catch(e){} });
+        // Function to fetch data and render table
+        async function loadVoteCentres() {
+            const statusDiv = document.getElementById('status');
+            const tableContainer = document.getElementById('table-container');
 
-        // Listen for general map errors and source data events to help debug tiles
-        map.on('error', (e) => {
-            console.warn('Map error:', e && e.error ? e.error.message || e.error : e);
-        });
-        map.on('sourcedata', (e) => {
-            if (e && e.sourceId) {
-                // When a source finishes loading we can log its status
-                // e.isSourceLoaded is true when the source is ready
-                console.debug('source event:', e.sourceId, 'isSourceLoaded=', e.isSourceLoaded);
+            try {
+                // Fetch relevant columns from public.vote_centre
+                const { data, error } = await supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, location_url')
+                    .order('vote_centre_code', { ascending: true });
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!data || data.length === 0) {
+                    statusDiv.innerHTML = 'No vote centres found.';
+                    return;
+                }
+
+                // Store data and initialize UI
+                voteData = data;
+                initMap();
+                populateAreaFilter(data);
+                renderCards(data);
+                // show filter row
+                const filterRow = document.querySelector('.filter-row');
+                if (filterRow) filterRow.style.display = 'flex';
+                statusDiv.style.display = 'none';
+
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = `Error loading data: ${err.message}`;
             }
-        });
+        }
 
-        // Ensure the map resizes correctly when entering/exiting fullscreen
-        document.addEventListener('fullscreenchange', () => {
-            setTimeout(() => { if (map && map.resize) map.resize(); }, 200);
-        });
-    }
+        function initMap() {
+            if (map) return;
 
-    // Helper: wait for the map to be ready before adding DOM markers (fixes mobile timing issues)
-    async function ensureMapReady() {
-        if (!map) return;
-        try {
-            if (typeof map.loaded === 'function' && map.loaded()) return;
-            if (typeof map.isStyleLoaded === 'function' && map.isStyleLoaded()) return;
-            await new Promise(resolve => {
-                let done = false;
-                const onDone = () => { if (!done) { done = true; resolve(); } };
-                if (map && map.once) map.once('load', onDone);
-                // Safety timeout: avoid hanging if 'load' didn't fire
-                setTimeout(onDone, 3000);
+            // Use a minimal inline style with OSM raster tiles so roads and labels are always visible
+            const osmRasterStyle = {
+                version: 8,
+                name: 'Raster multi-source base',
+                sources: {
+                    // Fallback base (Carto Light) — generally CORS-friendly
+                    'carto': {
+                        type: 'raster',
+                        tiles: [
+                            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                        ],
+                        scheme: 'xyz',
+                        tileSize: 256,
+                        minzoom: 0,
+                        maxzoom: 20,
+                        attribution: '© Carto, © OpenStreetMap contributors'
+                    },
+                    // Primary base (OpenStreetMap tiles)
+                    'osm': {
+                        type: 'raster',
+                        tiles: [
+                            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                        ],
+                        scheme: 'xyz',
+                        tileSize: 256,
+                        minzoom: 0,
+                        maxzoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }
+                },
+                layers: [
+                    // Background color so we never see a transparent checkerboard
+                    {
+                        id: 'background-fill',
+                        type: 'background',
+                        paint: { 'background-color': '#f0e6dc' }
+                    },
+                    // Carto as the fallback basemap (drawn first)
+                    {
+                        id: 'carto-raster-layer',
+                        type: 'raster',
+                        source: 'carto'
+                    },
+                    // OSM tiles on top — if they fail to load the Carto layer shows through
+                    {
+                        id: 'osm-raster-layer',
+                        type: 'raster',
+                        source: 'osm'
+                    }
+                ]
+            };
+
+            map = new maplibregl.Map({
+                container: 'map',
+                style: osmRasterStyle,
+                center: [91.3967, 23.0150], // Feni, Bangladesh [lng, lat]
+                zoom: 12,
+                scrollZoom: false
             });
-        } catch (e) {
-            console.warn('ensureMapReady error:', e);
-        }
-    }
 
-    // Geolocation: place a user marker, draw an accuracy circle and show nearby centres
-    let userMarker = null;
-    let accuracyOverlay = null;
-
-    function distanceMeters(lat1, lon1, lat2, lon2) {
-        const R = 6371000; // meters
-        const toRad = (d) => d * Math.PI / 180;
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
-
-    function getPixelRadiusForAccuracy(lat, lng, meters) {
-        // approximate degrees for small distances
-        const latShift = meters / 111320; // degrees latitude per meter
-        const p1 = map.project([lng, lat]);
-        const p2 = map.project([lng, lat + latShift]);
-        return Math.abs(p2.y - p1.y);
-    }
-
-    async function locateUser() {
-        const btn = document.getElementById('locateBtn');
-        if (!btn) return;
-        if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
-        btn.disabled = true; btn.textContent = 'Locating...';
-
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            const acc = pos.coords.accuracy || 0;
-            await ensureMapReady();
-
-            // remove old markers/overlays
-            try { if (userMarker) userMarker.remove(); } catch(e){}
-            try { if (accuracyOverlay && accuracyOverlay.marker) accuracyOverlay.marker.remove(); } catch(e){}
-
-            // create / add user marker
-            const el = document.createElement('div'); el.className = 'user-marker';
-            userMarker = new maplibregl.Marker(el).setLngLat([lng, lat]).addTo(map);
-
-            // create accuracy circle as a DOM marker sized in pixels
-            const pixelRadius = Math.max(6, Math.round(getPixelRadiusForAccuracy(lat, lng, acc)));
-            const accEl = document.createElement('div'); accEl.className = 'accuracy-circle';
-            accEl.style.width = `${pixelRadius * 2}px`;
-            accEl.style.height = `${pixelRadius * 2}px`;
-            const accMarker = new maplibregl.Marker({ element: accEl, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
-            accuracyOverlay = { el: accEl, marker: accMarker };
-
-            // center map and zoom in
-            try { map.flyTo({ center: [lng, lat], zoom: 15 }); } catch(e) { map.setCenter([lng, lat]); }
-
-            // show nearest centres
-            showNearestCenters(lat, lng, 6);
-
-            btn.disabled = false; btn.textContent = 'Locate Me';
-        }, (err) => {
-            let msg = 'Location error';
-            if (err.code === 1) {
-                msg = 'Location permission denied.\n\nPlease enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari';
-            } else if (err.code === 2) {
-                msg = 'Location unavailable. Please check if location services are enabled on your device.';
-            } else if (err.code === 3) {
-                msg = 'Location request timed out. Please try again.';
-            } else {
-                msg = 'Geolocation error: ' + (err.message || err.code);
+            map.addControl(new maplibregl.NavigationControl());
+            map.addControl(new maplibregl.AttributionControl({ compact: true }));
+            try {
+                const containerEl = document.querySelector('.container');
+                map.addControl(new maplibregl.FullscreenControl({ container: containerEl }));
+            } catch (e) {
+                console.warn('FullscreenControl not available:', e);
             }
-            alert(msg);
-            btn.disabled = false; btn.textContent = 'Locate Me';
-        }, { enableHighAccuracy: true, timeout: 15000 });
-    }
+            markerLayer = []; // Store markers in array
 
-    function showNearestCenters(lat, lng, n = 5) {
-        const panel = document.getElementById('nearbyPanel');
-        if (!panel) return;
-        const list = [];
-        voteData.forEach(c => {
-            const coords = parseLatLngString(c.location_latitude_longitude) || extractLatLngFromUrl(c.location_url) || null;
-            if (coords && coords.length === 2) {
-                const d = distanceMeters(lat, lng, coords[0], coords[1]);
-                list.push({ centre: c, d });
-            }
-        });
-        list.sort((a,b) => a.d - b.d);
-        if (list.length === 0) {
-            panel.style.display = 'none';
-            return;
+            // Ensure the map resizes correctly when the viewport size changes (for full-bleed)
+            window.addEventListener('resize', () => { try { if (map && map.resize) map.resize(); } catch (e) { } });
+            map.on('load', () => { try { if (map && map.resize) setTimeout(() => map.resize(), 100); } catch (e) { } });
+
+            // Listen for general map errors and source data events to help debug tiles
+            map.on('error', (e) => {
+                console.warn('Map error:', e && e.error ? e.error.message || e.error : e);
+            });
+            map.on('sourcedata', (e) => {
+                if (e && e.sourceId) {
+                    // When a source finishes loading we can log its status
+                    // e.isSourceLoaded is true when the source is ready
+                    console.debug('source event:', e.sourceId, 'isSourceLoaded=', e.isSourceLoaded);
+                }
+            });
+
+            // Ensure the map resizes correctly when entering/exiting fullscreen
+            document.addEventListener('fullscreenchange', () => {
+                setTimeout(() => { if (map && map.resize) map.resize(); }, 200);
+            });
         }
-        const items = list.slice(0, n).map(item => `<li><strong>${item.centre.vote_centre_name || '-'} </strong><br><small>${item.centre.vote_centre_location || ''} — ${Math.round(item.d)} m</small></li>`).join('');
-        panel.innerHTML = `<h3>Nearby centres</h3><ul class="nearby-list">${items}</ul>`;
-        panel.style.display = 'block';
-    }
 
-    // attach listener to locate button (button exists above script)
-    document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('locateBtn');
-        if (btn) btn.addEventListener('click', locateUser);
+        // Helper: wait for the map to be ready before adding DOM markers (fixes mobile timing issues)
+        async function ensureMapReady() {
+            if (!map) return;
+            try {
+                if (typeof map.loaded === 'function' && map.loaded()) return;
+                if (typeof map.isStyleLoaded === 'function' && map.isStyleLoaded()) return;
+                await new Promise(resolve => {
+                    let done = false;
+                    const onDone = () => { if (!done) { done = true; resolve(); } };
+                    if (map && map.once) map.once('load', onDone);
+                    // Safety timeout: avoid hanging if 'load' didn't fire
+                    setTimeout(onDone, 3000);
+                });
+            } catch (e) {
+                console.warn('ensureMapReady error:', e);
+            }
+        }
 
-        const nearbyBtn = document.getElementById('nearbyBtn');
-        if (nearbyBtn) nearbyBtn.addEventListener('click', showNearbyArea);
-    });
+        // Geolocation: place a user marker, draw an accuracy circle and show nearby centres
+        let userMarker = null;
+        let accuracyOverlay = null;
 
-    // Show nearby area: get user location and show all nearby centres within a radius
-    async function showNearbyArea() {
-        const btn = document.getElementById('nearbyBtn');
-        if (!btn) return;
-        if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
-        btn.disabled = true; btn.textContent = 'Getting location...';
+        function distanceMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // meters
+            const toRad = (d) => d * Math.PI / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
 
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            const radiusMeters = 5000; // 5km radius
-            await ensureMapReady();
+        function getPixelRadiusForAccuracy(lat, lng, meters) {
+            // approximate degrees for small distances
+            const latShift = meters / 111320; // degrees latitude per meter
+            const p1 = map.project([lng, lat]);
+            const p2 = map.project([lng, lat + latShift]);
+            return Math.abs(p2.y - p1.y);
+        }
 
-            // filter centres within radius
-            const nearby = [];
+        async function locateUser() {
+            const btn = document.getElementById('locateBtn');
+            if (!btn) return;
+            if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+            btn.disabled = true; btn.textContent = 'Locating...';
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const acc = pos.coords.accuracy || 0;
+                await ensureMapReady();
+
+                // remove old markers/overlays
+                try { if (userMarker) userMarker.remove(); } catch (e) { }
+                try { if (accuracyOverlay && accuracyOverlay.marker) accuracyOverlay.marker.remove(); } catch (e) { }
+
+                // create / add user marker
+                const el = document.createElement('div'); el.className = 'user-marker';
+                userMarker = new maplibregl.Marker(el).setLngLat([lng, lat]).addTo(map);
+
+                // create accuracy circle as a DOM marker sized in pixels
+                const pixelRadius = Math.max(6, Math.round(getPixelRadiusForAccuracy(lat, lng, acc)));
+                const accEl = document.createElement('div'); accEl.className = 'accuracy-circle';
+                accEl.style.width = `${pixelRadius * 2}px`;
+                accEl.style.height = `${pixelRadius * 2}px`;
+                const accMarker = new maplibregl.Marker({ element: accEl, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
+                accuracyOverlay = { el: accEl, marker: accMarker };
+
+                // center map and zoom in
+                try { map.flyTo({ center: [lng, lat], zoom: 15 }); } catch (e) { map.setCenter([lng, lat]); }
+
+                // show nearest centres
+                showNearestCenters(lat, lng, 6);
+
+                btn.disabled = false; btn.textContent = 'Locate Me';
+            }, (err) => {
+                let msg = 'Location error';
+                if (err.code === 1) {
+                    msg = 'Location permission denied.\n\nPlease enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari';
+                } else if (err.code === 2) {
+                    msg = 'Location unavailable. Please check if location services are enabled on your device.';
+                } else if (err.code === 3) {
+                    msg = 'Location request timed out. Please try again.';
+                } else {
+                    msg = 'Geolocation error: ' + (err.message || err.code);
+                }
+                alert(msg);
+                btn.disabled = false; btn.textContent = 'Locate Me';
+            }, { enableHighAccuracy: true, timeout: 15000 });
+        }
+
+        function showNearestCenters(lat, lng, n = 5) {
+            const panel = document.getElementById('nearbyPanel');
+            if (!panel) return;
+            const list = [];
             voteData.forEach(c => {
                 const coords = parseLatLngString(c.location_latitude_longitude) || extractLatLngFromUrl(c.location_url) || null;
                 if (coords && coords.length === 2) {
                     const d = distanceMeters(lat, lng, coords[0], coords[1]);
-                    if (d <= radiusMeters) nearby.push({ ...c, distance: d });
+                    list.push({ centre: c, d });
                 }
             });
-
-            if (nearby.length === 0) {
-                alert('No centres found within 5 km.');
-                btn.disabled = false; btn.textContent = 'Near by area';
+            list.sort((a, b) => a.d - b.d);
+            if (list.length === 0) {
+                panel.style.display = 'none';
                 return;
             }
+            const items = list.slice(0, n).map(item => `<li><strong>${item.centre.vote_centre_name || '-'} </strong><br><small>${item.centre.vote_centre_location || ''} — ${Math.round(item.d)} m</small></li>`).join('');
+            panel.innerHTML = `<h3>Nearby centres</h3><ul class="nearby-list">${items}</ul>`;
+            panel.style.display = 'block';
+        }
 
-            // Sort by distance and render only nearby centres
-            nearby.sort((a, b) => a.distance - b.distance);
-            const panel = document.getElementById('nearbyPanel');
-            if (panel) {
-                const items = nearby.map(item => `<li><strong>${item.vote_centre_name || '-'} </strong><br><small>${item.vote_centre_location || ''} — ${Math.round(item.distance)} m</small></li>`).join('');
-                panel.innerHTML = `<h3>Nearby centres (${nearby.length})</h3><ul class="nearby-list">${items}</ul>`;
-                panel.style.display = 'block';
-            }
+        // attach listener to locate button (button exists above script)
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('locateBtn');
+            if (btn) btn.addEventListener('click', locateUser);
 
-            // render only nearby markers on map
-            await renderMarkers(nearby);
+            const nearbyBtn = document.getElementById('nearbyBtn');
+            if (nearbyBtn) nearbyBtn.addEventListener('click', showNearbyArea);
+        });
 
-            btn.disabled = false; btn.textContent = 'Near by area';
-        }, (err) => {
-            let msg = 'Location error';
-            if (err.code === 1) {
-                msg = 'Location permission denied.\n\nTo use this feature, please enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari\n\nThen refresh this page and try again.';
-            } else if (err.code === 2) {
-                msg = 'Location unavailable. Please check if location services are enabled on your device.';
-            } else if (err.code === 3) {
-                msg = 'Location request timed out. Please try again.';
-            } else {
-                msg = 'Geolocation error: ' + (err.message || err.code);
-            }
-            alert(msg);
-            btn.disabled = false; btn.textContent = 'Near by area';
-        }, { enableHighAccuracy: true, timeout: 15000 });
-    }
+        // Show nearby area: get user location and show all nearby centres within a radius
+        async function showNearbyArea() {
+            const btn = document.getElementById('nearbyBtn');
+            if (!btn) return;
+            if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+            btn.disabled = true; btn.textContent = 'Getting location...';
 
-    function extractLatLngFromUrl(url) {
-        if (!url) return null;
-        try {
-            const decoded = decodeURIComponent(url);
-            // @lat,lng pattern
-            const atMatch = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (atMatch) return [parseFloat(atMatch[1]), parseFloat(atMatch[2])];
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const radiusMeters = 5000; // 5km radius
+                await ensureMapReady();
 
-            // Google "!3d...!4d..." format
-            const bangMatch = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (bangMatch) return [parseFloat(bangMatch[1]), parseFloat(bangMatch[2])];
+                // filter centres within radius
+                const nearby = [];
+                voteData.forEach(c => {
+                    const coords = parseLatLngString(c.location_latitude_longitude) || extractLatLngFromUrl(c.location_url) || null;
+                    if (coords && coords.length === 2) {
+                        const d = distanceMeters(lat, lng, coords[0], coords[1]);
+                        if (d <= radiusMeters) nearby.push({ ...c, distance: d });
+                    }
+                });
 
-            // query=lat,lng or q=lat,lng
-            const queryMatch = decoded.match(/[?&]query=([^&]+)/);
-            if (queryMatch) {
-                const q = decodeURIComponent(queryMatch[1]);
-                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
-                    const [lat, lng] = q.split(',').map(Number);
-                    return [lat, lng];
+                if (nearby.length === 0) {
+                    alert('No centres found within 5 km.');
+                    btn.disabled = false; btn.textContent = 'Near by area';
+                    return;
                 }
-            }
-            const qParam = decoded.match(/[?&]q=([^&]+)/);
-            if (qParam) {
-                const q = decodeURIComponent(qParam[1]);
-                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
-                    const [lat, lng] = q.split(',').map(Number);
-                    return [lat, lng];
+
+                // Sort by distance and render only nearby centres
+                nearby.sort((a, b) => a.distance - b.distance);
+                const panel = document.getElementById('nearbyPanel');
+                if (panel) {
+                    const items = nearby.map(item => `<li><strong>${item.vote_centre_name || '-'} </strong><br><small>${item.vote_centre_location || ''} — ${Math.round(item.distance)} m</small></li>`).join('');
+                    panel.innerHTML = `<h3>Nearby centres (${nearby.length})</h3><ul class="nearby-list">${items}</ul>`;
+                    panel.style.display = 'block';
                 }
-            }
 
-            // center=lat,lng (staticmap or static endpoints)
-            const centerParam = decoded.match(/[?&]center=([^&]+)/);
-            if (centerParam) {
-                const c = decodeURIComponent(centerParam[1]).replace(/\+/g, ' ');
-                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
-                    const [lat, lng] = c.split(',').map(Number);
-                    return [lat, lng];
+                // render only nearby markers on map
+                await renderMarkers(nearby);
+
+                btn.disabled = false; btn.textContent = 'Near by area';
+            }, (err) => {
+                let msg = 'Location error';
+                if (err.code === 1) {
+                    msg = 'Location permission denied.\n\nTo use this feature, please enable location permission:\n• Android: Settings → Apps → Browser → Permissions → Location\n• iPhone: Settings → Privacy → Location Services → Safari\n\nThen refresh this page and try again.';
+                } else if (err.code === 2) {
+                    msg = 'Location unavailable. Please check if location services are enabled on your device.';
+                } else if (err.code === 3) {
+                    msg = 'Location request timed out. Please try again.';
+                } else {
+                    msg = 'Geolocation error: ' + (err.message || err.code);
                 }
-            }
+                alert(msg);
+                btn.disabled = false; btn.textContent = 'Near by area';
+            }, { enableHighAccuracy: true, timeout: 15000 });
+        }
 
-            // ll=lat,lng
-            const llParam = decoded.match(/[?&]ll=([^&]+)/);
-            if (llParam) {
-                const c = decodeURIComponent(llParam[1]);
-                if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
-                    const [lat, lng] = c.split(',').map(Number);
-                    return [lat, lng];
+        function extractLatLngFromUrl(url) {
+            if (!url) return null;
+            try {
+                const decoded = decodeURIComponent(url);
+
+                // Priority: Check for explicit data coordinates (!3d...!4d) which represent the PIN location
+                // e.g. ...!3d23.015!4d91.396...
+                // Note: sometimes they are separated or order differs, but !3d is usually matches latitude context in maps urls
+                const pinMatch = decoded.match(/!3d(-?\d+\.\d+).*!4d(-?\d+\.\d+)/) || decoded.match(/!4d(-?\d+\.\d+).*!3d(-?\d+\.\d+)/);
+                if (pinMatch) {
+                    // If match 1 is !3d... it's lat. If match 1 is !4d... it's lng.
+                    // Let's parse carefully based on which regex matched
+                    const m1 = parseFloat(pinMatch[1]);
+                    const m2 = parseFloat(pinMatch[2]);
+                    // If the first group was 3d (lat), then m1 is lat.
+                    if (decoded.indexOf('!3d' + pinMatch[1]) < decoded.indexOf('!4d' + pinMatch[2])) {
+                        return [m1, m2]; // lat, lng
+                    } else {
+                        return [m2, m1]; // lng, lat (swapped because 4d came first? usually 3d is lat)
+                    }
                 }
+
+                // @lat,lng pattern (often camera center, fallback if pin not found)
+                const atMatch = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (atMatch) return [parseFloat(atMatch[1]), parseFloat(atMatch[2])];
+
+                // The old Google "!3d...!4d..." format is now covered by the more robust pinMatch above.
+                // const bangMatch = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+                // if (bangMatch) return [parseFloat(bangMatch[1]), parseFloat(bangMatch[2])];
+
+                // query=lat,lng or q=lat,lng
+                const queryMatch = decoded.match(/[?&]query=([^&]+)/);
+                if (queryMatch) {
+                    const q = decodeURIComponent(queryMatch[1]);
+                    if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
+                        const [lat, lng] = q.split(',').map(Number);
+                        return [lat, lng];
+                    }
+                }
+                const qParam = decoded.match(/[?&]q=([^&]+)/);
+                if (qParam) {
+                    const q = decodeURIComponent(qParam[1]);
+                    if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(q)) {
+                        const [lat, lng] = q.split(',').map(Number);
+                        return [lat, lng];
+                    }
+                }
+
+                // center=lat,lng (staticmap or static endpoints)
+                const centerParam = decoded.match(/[?&]center=([^&]+)/);
+                if (centerParam) {
+                    const c = decodeURIComponent(centerParam[1]).replace(/\+/g, ' ');
+                    if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
+                        const [lat, lng] = c.split(',').map(Number);
+                        return [lat, lng];
+                    }
+                }
+
+                // ll=lat,lng
+                const llParam = decoded.match(/[?&]ll=([^&]+)/);
+                if (llParam) {
+                    const c = decodeURIComponent(llParam[1]);
+                    if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(c)) {
+                        const [lat, lng] = c.split(',').map(Number);
+                        return [lat, lng];
+                    }
+                }
+
+                // /place/lat,lng pattern
+                const placeMatch = decoded.match(/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (placeMatch) return [parseFloat(placeMatch[1]), parseFloat(placeMatch[2])];
+
+            } catch (e) {
+                return null;
             }
-
-            // /place/lat,lng pattern
-            const placeMatch = decoded.match(/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (placeMatch) return [parseFloat(placeMatch[1]), parseFloat(placeMatch[2])];
-
-        } catch (e) {
             return null;
         }
-        return null;
-    }
 
-    // Parse plain "lat,lng" strings stored in database
-    function parseLatLngString(text) {
-        if (!text) return null;
-        const m = text.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
-        if (m) return [parseFloat(m[1]), parseFloat(m[2])];
-        return null;
-    }
+        // Parse plain "lat,lng" strings stored in database
+        function parseLatLngString(text) {
+            if (!text) return null;
+            const m = text.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+            if (m) return [parseFloat(m[1]), parseFloat(m[2])];
+            return null;
+        }
 
-    // Expand shortened URLs (like goo.gl) by following redirects
-    async function expandShortUrl(shortUrl) {
-        if (!shortUrl) return null;
-        
-        // Check cache first
-        const cacheKey = `expand:${shortUrl}`;
-        if (geoCache.has(cacheKey)) return geoCache.get(cacheKey);
-        
-        // Rate limiting for proxy requests (100ms delay)
-        await delay(100);
-        
-        try {
-            // Use corsproxy.io which is more reliable
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(shortUrl)}`;
-            const response = await fetch(proxyUrl, {
-                method: 'GET',
-                redirect: 'follow'
-            });
-            
-            // Try to get final URL from response.url first
-            let finalUrl = response.url || '';
+        // Expand shortened URLs (like goo.gl) by following redirects
+        async function expandShortUrl(shortUrl) {
+            if (!shortUrl) return null;
 
-            // If proxy didn't follow to a final URL (still contains proxy prefix), parse the response body
-            if (finalUrl && finalUrl.includes('corsproxy.io/?')) {
-                const body = await response.text();
+            // Check cache first
+            const cacheKey = `expand:${shortUrl}`;
+            if (geoCache.has(cacheKey)) return geoCache.get(cacheKey);
 
-                // Look for common Google Maps targets in the HTML (canonical, og:url, direct links)
-                const mapMatch = body.match(/https?:\/\/[^\s"'<>]*google\.com\/maps[^\s"'<>]*/i)
-                               || body.match(/https?:\/\/maps\.app\.goo\.gl\/[^\s"'<>]*/i)
-                               || body.match(/https?:\/\/maps\.google\.com\/[^\s"'<>]*/i);
+            // Rate limiting for proxy requests (100ms delay)
+            await delay(100);
 
-                if (mapMatch && mapMatch[0]) {
-                    finalUrl = mapMatch[0];
-                } else {
-                    // Check meta og:url
-                    const og = body.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)["']/i);
-                    if (og && og[1]) finalUrl = og[1];
+            try {
+                // Use corsproxy.io which is more reliable
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(shortUrl)}`;
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+
+                // Try to get final URL from response.url first
+                let finalUrl = response.url || '';
+
+                // If proxy didn't follow to a final URL (still contains proxy prefix), parse the response body
+                if (finalUrl && finalUrl.includes('corsproxy.io/?')) {
+                    const body = await response.text();
+
+                    // Look for common Google Maps targets in the HTML (canonical, og:url, direct links)
+                    const mapMatch = body.match(/https?:\/\/[^\s"'<>]*google\.com\/maps[^\s"'<>]*/i)
+                        || body.match(/https?:\/\/maps\.app\.goo\.gl\/[^\s"'<>]*/i)
+                        || body.match(/https?:\/\/maps\.google\.com\/[^\s"'<>]*/i);
+
+                    if (mapMatch && mapMatch[0]) {
+                        finalUrl = mapMatch[0];
+                    } else {
+                        // Check meta og:url
+                        const og = body.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)["']/i);
+                        if (og && og[1]) finalUrl = og[1];
+                    }
                 }
-            }
 
-            // Clean up any proxy prefix if present
-            if (finalUrl.startsWith('https://corsproxy.io/?')) {
-                finalUrl = decodeURIComponent(finalUrl.replace('https://corsproxy.io/?', ''));
-            }
+                // Clean up any proxy prefix if present
+                if (finalUrl.startsWith('https://corsproxy.io/?')) {
+                    finalUrl = decodeURIComponent(finalUrl.replace('https://corsproxy.io/?', ''));
+                }
 
-            // If finalUrl is still the shortUrl, give up and cache null
-            if (!finalUrl || finalUrl === shortUrl) {
-                console.warn('Could not expand short URL (no final URL found):', shortUrl);
+                // If finalUrl is still the shortUrl, give up and cache null
+                if (!finalUrl || finalUrl === shortUrl) {
+                    console.warn('Could not expand short URL (no final URL found):', shortUrl);
+                    geoCache.set(cacheKey, null);
+                    return null;
+                }
+
+                console.log('Expanded URL:', shortUrl, '->', finalUrl);
+                geoCache.set(cacheKey, finalUrl);
+                return finalUrl;
+            } catch (e) {
+                console.error('Failed to expand URL:', shortUrl, e);
                 geoCache.set(cacheKey, null);
                 return null;
             }
+        }
 
-            console.log('Expanded URL:', shortUrl, '->', finalUrl);
-            geoCache.set(cacheKey, finalUrl);
-            return finalUrl;
-        } catch (e) {
-            console.error('Failed to expand URL:', shortUrl, e);
-            geoCache.set(cacheKey, null);
+        async function geocodeQuery(query) {
+            if (!query) return null;
+            const key = `q:${query}`;
+            if (geoCache.has(key)) return geoCache.get(key);
+
+            // Rate limiting: wait at least 300ms between requests
+            const now = Date.now();
+            const timeSinceLastRequest = now - lastGeocodingTime;
+            if (timeSinceLastRequest < 300) {
+                await delay(300 - timeSinceLastRequest);
+            }
+            lastGeocodingTime = Date.now();
+
+            try {
+                // Add Feni, Bangladesh context to improve geocoding
+                const queryWithContext = query.includes('Feni, Bangladesh') ? query : `${query}, Feni, Bangladesh`;
+                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(queryWithContext)}`;
+                console.log('Geocoding:', queryWithContext);
+
+                const res = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'VoteCentreMap/1.0'
+                    }
+                });
+                const json = await res.json();
+
+                if (json && json[0]) {
+                    const lat = parseFloat(json[0].lat);
+                    const lng = parseFloat(json[0].lon);
+                    const coords = [lat, lng];
+                    console.log('✓ Found coordinates:', coords, 'for', query);
+                    geoCache.set(key, coords);
+                    return coords;
+                } else {
+                    console.warn('✗ No coordinates found for:', query);
+                }
+            } catch (e) {
+                console.error('Geocoding error for', query, ':', e);
+            }
+            geoCache.set(key, null);
             return null;
         }
-    }
 
-    async function geocodeQuery(query) {
-        if (!query) return null;
-        const key = `q:${query}`;
-        if (geoCache.has(key)) return geoCache.get(key);
-        
-        // Rate limiting: wait at least 300ms between requests
-        const now = Date.now();
-        const timeSinceLastRequest = now - lastGeocodingTime;
-        if (timeSinceLastRequest < 300) {
-            await delay(300 - timeSinceLastRequest);
-        }
-        lastGeocodingTime = Date.now();
+        async function renderMarkers(data) {
+            if (!map) return;
+            await ensureMapReady();
 
-        try {
-            // Add Feni, Bangladesh context to improve geocoding
-            const queryWithContext = query.includes('Feni, Bangladesh') ? query : `${query}, Feni, Bangladesh`;
-            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(queryWithContext)}`;
-            console.log('Geocoding:', queryWithContext);
-            
-            const res = await fetch(url, {
-                headers: {
-                    'User-Agent': 'VoteCentreMap/1.0'
-                }
-            });
-            const json = await res.json();
-            
-            if (json && json[0]) {
-                const lat = parseFloat(json[0].lat);
-                const lng = parseFloat(json[0].lon);
-                const coords = [lat, lng];
-                console.log('✓ Found coordinates:', coords, 'for', query);
-                geoCache.set(key, coords);
-                return coords;
-            } else {
-                console.warn('✗ No coordinates found for:', query);
-            }
-        } catch (e) {
-            console.error('Geocoding error for', query, ':', e);
-        }
-        geoCache.set(key, null);
-        return null;
-    }
+            // Remove existing markers
+            markerLayer.forEach(marker => marker.remove());
+            markerLayer = [];
 
-    async function renderMarkers(data) {
-        if (!map) return;
-        await ensureMapReady();
-        
-        // Remove existing markers
-        markerLayer.forEach(marker => marker.remove());
-        markerLayer = [];
-        
-        const bounds = new maplibregl.LngLatBounds();
-        let successCount = 0;
-        let failCount = 0;
+            const bounds = new maplibregl.LngLatBounds();
+            let successCount = 0;
+            let failCount = 0;
 
-        console.log(`Rendering ${data.length} markers...`);
+            console.log(`Rendering ${data.length} markers...`);
 
-        // Process all markers in parallel batches for faster loading
-        const batchSize = 10; // Process 10 markers at a time
-        
-        for (let batchStart = 0; batchStart < data.length; batchStart += batchSize) {
-            const batch = data.slice(batchStart, batchStart + batchSize);
-            
-            await Promise.all(batch.map(async (centre, batchIndex) => {
-                const i = batchStart + batchIndex;
-                const name = centre.vote_centre_name || '';
-                const location = centre.vote_centre_location || '';
-                const area = centre.vote_centre_area || '';
-                const locationUrl = centre.location_url || '';
+            // Process all markers in parallel batches for faster loading
+            const batchSize = 10; // Process 10 markers at a time
 
-                // Priority 1: explicit coordinates stored in DB (format: "lat,lng")
-                let coords = parseLatLngString(centre.location_latitude_longitude);
-                if (coords) {
-                    console.log('Using saved coordinates for', centre.vote_centre_code || centre.vote_centre_iid, coords);
-                } else {
-                    // Priority 2: extract coordinates from location_url (including expanding short URLs)
-                    coords = extractLatLngFromUrl(locationUrl);
+            for (let batchStart = 0; batchStart < data.length; batchStart += batchSize) {
+                const batch = data.slice(batchStart, batchStart + batchSize);
 
-                    if (!coords && locationUrl && locationUrl.trim()) {
-                        // Try to extract coords from the URL directly (handles many Google link shapes)
+                await Promise.all(batch.map(async (centre, batchIndex) => {
+                    const i = batchStart + batchIndex;
+                    const name = centre.vote_centre_name || '';
+                    const location = centre.vote_centre_location || '';
+                    const area = centre.vote_centre_area || '';
+                    const locationUrl = centre.location_url || '';
+
+                    // Priority 1: explicit coordinates stored in DB (format: "lat,lng")
+                    let coords = parseLatLngString(centre.location_latitude_longitude);
+                    if (coords) {
+                        console.log('Using saved coordinates for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+                    } else {
+                        // Priority 2: extract coordinates from location_url (including expanding short URLs)
                         coords = extractLatLngFromUrl(locationUrl);
-                        if (!coords && (locationUrl.includes('goo.gl') || locationUrl.includes('maps.app.goo.gl'))) {
-                            const expandedUrl = await expandShortUrl(locationUrl);
-                            if (expandedUrl) {
-                                coords = extractLatLngFromUrl(expandedUrl);
-                                if (coords) console.log('Extracted coords from expanded URL for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+
+                        if (!coords && locationUrl && locationUrl.trim()) {
+                            // Try to extract coords from the URL directly (handles many Google link shapes)
+                            coords = extractLatLngFromUrl(locationUrl);
+                            if (!coords && (locationUrl.includes('goo.gl') || locationUrl.includes('maps.app.goo.gl'))) {
+                                const expandedUrl = await expandShortUrl(locationUrl);
+                                if (expandedUrl) {
+                                    coords = extractLatLngFromUrl(expandedUrl);
+                                    if (coords) console.log('Extracted coords from expanded URL for', centre.vote_centre_code || centre.vote_centre_iid, coords);
+                                }
+                            }
+
+                            // If we found coords from URL and DB doesn't already have them, save to DB
+                            if (coords && (!centre.location_latitude_longitude || !centre.location_latitude_longitude.trim())) {
+                                const coordsStr = `${coords[0]},${coords[1]}`;
+                                try {
+                                    const { data: upData, error: upErr } = await supabaseClient
+                                        .from('vote_centre')
+                                        .update({ location_latitude_longitude: coordsStr })
+                                        .eq('vote_centre_iid', centre.vote_centre_iid);
+                                    if (!upErr) {
+                                        centre.location_latitude_longitude = coordsStr; // update in-memory record
+                                        console.log('Saved extracted coords to DB for', centre.vote_centre_iid, coordsStr);
+                                    } else {
+                                        console.warn('Failed to save extracted coords for', centre.vote_centre_iid, upErr);
+                                    }
+                                } catch (e) {
+                                    console.warn('Error saving extracted coords for', centre.vote_centre_iid, e);
+                                }
                             }
                         }
 
-                        // If we found coords from URL and DB doesn't already have them, save to DB
-                        if (coords && (!centre.location_latitude_longitude || !centre.location_latitude_longitude.trim())) {
-                            const coordsStr = `${coords[0]},${coords[1]}`;
-                            try {
-                                const { data: upData, error: upErr } = await supabaseClient
-                                    .from('vote_centre')
-                                    .update({ location_latitude_longitude: coordsStr })
-                                    .eq('vote_centre_iid', centre.vote_centre_iid);
-                                if (!upErr) {
-                                    centre.location_latitude_longitude = coordsStr; // update in-memory record
-                                    console.log('Saved extracted coords to DB for', centre.vote_centre_iid, coordsStr);
-                                } else {
-                                    console.warn('Failed to save extracted coords for', centre.vote_centre_iid, upErr);
-                                }
-                            } catch (e) {
-                                console.warn('Error saving extracted coords for', centre.vote_centre_iid, e);
-                            }
-                        }
+                        // NOTE: Custom geocoding/search fallback has been disabled on request.
+                        // We will NOT call geocodeQuery() if neither stored coords nor location_url provide coordinates.
                     }
 
-                    // NOTE: Custom geocoding/search fallback has been disabled on request.
-                    // We will NOT call geocodeQuery() if neither stored coords nor location_url provide coordinates.
-                }
+                    if (coords && coords.length === 2) {
+                        const [lat, lng] = coords;
+                        bounds.extend([lng, lat]); // Mapbox uses [lng, lat]
 
-                if (coords && coords.length === 2) {
-                    const [lat, lng] = coords;
-                    bounds.extend([lng, lat]); // Mapbox uses [lng, lat]
-
-                    const mapHref = (locationUrl && locationUrl.trim()) ? locationUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`;
-                    const popupHtml = `
+                        const mapHref = (locationUrl && locationUrl.trim()) ? locationUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`;
+                        const popupHtml = `
                         <strong>${name || '-'} </strong><br>
                         <span>Code: ${centre.vote_centre_code || '-'}</span><br>
                         <span>Location: ${location || '-'}</span><br>
@@ -915,102 +1009,104 @@
                         <a href="${mapHref}" target="_blank" style="color: #ff7a00;">Open in Google Maps</a>
                     `;
 
-                    // Create custom numbered marker element
-                    const markerNumber = centre.vote_centre_code || (i + 1);
-                    const el = document.createElement('div');
-                    el.className = 'numbered-marker';
-                    el.textContent = markerNumber;
+                        // Create custom numbered marker element
+                        const markerNumber = centre.vote_centre_code || (i + 1);
+                        const el = document.createElement('div');
+                        el.className = 'numbered-marker';
+                        el.textContent = markerNumber;
 
-                    // Create MapLibre marker
-                    const marker = new maplibregl.Marker(el)
-                        .setLngLat([lng, lat])
-                        .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML(popupHtml))
-                        .addTo(map);
+                        // Create MapLibre marker
+                        // anchor: 'bottom' ensures the tip of our pin (at the bottom of the element) points to the coordinate
+                        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                            .setLngLat([lng, lat])
+                            .setPopup(new maplibregl.Popup({ offset: 50 }).setHTML(popupHtml))
+                            .addTo(map);
 
-                    // attach centre info for later use (nearest listing)
-                    marker._centreName = name || '';
-                    marker._centreCode = centre.vote_centre_code || '';
-                    markerLayer.push(marker);
-                    successCount++;
-                } else {
-                    // No coordinates available (no DB coords and no usable location_url)
-                    console.warn('No coordinates for centre', centre.vote_centre_code || centre.vote_centre_iid, 'location_url=', locationUrl ? 'present' : 'absent');
-                    failCount++;
+                        // attach centre info for later use (nearest listing)
+                        marker._centreName = name || '';
+                        marker._centreCode = centre.vote_centre_code || '';
+                        markerLayer.push(marker);
+                        successCount++;
+                    } else {
+                        // No coordinates available (no DB coords and no usable location_url)
+                        console.warn('No coordinates for centre', centre.vote_centre_code || centre.vote_centre_iid, 'location_url=', locationUrl ? 'present' : 'absent');
+                        failCount++;
+                    }
+                }));
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds, { padding: 50 });
                 }
-            }));
-            
-            if (!bounds.isEmpty()) {
-                map.fitBounds(bounds, { padding: 50 });
+            }
+
+            console.log(`Map markers: ${successCount} shown, ${failCount} failed`);
+
+            if (bounds.isEmpty()) {
+                // Fallback to Feni, Bangladesh center if no markers
+                map.setCenter([91.3967, 23.0150]);
+                map.setZoom(12);
             }
         }
 
-        console.log(`Map markers: ${successCount} shown, ${failCount} failed`);
-
-        if (bounds.isEmpty()) {
-            // Fallback to Feni, Bangladesh center if no markers
-            map.setCenter([91.3967, 23.0150]);
-            map.setZoom(12);
+        // Populate area dropdown with unique areas
+        function populateAreaFilter(data) {
+            const sel = document.getElementById('areaFilter');
+            if (!sel) return;
+            // compute unique areas (use 'Unknown' for empty)
+            const areas = Array.from(new Set(data.map(d => (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown')));
+            areas.sort((a, b) => a.localeCompare(b));
+            // clear existing (except All areas)
+            sel.innerHTML = '<option value="">All areas</option>';
+            areas.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a;
+                opt.textContent = a === 'Unknown' ? 'Unknown' : a;
+                sel.appendChild(opt);
+            });
+            sel.addEventListener('change', async function () {
+                // When area changes, render only centres for that area and ensure map updates
+                await renderCards(voteData, this.value);
+            });
         }
-    }
 
-    // Populate area dropdown with unique areas
-    function populateAreaFilter(data) {
-        const sel = document.getElementById('areaFilter');
-        if (!sel) return;
-        // compute unique areas (use 'Unknown' for empty)
-        const areas = Array.from(new Set(data.map(d => (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown')));
-        areas.sort((a,b) => a.localeCompare(b));
-        // clear existing (except All areas)
-        sel.innerHTML = '<option value="">All areas</option>';
-        areas.forEach(a => {
-            const opt = document.createElement('option');
-            opt.value = a;
-            opt.textContent = a === 'Unknown' ? 'Unknown' : a;
-            sel.appendChild(opt);
-        });
-        sel.addEventListener('change', async function() {
-            // When area changes, render only centres for that area and ensure map updates
-            await renderCards(voteData, this.value);
-        });
-    }
-
-    // Render cards, optionally filter by area
-    async function renderCards(data, areaFilter = '') {
-        const tableContainer = document.getElementById('table-container');
-        const resultCount = document.getElementById('resultCount');
-        if (!tableContainer) return;
-        const filtered = data.filter(d => {
-            const area = (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown';
-            return !areaFilter || areaFilter === '' ? true : area === areaFilter;
-        });
-        let html = '<div class="card-grid">';
-        filtered.forEach(centre => {
-            const code = centre.vote_centre_code || '';
-            const name = centre.vote_centre_name || '';
-            const location = centre.vote_centre_location || '';
-            const area = centre.vote_centre_area || '';
-            const locationUrl = centre.location_url || '';
-            const locationParts = [name, location, area].filter(part => part && part.trim() !== '');
-            const query = locationParts.join(', ');
-            const encodedQuery = encodeURIComponent(query);
-            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
-            const finalMapHref = locationUrl && locationUrl.trim() ? locationUrl : mapUrl;
-            html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <a href="${finalMapHref}" target="_blank" class="map-link">Open Map</a>\n                        </div>\n                    </article>`;
-        });
-        html += '</div>';
-        tableContainer.innerHTML = html;
-        // Wait for markers to be rendered and bounds adjusted
-        await renderMarkers(filtered);
-        if (resultCount) resultCount.textContent = `${filtered.length} centre(s)`;
-    }
+        // Render cards, optionally filter by area
+        async function renderCards(data, areaFilter = '') {
+            const tableContainer = document.getElementById('table-container');
+            const resultCount = document.getElementById('resultCount');
+            if (!tableContainer) return;
+            const filtered = data.filter(d => {
+                const area = (d.vote_centre_area && d.vote_centre_area.toString().trim()) ? d.vote_centre_area.toString().trim() : 'Unknown';
+                return !areaFilter || areaFilter === '' ? true : area === areaFilter;
+            });
+            let html = '<div class="card-grid">';
+            filtered.forEach(centre => {
+                const code = centre.vote_centre_code || '';
+                const name = centre.vote_centre_name || '';
+                const location = centre.vote_centre_location || '';
+                const area = centre.vote_centre_area || '';
+                const locationUrl = centre.location_url || '';
+                const locationParts = [name, location, area].filter(part => part && part.trim() !== '');
+                const query = locationParts.join(', ');
+                const encodedQuery = encodeURIComponent(query);
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+                const finalMapHref = locationUrl && locationUrl.trim() ? locationUrl : mapUrl;
+                html += `<article class="card">\n                        <div>\n                            <h2 class="card-title">${name || '-'} </h2>\n                            <div class="card-meta"><strong>Code:</strong> ${code || '-'} &nbsp; <strong>Location:</strong> ${location || '-'} &nbsp; <strong>Area:</strong> ${area || '-'}</div>\n                        </div>\n                        <div class="card-actions">\n                            <a href="${finalMapHref}" target="_blank" class="map-link">Open Map</a>\n                        </div>\n                    </article>`;
+            });
+            html += '</div>';
+            tableContainer.innerHTML = html;
+            // Wait for markers to be rendered and bounds adjusted
+            await renderMarkers(filtered);
+            if (resultCount) resultCount.textContent = `${filtered.length} centre(s)`;
+        }
 
 
 
 
 
-    // Load data on page load
-    document.addEventListener('DOMContentLoaded', loadVoteCentres);
-</script>
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadVoteCentres);
+    </script>
 
 </body>
+
 </html>
