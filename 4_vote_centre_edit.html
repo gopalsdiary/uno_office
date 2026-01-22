@@ -141,6 +141,21 @@
       font-weight: 500;
       color: #334155;
     }
+
+    /* Column selector (checkboxes to show/hide columns) */
+    .column-selector {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      display: block;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #334155;
+    }
+    .column-selector .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+    .column-selector .cols { display:flex; gap:8px; flex-wrap:wrap; }
+    .column-selector .cols .filter-checkbox { margin: 0; }
     
     .edit-table-btn {
       padding: 12px 28px;
@@ -326,7 +341,7 @@
       background: #e8f4f8 !important;
     }
 
-    /* Raw DB table styles */
+    /* Raw DB table styles (improved) */
     .raw-table {
       width: 100%;
       border-collapse: collapse;
@@ -334,19 +349,66 @@
       background: white;
       border-radius: 8px;
       overflow: auto;
+      box-shadow: 0 6px 20px rgba(12, 18, 26, 0.06);
     }
     .raw-table th, .raw-table td {
-      padding: 8px 10px;
+      padding: 12px 12px;
       border: 1px solid #e9ecef;
       text-align: left;
       vertical-align: top;
       font-size: 13px;
+      white-space: normal; /* allow wrapping for readability */
+      word-break: break-word;
+      max-width: 520px;
     }
     .raw-table th {
-      background: #111827;
-      color: white;
-      font-weight: 600;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      border-bottom: 1px solid #e6eef6;
+      text-transform: none;
     }
+    .raw-table tbody tr:nth-child(odd) { background: #ffffff; }
+    .raw-table tbody tr:nth-child(even) { background: #fbfdff; }
+    .raw-table tbody tr:hover { background: #eef6fb; }
+
+    /* Sticky first column (ID) - light theme */
+    .raw-table th:first-child, .raw-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 6;
+      background: #ffffff;
+      color: #0f172a;
+      min-width: 56px;
+      border-right: 1px solid #e9eef6;
+    }
+    /* Use auto table layout so extra columns can expand naturally */
+    .raw-table { table-layout: auto; }
+    /* Column width hints (min-width only to allow flexible layout) */
+    .raw-table th[data-col="vote_centre_iid"], .raw-table td[data-col="vote_centre_iid"] { min-width:60px; max-width:80px; text-align:center; }
+    .raw-table th[data-col="vote_centre_code"], .raw-table td[data-col="vote_centre_code"] { min-width:110px; max-width:220px; }
+    .raw-table th[data-col="vote_centre_name"], .raw-table td[data-col="vote_centre_name"] { min-width:200px; }
+    .raw-table th[data-col="vote_centre_location"], .raw-table td[data-col="vote_centre_location"] { min-width:140px; }
+    .raw-table th[data-col="vote_centre_area"], .raw-table td[data-col="vote_centre_area"] { min-width:120px; }
+    /* Keep Save column a fixed width */
+    .raw-table thead th.raw-actions, .raw-table tbody td.raw-actions { min-width:120px; max-width:160px; width:140px; }
+
+    /* Sticky Save column on the right */
+    .raw-table thead th:last-child, .raw-table tbody td:last-child {
+      position: sticky;
+      right: 0;
+      z-index: 6;
+      background: #ffffff;
+      min-width: 120px;
+      padding-right: 16px;
+    }
+
+    .raw-table td .raw-edit-field { width: 100%; box-sizing: border-box; }
+    .raw-table textarea.raw-edit-field { resize: vertical; }
+    
     
     .raw-edit-field {
       width: 100%;
@@ -383,20 +445,22 @@
     }
 
     .raw-update-btn {
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
       cursor: pointer;
       border: none;
-      background: linear-gradient(135deg, #6366f1 0%, #38bdf8 100%);
+      background: linear-gradient(135deg,#4f46e5 0%, #06b6d4 100%);
       color: white;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+      transition: all 0.18s;
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.22);
+      display: inline-block;
+      white-space: nowrap;
     }
 
     .raw-update-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 10px 22px rgba(79,70,229,0.28);
     }
 
     .raw-update-btn:active {
@@ -881,6 +945,20 @@
         font-size: 12px;
       }
     }
+
+    /* Responsive: convert raw table rows to card-like blocks for small screens */
+    @media (max-width: 900px) {
+      .raw-table, .raw-table thead, .raw-table tbody, .raw-table th, .raw-table td, .raw-table tr { display: block; width: 100%; }
+      .raw-table thead { display: none; }
+      .raw-table tbody { display: block; }
+      .raw-table tr { display: block; margin: 0 0 12px 0; padding: 12px; border:1px solid #eef2f6; border-radius:8px; background:#ffffff; }
+      .raw-table td { display: flex; padding: 8px 0; border: none; }
+      .raw-table td::before { content: attr(data-label); flex: 0 0 36%; font-weight: 700; color: #475569; padding-right: 12px; }
+      .raw-table td > * { flex: 1; }
+      .raw-table textarea.raw-edit-field, .raw-table input.raw-edit-field { width: 100%; box-sizing: border-box; }
+      .raw-table thead th:first-child, .raw-table tbody td:first-child { position: static; background: transparent; color: inherit; box-shadow: none; }
+      .raw-table thead th:last-child, .raw-table tbody td:last-child { position: static; right: auto; }
+    }
   </style>
 </head>
 <body>
@@ -888,6 +966,11 @@
     <h1>Vote Centres — Edit</h1>
   
   <div class="action-buttons">
+    <div class="search-box" style="flex:1; display:flex; gap:8px; align-items:center;">
+      <input id="search-input" type="search" placeholder="Search Name, Location or Area..." />
+      <button onclick="searchPolling(1)">🔎 Search</button>
+      <button onclick="document.getElementById('search-input').value=''; searchPolling(1);" style="background:#ef4444;">✖ Clear</button>
+    </div>
     <button class="add-new-btn" onclick="window.location.href='4_vote_centre.html'">⬅️ Back</button>
     <button class="update-btn" id="bulk-update-btn" onclick="saveBulkUpdates()" disabled style="display:none;">💾 বাল্ক আপডেট</button>
   </div>
@@ -919,6 +1002,15 @@
     </table>
   </div>
 
+  <!-- Column selector: Supabase columns will be listed here. টিক করে দেখাতে পারে -->
+  <div id="columnSelector" class="column-selector" style="display:block;">
+    <div class="controls">
+      <strong style="margin-right:8px;">কলাম নির্বাচন:</strong>
+      <button class="edit-table-btn" type="button" onclick="selectAllColumns()" style="padding:6px 10px; font-size:13px;">সব সিলেক্ট</button>
+      <button class="edit-table-btn" type="button" onclick="clearAllColumns()" style="padding:6px 10px; font-size:13px;">সব আনসিলেক্ট</button>
+    </div>
+    <div class="cols" id="columnSelectorCols">Loading columns...</div>
+  </div>
   <!-- Raw table showing all vote_centre columns with per-row Update -->
   <div id="rawTableContainer" style="margin-top:0;"></div>
 
@@ -979,6 +1071,28 @@
     let rawTableData = []; // cache for raw table view
     let modifiedRows = new Map();
     let isEditTableMode = false;
+
+    // Global column labels (used by selector and table render)
+    const VOTE_CENTRE_COLUMN_LABELS = {
+      vote_centre_iid: 'ID',
+      vote_centre_code: 'Code',
+      vote_centre_name: 'Name',
+      voter_both_total: 'Vote Booth',
+      voter_both_male: 'Vote booth (Male)',
+      voter_both_female: 'Vote booth (Female)',
+      vote_centre_location: 'Location',
+      vote_centre_area: 'Area',
+      male_voter: 'Male Voters',
+      female_voter: 'Female Voters',
+      hizra_voter: 'Hizra Voters',
+      total_voter: 'Total Voters',
+      vote_centre_quality: 'Quality',
+      comment: 'Comment',
+      vote_centre_condition: 'Condition'
+    };
+
+    // Default visible columns shown when user has not saved a preference yet
+    const DEFAULT_VISIBLE_COLUMNS = ['vote_centre_iid','vote_centre_code','vote_centre_name','vote_centre_location','vote_centre_area'];
 
     async function loadPollingData(page = 1) {
       const loadingEl = document.getElementById('loading');
@@ -1324,7 +1438,7 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    async function displayRawTable(rows) {
+    async function displayRawTable(rows, selectedOverride) {
       rawTableData = rows || [];
       const container = document.getElementById('rawTableContainer');
       
@@ -1336,23 +1450,7 @@
       }
 
       // Column order and labels from labels object
-      const columnLabels = {
-        vote_centre_iid: 'ID',
-        vote_centre_code: 'Code',
-        vote_centre_name: 'Name',
-        voter_both_total: 'Vote Booth',
-        voter_both_male: 'Vote booth (Male)',
-        voter_both_female: 'Vote booth (Female)',
-        vote_centre_location: 'Location',
-        vote_centre_area: 'Area',
-        male_voter: 'Male Voters',
-        female_voter: 'Female Voters',
-        hizra_voter: 'Hizra Voters',
-        total_voter: 'Total Voters',
-        vote_centre_quality: 'Quality',
-        comment: 'Comment',
-        vote_centre_condition: 'Condition'
-      };
+      const columnLabels = VOTE_CENTRE_COLUMN_LABELS;
       
       // Define column types based on schema
       const textColumns = ['vote_centre_name', 'vote_centre_location', 'vote_centre_area', 'male_voter', 'female_voter', 'hizra_voter', 'total_voter', 'vote_centre_quality', 'comment', 'vote_centre_condition'];
@@ -1374,15 +1472,20 @@
       // Add remaining columns
       Array.from(allCols).sort().forEach(c => cols.push(c));
 
-      console.log('Final columns order:', cols);
+      const availableCols = cols.slice();
+      const saved = Array.isArray(selectedOverride) ? selectedOverride : getSavedVisibleColumns();
+      const visibleCols = (saved && Array.isArray(saved) && saved.length > 0) ? availableCols.filter(c => saved.includes(c)) : availableCols.slice();
+      // Render selector UI (available columns + checked state)
+      renderColumnSelector(availableCols, saved);
+      console.log('Final columns order:', cols, 'Visible columns:', visibleCols);
 
       let html = '<table class="raw-table"><thead><tr>';
-      cols.forEach(c => html += `<th>${escapeHtmlVc(columnLabels[c] || c)}</th>`);
+      visibleCols.forEach(c => html += `<th data-col="${c}">${escapeHtmlVc(columnLabels[c] || c)}</th>`);
       html += `<th class="raw-actions">Save</th></tr></thead><tbody>`;
 
       rawTableData.forEach((row, rowIdx) => {
         html += `<tr data-row-id="${row.vote_centre_iid}" data-row-idx="${rowIdx}">`;
-        cols.forEach(c => {
+        visibleCols.forEach(c => {
           let v = row[c];
           if (v === null || v === undefined) v = '';
           else if (typeof v === 'object') v = JSON.stringify(v);
@@ -1392,18 +1495,19 @@
           const isText = textColumns.includes(c);
           const isNumeric = numericColumns.includes(c);
           
+          const labelForCell = escapeHtmlVc(columnLabels[c] || c);
           if (isReadOnly) {
-            html += `<td style="font-weight:700; color:#111827;">${escapeHtmlVc(String(v))}</td>`;
+            html += `<td data-col="${c}" data-label="${labelForCell}" style="font-weight:700; color:#111827;">${escapeHtmlVc(String(v))}</td>`;
           } else if (isText) {
-            html += `<td><textarea class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" rows="3">${escapeHtmlVc(String(v))}</textarea></td>`;
+            html += `<td data-col="${c}" data-label="${labelForCell}"><textarea class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" rows="3">${escapeHtmlVc(String(v))}</textarea></td>`;
           } else if (isNumeric) {
-            html += `<td><input type="number" step="any" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
+            html += `<td data-col="${c}" data-label="${labelForCell}"><input type="number" step="any" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
           } else {
-            html += `<td><input type="text" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
+            html += `<td data-col="${c}" data-label="${labelForCell}"><input type="text" class="raw-edit-field" data-col="${c}" data-orig="${escapeHtmlVc(String(v))}" value="${escapeHtmlVc(String(v))}" /></td>`;
           }
         });
         const id = row.vote_centre_iid;
-        html += `<td style="text-align:center;"><button class="raw-update-btn" onclick="saveRawTableRow(${id}, ${rowIdx})">💾 Save</button></td>`;
+        html += `<td class="raw-actions" data-label="Save" style="text-align:center;"><button class="raw-update-btn" onclick="saveRawTableRow(${id}, ${rowIdx})">💾 Save</button></td>`;
         html += '</tr>';
       });
 
@@ -1415,8 +1519,86 @@
       note.style.marginTop = '8px';
       note.style.color = '#666';
       note.style.fontSize = '13px';
-      note.textContent = 'Total columns: ' + cols.length + ' | Total records: ' + rawTableData.length;
+      note.textContent = 'Available columns: ' + availableCols.length + ' | Visible: ' + visibleCols.length + ' | Total records: ' + rawTableData.length;
       container.appendChild(note);
+      // Auto-resize raw edit textareas for better UX
+      attachRawTextareaAutosize();
+    }
+
+    // Auto-resize helper for raw table textareas (keeps rows compact)
+    function attachRawTextareaAutosize() {
+      const areas = document.querySelectorAll('#rawTableContainer textarea.raw-edit-field');
+      areas.forEach(ta => {
+        ta.style.overflow = 'hidden';
+        const resize = () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight || 32) + 'px'; };
+        resize();
+        ta.addEventListener('input', resize);
+      });
+    }
+
+    // Column selector helpers: persist selection in localStorage
+    function getSavedVisibleColumns() {
+      try {
+        const v = localStorage.getItem('vc_visible_cols');
+        if (!v) return null;
+        return JSON.parse(v);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function saveVisibleColumns(arr) {
+      try {
+        localStorage.setItem('vc_visible_cols', JSON.stringify(arr || []));
+      } catch (err) { console.warn('Could not save visible columns', err); }
+    }
+
+    function renderColumnSelector(availableCols, selectedCols) {
+      const wrap = document.getElementById('columnSelectorCols');
+      if (!wrap) return;
+      wrap.innerHTML = '';
+      availableCols.forEach(c => {
+        const label = VOTE_CENTRE_COLUMN_LABELS[c] || c;
+        const isChecked = Array.isArray(selectedCols) ? selectedCols.includes(c) : DEFAULT_VISIBLE_COLUMNS.includes(c);
+        const el = document.createElement('label');
+        el.className = 'filter-checkbox';
+        el.style.margin = '0';
+        el.innerHTML = `<input type="checkbox" value="${c}" ${isChecked ? 'checked' : ''} onchange="onColumnToggle(event)"> <span style="font-weight:600; margin-left:6px;">${escapeHtmlVc(label)}</span>`;
+        wrap.appendChild(el);
+      });
+    }
+
+    function onColumnToggle(e) {
+      const wrap = document.getElementById('columnSelectorCols');
+      if (!wrap) return;
+      const checks = wrap.querySelectorAll('input[type="checkbox"]');
+      let selected = Array.from(checks).filter(i => i.checked).map(i => i.value);
+
+      // If user cleared all selections, restore defaults (avoid empty table)
+      if (!selected || selected.length === 0) {
+        alert('কমপক্ষে একটি কলাম সিলেক্ট করা প্রয়োজন — ডিফল্ট কলামগুলো ফেরত দেওয়া হচ্ছে।');
+        selected = DEFAULT_VISIBLE_COLUMNS.slice();
+        wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = selected.includes(cb.value));
+      }
+
+      console.debug('Column selector changed, selected:', selected);
+      saveVisibleColumns(selected);
+      // Re-render raw table with new selection (pass selection to avoid storage race)
+      displayRawTable(rawTableData, selected);
+    }
+
+    function selectAllColumns() {
+      const wrap = document.getElementById('columnSelectorCols');
+      if (!wrap) return;
+      wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+      onColumnToggle();
+    }
+
+    function clearAllColumns() {
+      const wrap = document.getElementById('columnSelectorCols');
+      if (!wrap) return;
+      wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      onColumnToggle();
     }
     
     // Save raw table row
@@ -1637,10 +1819,14 @@
       }
     }
 
-    // Enable search on Enter key
-    document.getElementById('search-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') searchPolling();
-    });
+    // Enable search on Enter key (guard in case element missing)
+    (function(){
+      const si = document.getElementById('search-input');
+      if (!si) return;
+      si.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchPolling(1);
+      });
+    })();
 
     // Render table rows (reusable)
     function renderTableRows(data, tbody) {

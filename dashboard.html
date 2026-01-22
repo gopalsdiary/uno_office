@@ -105,17 +105,17 @@
 		}
 		
 		.action-btn {
-			padding: 10px 18px;
+			padding: 6px 10px;
 			border: none;
-			border-radius: 10px;
+			border-radius: 8px;
 			font-weight: 600;
 			cursor: pointer;
-			transition: all 0.3s ease;
-			font-size: 14px;
+			transition: all 0.2s ease;
+			font-size: 13px;
 			display: flex;
 			align-items: center;
-			gap: 8px;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			gap: 6px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 		}
 		
 		.action-btn.reset {
@@ -125,7 +125,7 @@
 		
 		.action-btn.reset:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
+			box-shadow: 0 4px 10px rgba(255, 255, 255, 0.25);
 			background: #f0f9ff;
 		}
 		
@@ -136,7 +136,7 @@
 		
 		.action-btn.logout:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+			box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
 			background: #ef4444;
 		}
 		
@@ -192,8 +192,8 @@
 
 		.btns { 
 			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-			gap: 18px;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 12px;
 			width: 100%;
 		}
 		
@@ -201,19 +201,19 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			padding: 20px 18px;
+			padding: 12px 14px;
 			background: white;
 			color: #0f172a;
 			text-decoration: none;
-			border-radius: 16px;
-			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-			font-size: 16px;
+			border-radius: 12px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+			font-size: 14px;
 			font-weight: 700;
-			transition: all 0.3s ease;
+			transition: all 0.2s ease;
 			position: relative;
 			overflow: hidden;
 			text-align: center;
-			line-height: 1.45;
+			line-height: 1.35;
 			border: 2px solid transparent;
 		}
 		
@@ -233,8 +233,8 @@
 		}
 		
 		a.button:hover { 
-			transform: translateY(-6px);
-			box-shadow: 0 14px 32px rgba(102, 126, 234, 0.25);
+			transform: translateY(-4px);
+			box-shadow: 0 8px 20px rgba(102, 126, 234, 0.18);
 			border-color: rgba(102, 126, 234, 0.8);
 		}
 		
@@ -284,8 +284,8 @@
 		}
 		
 		.icon {
-			margin-right: 12px;
-			font-size: 28px;
+			margin-right: 10px;
+			font-size: 20px;
 		}
 		
 		/* Footer Section */
@@ -346,8 +346,8 @@
 			}
 			
 			.action-btn {
-				padding: 8px 14px;
-				font-size: 13px;
+				padding: 6px 10px;
+				font-size: 12px;
 			}
 			
 			.main-content {
@@ -365,8 +365,8 @@
 			}
 			
 			a.button {
-				padding: 18px 16px;
-				font-size: 15px;
+				padding: 14px 12px;
+				font-size: 14px;
 			}
 			
 			.footer {
@@ -404,7 +404,8 @@
 			.action-btn {
 				flex: 1;
 				justify-content: center;
-				padding: 10px;
+				padding: 8px;
+				font-size: 12px;
 			}
 
 			/* Text visibility restored */
@@ -418,12 +419,12 @@
 			}
 			
 			a.button {
-				padding: 16px 14px;
-				font-size: 15px;
+				padding: 12px 10px;
+				font-size: 13px;
 			}
 			
 			.icon {
-				font-size: 24px;
+				font-size: 18px;
 				margin-right: 8px;
 			}
 			
@@ -561,7 +562,32 @@
 					</a>
 				</div>
 			</div>
+
+		<div class="button-section">
+				<div class="section-header">
+					<div class="section-eyebrow">Election Results</div>
+					<div class="section-title">ফলাফল তৈরি </div>
+					<div class="section-desc">Election result management </div>
+				</div>
+				<div class="btns">
+					<a class="button success" href="result/form_6.html" title="Generate Duty List">
+						<span class="icon">⚡</span>
+						<span>Form 6</span>
+					</a>
+					<a class="button success" href="result/form_18.html" title="Edit Duty List">
+						<span class="icon">✏️</span>
+						<span>Form 18</span>
+					</a>
+					<a class="button primary" href="result/combine_result.html" title="Duty Finding">
+						<span class="icon">🔎</span>
+						<span>Combine Result</span>	
+					</a>
+					
+					
+				</div>
+		</div> 
 		</div>
+
 
 		<!-- Footer Section -->
 		<div class="footer">
