@@ -8,16 +8,19 @@
 	<meta name="created" content="2026-01-21T05:49:00"/>
 	<meta name="changedby" content="Gopals Diary"/>
 	<meta name="changed" content="2026-01-23T17:44:00"/>
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="../authentication.js"></script>
 	<style type="text/css">
-		@page { size: 8.5in 14in; margin-left: 0.3in; margin-right: 0.3in; margin-top: 0.4in; margin-bottom: 0.3in }
-		p { color: #000000; orphans: 2; widows: 2; margin-bottom: 0.08in; direction: ltr; background: transparent }
-		p.western { font-family: "Times New Roman", serif; font-size: 12pt; so-language: en-US }
-		p.cjk { font-family: "Times New Roman", serif; font-size: 12pt }
-		p.ctl { font-family: "Vrinda", serif; font-size: 12pt; so-language: bn-BD }
+		@page { size: 8.5in 14in; margin-left: 0.2in; margin-right: 0.2in; margin-top: 0.25in; margin-bottom: 0.2in }
+		p { color: #000000; orphans: 2; widows: 2; margin: 0; padding: 0; line-height: 0.9; direction: ltr; background: transparent }
+		p.western { font-family: "Times New Roman", serif; font-size: 12pt; so-language: en-US; margin: 0; padding: 0 }
+		p.cjk { font-family: "Times New Roman", serif; font-size: 12pt; margin: 0; padding: 0 }
+		p.ctl { font-family: "Vrinda", serif; font-size: 12pt; so-language: bn-BD; margin: 0; padding: 0 }
+		td { vertical-align: top; }
 	</style>
 </head>
 <body lang="en-US" text="#000000" link="#000080" vlink="#800000" dir="ltr">
-<table width="773" cellpadding="7" cellspacing="0">
+<table width="773" cellpadding="2" cellspacing="0">
 	<col width="244"/>
 	<col width="244"/>
 	<col width="244"/>
@@ -43,8 +46,8 @@
 		</td>
 		<td width="244" style="border: none; padding: 0in"><p class="western" align="center">
 			<font face="Times New Roman, serif"><span lang="ar-SA"><font face="NikoshBAN"><font size="4" style="font-size: 16pt"><span lang="bn-IN">কেন্দ্র
-			নং</span></font></font></span></font><font face="NikoshBAN"><font size="2" style="font-size: 9pt">-
-			vote_centre_code</font></font></p>
+			nং</span></font></font></span></font><font face="NikoshBAN"><font size="2" style="font-size: 9pt">-
+			<span class="vote_centre_code">vote_centre_code</span></font></font></p>
 		</td>
 	</tr>
 </table>
@@ -58,7 +61,7 @@
 <p class="western" align="center" style="margin-bottom: 0in"><br/>
 
 </p>
-<table width="773" cellpadding="7" cellspacing="0">
+<table width="773" cellpadding="2" cellspacing="0">
 	<col width="97"/>
 	<col width="118"/>
 	<col width="288"/>
@@ -81,13 +84,7 @@
 		</td>
 	</tr>
 </table>
-<p class="western" align="center" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" align="center" style="margin-bottom: 0in"><br/>
-
-</p>
-<table width="766" cellpadding="7" cellspacing="0">
+<table width="766" cellpadding="2" cellspacing="0">
 	<col width="145"/>
 	<col width="88"/>
 	<col width="102"/>
@@ -100,15 +97,15 @@
 			<font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><span lang="bn-IN"><b>ভোট
 			কেন্দ্রের নম্বর</b></span></font></span></font><font face="Nikosh">,
 			</font><font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><span lang="bn-IN"><b>নাম
-			ও অবস্থানঃ </b></span></font></span></font><font face="Nikosh"><font size="1" style="font-size: 8pt">vote_centre_code,
-			vote_centre_name, vote_centre_location</font></font></p>
+			ও অবস্থানঃ </b></span></font></span></font><font face="Nikosh"><font size="1" style="font-size: 8pt"><span class="vote_centre_code">vote_centre_code</span>,
+			<span class="vote_centre_name">vote_centre_name</span>, <span class="vote_centre_location">vote_centre_location</span></font></font></p>
 		</td>
 		<td width="61" style="border: 1px solid #000000; padding: 0in 0.08in"><p class="western" align="center">
 			<font face="Nikosh"><font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>কেন্দ্রর
 			ধরনঃ</b></span></font></font></p>
 		</td>
 		<td width="161" style="border: 1px solid #000000; padding: 0in 0.08in"><p class="western" align="center">
-			<font face="Nikosh">vote_centre_qualtiy</font></p>
+			<font face="Nikosh"><span class="vote_centre_qualtiy">vote_centre_qualtiy</span></font></p>
 		</td>
 	</tr>
 	<tr valign="top">
@@ -162,7 +159,7 @@
 			<font face="Nikosh"><font size="2" style="font-size: 10pt">Total_voter</font></font></p>
 		</td>
 		<td rowspan="4" width="161" style="border: 1px solid #000000; padding: 0in 0.08in"><p class="western" align="center">
-			<font face="Nikosh"><font size="2" style="font-size: 11pt">voter_both_total</font></font></p>
+			<font face="Nikosh"><font size="2" style="font-size: 11pt"><span class="voter_both_total">voter_both_total</span></font></font></p>
 		</td>
 	</tr>
 	<tr>
@@ -216,23 +213,10 @@
 		</td>
 	</tr>
 </table>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" align="justify" style="text-indent: 0.5in; margin-bottom: 0in">
-<br/>
-
-</p>
 <table width="758" cellpadding="2" cellspacing="0">
 	<col width="754"/>
 	<tr>
-		<td width="754" valign="top" style="border: none; padding: 0in"><p class="western" align="justify" style="margin-bottom: 0in">
-			<br/>
-
-			</p>
+		<td width="754" valign="top" style="border: none; padding: 0in">
 			<p class="western" align="justify">      <font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><font size="2" style="font-size: 11pt"><span lang="bn-BD">গণপ্রতিনিধিত্ব
 			আদেশ</span></font></font></span></font><font face="Nikosh"><font size="2" style="font-size: 11pt">,
 			</font></font><font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><font size="2" style="font-size: 11pt"><span lang="bn-BD">১৯৭২
@@ -262,10 +246,7 @@
 		</td>
 	</tr>
 </table>
-<p class="western" align="justify" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in"><table dir="ltr" align="left" width="744" hspace="12" cellpadding="3" cellspacing="0">
+<p class="western" style="margin-bottom: 0in"><table id="officerTable" dir="ltr" align="left" width="744" hspace="12" cellpadding="3" cellspacing="0">
 	<col width="109"/>
 	<col width="16"/>
 	<col width="141"/>
@@ -612,7 +593,7 @@
 
 </p>
 <center>
-	<table width="759" cellpadding="7" cellspacing="0">
+	<table width="759" cellpadding="2" cellspacing="0">
 		<col width="243"/>
 		<col width="295"/>
 		<col width="177"/>
@@ -683,7 +664,7 @@
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<table width="739" cellpadding="7" cellspacing="0">
+<table width="739" cellpadding="2" cellspacing="0">
 	<col width="32"/>
 	<col width="432"/>
 	<col width="232"/>
@@ -720,7 +701,7 @@
 </table>
 <p class="western" align="right" style="margin-bottom: 0in"><font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><span lang="bn-IN">কেন্দ্র
 নং</span></font></span></font><font face="Nikosh"><font size="2" style="font-size: 10pt">-</font></font><font face="NikoshBAN"><font size="2" style="font-size: 10pt"><span lang="en-US">
-vote_centre_code</span></font></font></p>
+<span class="vote_centre_code">vote_centre_code</span></span></font></font></p>
 <p class="western" align="center" style="margin-bottom: 0in"><font face="Nikosh"><font size="2" style="font-size: 10pt"><span lang="bn-IN"><b>প্রাপ্তি
 স্বীকার ও অঙ্গীকারনামা</b></span></font></font></p>
 <p class="western" align="center" style="margin-bottom: 0in"><font face="Nikosh"><font size="2" style="font-size: 11pt">(</font></font><font face="Nikosh"><font size="2" style="font-size: 11pt"><span lang="bn-IN">এই
@@ -767,14 +748,14 @@ vote_centre_code</span></font></font></p>
 <p class="western" align="justify" style="margin-bottom: 0in"><br/>
 
 </p>
-<table width="749" cellpadding="7" cellspacing="0">
+<table width="749" cellpadding="2" cellspacing="0">
 	<col width="385"/>
 	<col width="336"/>
 	<tr>
 		<td width="385" height="13" style="border-top: none; border-bottom: 1.00pt none #000000; border-left: none; border-right: none; padding: 0in"><p class="western">
 			<font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><font size="2" style="font-size: 11pt"><span lang="bn-IN">ভোটকেন্দ্রের
 			নম্বর ও নাম</span></font></font></span></font><font face="Nikosh"><font size="2" style="font-size: 11pt">:
-			</font></font><font face="Nikosh"><font size="1" style="font-size: 8pt">vote_centre_name</font></font></p>
+			</font></font><font face="Nikosh"><font size="1" style="font-size: 8pt"><span class="vote_centre_name">vote_centre_name</span></font></font></p>
 		</td>
 		<td width="336" style="border-top: none; border-bottom: 1.00pt none #000000; border-left: none; border-right: none; padding: 0in"><p class="western">
 			<font face="Times New Roman, serif"><span lang="ar-SA"><font face="Nikosh"><font size="2" style="font-size: 10pt"><span lang="bn-IN">প্রিজাইডিং
@@ -788,5 +769,239 @@ vote_centre_code</span></font></font></p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
+<script>
+	// Get URL parameter
+	function getUrlParam(param) {
+		const urlParams = new URLSearchParams(window.location.search);
+		return urlParams.get(param);
+	}
+
+	// Convert Arabic numerals to Bengali numerals (e.g., 1 -> ১)
+	function toBengaliNumber(n) {
+		const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+		return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+	}
+
+	function setTextByClass(className, value) {
+		document.querySelectorAll('.' + className).forEach(el => {
+			el.textContent = value;
+		});
+	}
+
+	function getOfficerName(officer, type) {
+		if (!officer) return '';
+		if (type === 'presiding') return officer.presiding_name || officer.officer_name || officer.name || '';
+		if (type === 'ass_presiding') return officer.ass_presiding_name || officer.officer_name || officer.name || '';
+		if (type === 'polling') return officer.polling_name || officer.officer_name || officer.name || '';
+		return officer.officer_name || officer.name || '';
+	}
+
+	function formatOfficer(officer, type) {
+		if (!officer) return '';
+		const name = getOfficerName(officer, type);
+		const designation = officer.designation || officer.officer_designation || '';
+		return designation ? `${name}, ${designation}` : name;
+	}
+
+	// Load centre data from Supabase using centre_assignments table
+	async function loadCentreDataFromSupabase(centreCode) {
+		if (!window.supabaseClient) {
+			throw new Error('Supabase client not initialized');
+		}
+
+		const { data: centreData, error: centreError } = await window.supabaseClient
+			.from('vote_centre')
+			.select('*')
+			.eq('vote_centre_code', centreCode)
+			.single();
+
+		if (centreError) throw new Error(`Failed to load centre: ${centreError.message}`);
+
+		const { data: assignments, error: assignError } = await window.supabaseClient
+			.from('centre_assignments')
+			.select('*')
+			.eq('vote_centre_code', centreCode)
+			.order('assignment_id', { ascending: true });
+
+		if (assignError) throw new Error(`Failed to load assignments: ${assignError.message}`);
+
+		let presiding = null;
+		let assPresiding = [];
+		let polling = [];
+
+		if (assignments && assignments.length > 0) {
+			for (const assignment of assignments) {
+				if (assignment.officer_type === 'presiding') {
+					presiding = {
+						presiding_iid: assignment.officer_iid,
+						presiding_name: assignment.officer_name,
+						designation: assignment.officer_designation,
+						gender: assignment.officer_gender
+					};
+				} else if (assignment.officer_type === 'ass_presiding') {
+					assPresiding.push({
+						ass_presiding_iid: assignment.officer_iid,
+						ass_presiding_name: assignment.officer_name,
+						designation: assignment.officer_designation,
+						gender: assignment.officer_gender,
+						booth_number: assignment.booth_number
+					});
+				} else if (assignment.officer_type === 'polling') {
+					polling.push({
+						polling_iid: assignment.officer_iid,
+						polling_name: assignment.officer_name,
+						designation: assignment.officer_designation,
+						gender: assignment.officer_gender,
+						booth_number: assignment.booth_number,
+						person_number: assignment.person_number
+					});
+				}
+			}
+
+			assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+			polling.sort((a, b) => {
+				if ((a.booth_number || 0) !== (b.booth_number || 0)) {
+					return (a.booth_number || 0) - (b.booth_number || 0);
+				}
+				return (a.person_number || 0) - (b.person_number || 0);
+			});
+		}
+
+		return {
+			centre: centreData,
+			presiding,
+			assPresiding,
+			polling
+		};
+	}
+
+	function renderCentreInfo(centre) {
+		setTextByClass('vote_centre_code', toBengaliNumber(centre.vote_centre_code || ''));
+		setTextByClass('vote_centre_name', centre.vote_centre_name || '');
+		setTextByClass('vote_centre_location', centre.vote_centre_location || '');
+		setTextByClass('vote_centre_qualtiy', centre.vote_centre_qualtiy || '');
+		setTextByClass('voter_both_total', toBengaliNumber(centre.voter_both_total || 0));
+	}
+
+	function renderOfficerTable(data) {
+		const table = document.getElementById('officerTable');
+		if (!table) return;
+
+		const presiding = data.presiding;
+		const assPresiding = data.assPresiding || [];
+		const polling = data.polling || [];
+
+		const rows = Array.from(table.querySelectorAll('tr'));
+		rows.slice(2).forEach(row => row.remove());
+
+		const totalAss = Math.max(1, assPresiding.length);
+		const totalRows = Math.max(2, totalAss * 2);
+		const presidingText = formatOfficer(presiding, 'presiding');
+		const dutyAssistText = assPresiding[0] ? formatOfficer(assPresiding[0], 'ass_presiding') : '';
+
+		for (let i = 0; i < totalAss; i++) {
+			const ass = assPresiding[i];
+			const poll1 = polling[i * 2];
+			const poll2 = polling[i * 2 + 1];
+
+			const tr1 = document.createElement('tr');
+
+			if (i === 0) {
+				const tdPres = document.createElement('td');
+				tdPres.setAttribute('rowspan', String(totalRows));
+				tdPres.setAttribute('width', '109');
+				tdPres.style.border = '1px solid #000000';
+				tdPres.style.padding = '0in 0.03in';
+				tdPres.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt">${presidingText || ''}</font></font></p>`;
+				tr1.appendChild(tdPres);
+			}
+
+			const tdIndex = document.createElement('td');
+			tdIndex.setAttribute('rowspan', '2');
+			tdIndex.setAttribute('width', '16');
+			tdIndex.style.border = '1px solid #000000';
+			tdIndex.style.padding = '0in 0.03in';
+			tdIndex.innerHTML = `<p class="western" align="center"><font face="Nikosh"><font size="2" style="font-size: 10pt"><span lang="bn-BD">${toBengaliNumber(i + 1)}</span></font></font></p>`;
+			tr1.appendChild(tdIndex);
+
+			const tdAss = document.createElement('td');
+			tdAss.setAttribute('rowspan', '2');
+			tdAss.setAttribute('width', '141');
+			tdAss.setAttribute('bgcolor', '#ffffff');
+			tdAss.style.background = '#ffffff';
+			tdAss.style.border = '1px solid #000000';
+			tdAss.style.padding = '0in 0.03in';
+			tdAss.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt">${formatOfficer(ass, 'ass_presiding')}</font></font></p>`;
+			tr1.appendChild(tdAss);
+
+			const tdPollIndex1 = document.createElement('td');
+			tdPollIndex1.setAttribute('width', '29');
+			tdPollIndex1.style.border = '1px solid #000000';
+			tdPollIndex1.style.padding = '0in 0.03in';
+			tdPollIndex1.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt"><span lang="ar-SA">${toBengaliNumber(1)}</span></font></font></p>`;
+			tr1.appendChild(tdPollIndex1);
+
+			const tdPoll1 = document.createElement('td');
+			tdPoll1.setAttribute('width', '217');
+			tdPoll1.setAttribute('valign', 'top');
+			tdPoll1.setAttribute('bgcolor', '#ffffff');
+			tdPoll1.style.background = '#ffffff';
+			tdPoll1.style.border = '1px solid #000000';
+			tdPoll1.style.padding = '0in 0.03in';
+			tdPoll1.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt">${formatOfficer(poll1, 'polling')}</font></font></p>`;
+			tr1.appendChild(tdPoll1);
+
+			if (i === 0) {
+				const tdDuty = document.createElement('td');
+				tdDuty.setAttribute('rowspan', String(totalRows));
+				tdDuty.setAttribute('width', '195');
+				tdDuty.style.border = '1px solid #000000';
+				tdDuty.style.padding = '0in 0.03in';
+				tdDuty.innerHTML = `<p class="western" align="center"><font face="Nikosh"><font size="2" style="font-size: 10pt">${dutyAssistText}</font></font></p>`;
+				tr1.appendChild(tdDuty);
+			}
+
+			table.appendChild(tr1);
+
+			const tr2 = document.createElement('tr');
+			const tdPollIndex2 = document.createElement('td');
+			tdPollIndex2.setAttribute('width', '29');
+			tdPollIndex2.style.border = '1px solid #000000';
+			tdPollIndex2.style.padding = '0in 0.03in';
+			tdPollIndex2.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt"><span lang="bn-BD">${toBengaliNumber(2)}</span></font></font></p>`;
+			tr2.appendChild(tdPollIndex2);
+
+			const tdPoll2 = document.createElement('td');
+			tdPoll2.setAttribute('width', '217');
+			tdPoll2.setAttribute('valign', 'top');
+			tdPoll2.setAttribute('bgcolor', '#ffffff');
+			tdPoll2.style.background = '#ffffff';
+			tdPoll2.style.border = '1px solid #000000';
+			tdPoll2.style.padding = '0in 0.03in';
+			tdPoll2.innerHTML = `<p class="western"><font face="Nikosh"><font size="2" style="font-size: 10pt">${formatOfficer(poll2, 'polling')}</font></font></p>`;
+			tr2.appendChild(tdPoll2);
+
+			table.appendChild(tr2);
+		}
+	}
+
+	window.addEventListener('DOMContentLoaded', async () => {
+		checkAuth();
+
+		const centreCode = getUrlParam('code');
+		if (!centreCode) {
+			console.warn("URL parameter 'code' is required.");
+			return;
+		}
+
+		try {
+			const freshData = await loadCentreDataFromSupabase(centreCode);
+			renderCentreInfo(freshData.centre);
+			renderOfficerTable(freshData);
+		} catch (error) {
+			console.error('Error loading centre data:', error);
+		}
+	});
+</script>
 </body>
 </html>
