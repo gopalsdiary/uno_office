@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নিয়োগপত্র - Appointment Letter</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #38ef7d;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div id="appointmentContent">
+            <div class="loading">
+                <h2>⏳ Loading data...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameter
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        // Load centre data from Supabase
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            checkAuth();
+            
+            const centreCode = getUrlParam('code');
+            
+            if (!centreCode) {
+                document.getElementById('appointmentContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ No centre code provided</h2>
+                        <p>URL parameter 'code' is required.</p>
+                        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                console.log('Loading data for centre code:', centreCode);
+                const freshData = await loadCentreDataFromSupabase(centreCode);
+                renderAppointmentLetter(freshData);
+            } catch (error) {
+                console.error('Error loading centre data:', error);
+                document.getElementById('appointmentContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error loading data</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+                    </div>
+                `;
+            }
+        });
+        
+        // Load centre data from Supabase using centre_assignments table
+        async function loadCentreDataFromSupabase(centreCode) {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            
+            // Fetch vote centre details
+            const { data: centreData, error: centreError } = await window.supabaseClient
+                .from('vote_centre')
+                .select('*')
+                .eq('vote_centre_code', centreCode)
+                .single();
+            
+            if (centreError) throw new Error(`Failed to load centre: ${centreError.message}`);
+            
+            // Fetch all assignments for this centre from centre_assignments table
+            const { data: assignments, error: assignError } = await window.supabaseClient
+                .from('centre_assignments')
+                .select('*')
+                .eq('vote_centre_code', centreCode)
+                .order('assignment_id', { ascending: true });
+            
+            if (assignError) throw new Error(`Failed to load assignments: ${assignError.message}`);
+            
+            console.log('Raw assignments:', assignments);
+            
+            // Process assignments into presiding, assPresiding, polling
+            let presiding = null;
+            let assPresiding = [];
+            let polling = [];
+            
+            if (assignments && assignments.length > 0) {
+                for (const assignment of assignments) {
+                    if (assignment.officer_type === 'presiding') {
+                        presiding = {
+                            presiding_iid: assignment.officer_iid,
+                            presiding_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender
+                        };
+                    } else if (assignment.officer_type === 'ass_presiding') {
+                        assPresiding.push({
+                            ass_presiding_iid: assignment.officer_iid,
+                            ass_presiding_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender,
+                            booth_number: assignment.booth_number
+                        });
+                    } else if (assignment.officer_type === 'polling') {
+                        polling.push({
+                            polling_iid: assignment.officer_iid,
+                            polling_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender,
+                            booth_number: assignment.booth_number,
+                            person_number: assignment.person_number
+                        });
+                    }
+                }
+                
+                // Sort assPresiding by booth_number
+                assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+                
+                // Sort polling by booth_number then person_number
+                polling.sort((a, b) => {
+                    if ((a.booth_number || 0) !== (b.booth_number || 0)) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+            }
+            
+            console.log('Loaded:', { centre: centreData, presiding, assPresiding, polling });
+            
+            return {
+                centre: centreData,
+                presiding: presiding,
+                assPresiding: assPresiding,
+                polling: polling
+            };
+        }
+        
+        // Convert Arabic numerals to Bengali numerals (e.g., 1 -> ১)
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        function getOfficerName(officer, type) {
+            if (!officer) return '';
+            // Fields from centre_assignments table
+            if (type === 'presiding') return officer.presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'ass_presiding') return officer.ass_presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'polling') return officer.polling_name || officer.officer_name || officer.name || '';
+            return officer.officer_name || officer.name || '';
+        }
+        
+        function renderAppointmentLetter(data) {
+            const centre = data.centre;
+            const presiding = data.presiding;
+            const assPresiding = data.assPresiding || [];
+            const polling = data.polling || [];
+            
+            // Build table rows - same format as 3_vote_centre.html
+            let tableRows = '';
+            const maxRows = Math.max(1, assPresiding.length);
+            const firstAssPres = assPresiding.length > 0 ? assPresiding[0] : null;
+            
+            if (assPresiding.length === 0) {
+                tableRows = `
+                    <tr>
+                        <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
+                            ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
+                        </td>
+                        <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
+                        <td style="border:0.75pt solid #000; padding:5pt;">&nbsp;</td>
+                        <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
+                    </tr>`;
+            } else {
+                for (let i = 0; i < maxRows; i++) {
+                    const assPres = assPresiding[i];
+                    const poll1 = polling[i * 2];
+                    const poll2 = polling[i * 2 + 1];
+                    
+                    tableRows += `
+                        <tr>
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
+                                ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
+                            </td>` : ''}
+                            
+                            <td style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;">
+                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
+                                </p>
+                                ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt;">${assPres.designation}</p>` : ''}
+
+                            </td>
+                            
+                            <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">
+                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll1, 'polling'))}</span>${poll1.designation ? `, ${poll1.designation}` : ''}</p>` : ''}
+                                ${poll2 ? `<p style="margin:0; font-size:10pt;"><strong>২.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll2, 'polling'))}</span>${poll2.designation ? `, ${poll2.designation}` : ''}</p>` : ''}
+                            </td>
+                            
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${firstAssPres ? toBengaliNumber(getOfficerName(firstAssPres, 'ass_presiding')) : ''}</span></p>
+                                ${firstAssPres && firstAssPres.designation ? `<p style="margin:0; font-size:9pt;">${firstAssPres.designation}</p>` : ''}
+                            </td>` : ''}
+                        </tr>`;
+                }
+            }
+            
+            const content = `
+                <p style="text-align:right; font-size:16pt; margin-bottom:10px;">
+                    <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
+                </p>
+                <p style="text-align:center; font-size:16pt; margin-bottom:5px;">
+                    <span style="font-family:NikoshBAN;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন</span>
+                </p>
+                <p style="text-align:center; font-size:14pt; margin-bottom:10px;">
+                    <u><span style="font-family:NikoshBAN;">প্রিজাইডিং অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র</span></u>
+                </p>
+                <p style="font-size:13pt; margin-bottom:5px;">
+                    <span style="font-family:NikoshBAN;">জেলার নামঃ ফেনী, নির্বাচনী এলাকার নম্বর ও নামঃ ২৬৬, ফেনী-২</span>
+                </p>
+                <p style="font-size:12pt; margin-bottom:5px;">
+                    <span style="font-family:NikoshBAN; color:#c00000;">ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'}</span>
+                </p>
+                <p style="font-size:12pt; margin-bottom:10px;">
+                    <span style="font-family:NikoshBAN; color:#ff0066;">যে ভোটার এলাকার ভোটারগণ ভোট প্রদান করবেন সে এলাকার নামঃ ${centre.vote_centre_location || 'N/A'} (পুরুষ বুথ-${toBengaliNumber(centre.voter_both_male || 0)} টি, মহিলা বুথ-${toBengaliNumber(centre.voter_both_female || 0)} টি)</span>
+                </p>
+                <p style="text-align:justify; font-size:10pt; margin-bottom:15px;">
+                    <span style="font-family:NikoshBAN;">গণপ্রতিনিধিত্ব আদেশ, 1972 এর অনুচ্ছেদ 9 এর দফা (1খ) কর্তৃক অর্পিত ক্ষমতাবলে, আমি মনিরা হক, জেলা প্রশাসক, ফেনী ও 266, ফেনী-2 নির্বাচনি এলাকার রিটার্নিং অফিসার নিম্নলিখিত ব্যক্তিগণকে উপরোল্লিখিত ভোটকেন্দ্রের জন্য এতদ্বারা প্রিজাইডিং অফিসার, প্রিজাইডিং অফিসারকে সহায়তা দানের জন্য সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসার হিসাবে নিয়োগ করিলাম:</span>
+                </p>
+                
+                <table style="width:100%; border:0.75pt solid #000; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:15%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:10pt;">প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:20%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:10pt;">সহকারী প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:45%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:10pt;">পোলিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:20%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:9pt;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে দায়িত্ব পালন করবেন</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">১</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">২</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৩</span></td>
+                        <td style="border:0.75pt solid #000; padding:3pt; text-align:center;"><span style="font-family:Nikosh; font-size:10pt;">৪</span></td>
+                    </tr>
+                    ${tableRows}
+                </table>
+                
+                <p style="margin-top:1px;"><span style="font-family:NikoshBAN; font-size:12pt;">স্থান: </span></p>
+                <p><span style="font-family:NikoshBAN; font-size:12pt;">তারিখ: </span></p>
+                
+                <table style="width:100%; margin-top:2px; border-collapse:collapse; border:1px solid white;">
+                    <tr>
+                        <td style="width:50%; padding:5px; border-top:1px solid white; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white; vertical-align:middle; min-height:110px;">
+                            &nbsp;
+                        </td>
+                        <td style="width:50%; padding:5px; border-top:1px solid white; border-bottom:1px solid white; border-right:1px solid white; border-left:0; vertical-align:middle; min-height:110px;">
+                            <div style="display:flex; align-items:center; justify-content:center; height:100%;">
+                                <div style="text-align:center;">
+                                    <p style="font-size:12pt; margin:0 0 6px;"><strong style="font-family:NikoshBAN;">মনিরা হক</strong></p>
+                                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">জেলা প্রশাসক, ফেনী</span></p>
+                                    <p style="font-size:10pt; margin:0 0 2px;"><span style="font-family:NikoshBAN;">ও</span></p>
+                                    <p style="font-size:10pt; margin:0;"><span style="font-family:NikoshBAN;">রিটার্নিং অফিসার, নির্বাচনী এলাকা 266, ফেনী-2</span></p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top:2px; border-top:2px solid #000; padding-top:1px;">
+                    <p style="text-align:center; font-size:12pt; margin-bottom:5px;">
+                        <span style="font-family:NikoshBAN;">প্রাপ্তি স্বীকার ও অংগীকারনামা</span>
+                    </p>
+                    <p style="text-align:center; margin-bottom:5px;">
+                        <span style="font-family:NikoshBAN;">(এই অংশটুকু রিটার্নিং অফিসারকে ফেরত দিতে হবে)</span>
+                    </p>
+                    <p style="text-align:justify; margin-bottom:20px;">
+                        <span style="font-family:NikoshBAN;">আমি…………………………………উপরে বর্ণিত নিয়োগ গ্রহন করে অঙ্গীকার করছি যে, আমি আমার উপর অর্পিত দায়িত্ব সর্বপ্রকার দলীয়/গোষ্ঠীয়/ধর্মীয় প্রভাব হইতে মুক্ত থাকিয়া সততা ও ন্যায় নিষ্ঠার সাথে পালন করব।</span>
+                    </p>
+                    <div style="text-align:right; margin-top:30px;">
+                        <p><span style="font-family:NikoshBAN;">……………………………………..</span></p>
+                        <p><span style="font-family:NikoshBAN;">স্বাক্ষর ও জাতীয় পরিচিতি নম্বর</span></p>
+                    </div>
+                    <p style="margin-top:30px;">
+                        <span style="font-family:NikoshBAN;">ভোটকেন্দ্রের নম্বর ও নামঃ ${toBengaliNumber(centre.vote_centre_code || '')} - ${centre.vote_centre_name || ''}</span>
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('appointmentContent').innerHTML = content;
+        }
+    </script>
+</body>
+</html>
