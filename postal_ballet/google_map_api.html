@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Election Map - Vote Centres</title>
+    <!-- Google Maps API with Places, Geometry, and Directions -->
+    <!-- Define callback BEFORE loading the map script -->
+    <script>
+        // Google Maps Loader Promise
+        window.mapLoadedPromise = new Promise(resolve => {
+            window.onGoogleMapLoaded = () => {
+                console.log("Google Maps API Loaded");
+                resolve();
+            };
+        });
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEFjz0YuN_xPbtaEXodsDCLqAkNs0jC30&libraries=places,geometry&loading=async&callback=onGoogleMapLoaded" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Icons (Phosphor Icons for a clean look) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* App-like feel */
+        }
+
+        /* Top Bar */
+        .app-header {
+            background: var(--surface);
+            padding: 12px 20px;
+            box-shadow: var(--shadow-sm);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Layout */
+        .main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Sidebar (Desktop) / Bottom Sheet (Mobile) */
+        .sidebar {
+            width: 380px;
+            background: var(--surface);
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #e5e7eb;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Controls Area in Sidebar */
+        .controls {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white; /* Changed to white for better contrast */
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: var(--text-main);
+        }
+        .btn-outline:hover { background: #f1f5f9; }
+
+        /* Results List */
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .place-card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .place-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .place-card.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .place-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .place-meta {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 2px;
+        }
+
+        .place-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        /* Floating Directions Panel (over map) */
+        .route-panel {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-lg);
+            display: none; /* hidden by default */
+            align-items: center;
+            gap: 16px;
+            z-index: 50;
+            font-weight: 600;
+            color: var(--text-main);
+            border: 1px solid rgba(0,0,0,0.05);
+            max-width: 90%;
+            white-space: nowrap;
+        }
+        
+        .route-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .route-value {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Loading State */
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-sub);
+        }
+        
+        /* Mobile Adapative */
+        @media (max-width: 768px) {
+            body { height: 100vh; /* secure full height */ }
+            .app-header { padding: 10px 16px; }
+            .main-content { flex-direction: column; }
+            
+            .sidebar {
+                width: 100%;
+                height: 45%; 
+                order: 2; /* Map on top in logic, but visually we might want map top */
+                border-right: none;
+                border-top: 1px solid #e2e8f0;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            }
+            
+            .map-container {
+                height: 55%;
+                order: 1;
+            }
+            
+            .route-panel {
+                top: auto;
+                bottom: 20px;
+                width: auto;
+                border-radius: 12px;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+                text-align: center;
+                white-space: normal;
+                gap: 12px;
+            }
+            .route-info {
+                justify-content: center;
+            }
+        }
+
+        /* User Marker & Markers Styles */
+        .user-marker {
+            width: 20px; height: 20px; background: #2563eb; 
+            border: 3px solid white; border-radius: 50%; 
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+
+        .numbered-marker {
+            width: 32px; height: 32px;
+            background: #2563eb; color: white;
+            border: 2px solid white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: absolute;
+            transform: translate(-50%, -100%);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .numbered-marker:hover {
+            transform: translate(-50%, -100%) scale(1.15);
+            background: #1e40af;
+            z-index: 100;
+        }
+        .numbered-marker.highlighted {
+            background: #f59e0b; /* Amber */
+            transform: translate(-50%, -100%) scale(1.2);
+            z-index: 101;
+            border-color: #fffbeb;
+        }
+
+        /* Filter Toggle on top of map (optional) */
+        .map-toggles {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .chip {
+            background: white; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .chip.active { background: var(--text-main); color: white; }
+
+    </style>
+</head>
+
+<body>
+
+    <header class="app-header">
+        <h1 class="app-title">
+            <i class="ph ph-map-trifold" style="font-size: 24px; color: var(--primary);"></i>
+            Vote Centre Smart Map
+        </h1>
+        <div style="font-size: 0.8rem; color: var(--text-sub);">
+            <span id="connectionStatus">● Live</span>
+        </div>
+    </header>
+
+    <div class="main-content">
+        
+        <!-- Interactive Map Area -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- Route Info Floating Panel -->
+            <div id="routePanel" class="route-panel">
+                <div class="route-info">
+                    <i class="ph ph-car-profile" style="font-size:24px;"></i>
+                    <div>
+                        <div id="routeDistance" class="route-value">-- km</div>
+                        <div id="routeDuration" style="font-size:0.85rem; color:#666;">-- min</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openExternalMap()">
+                    <i class="ph ph-arrow-square-out"></i> Start Navigation
+                </button>
+                <button class="btn btn-outline btn-sm" style="border:none; padding:4px;" onclick="clearRoute()">
+                    <i class="ph ph-x" style="font-size:18px;"></i>
+                </button>
+            </div>
+
+            <!-- Map Toggles -->
+            <div class="map-toggles">
+                <div class="chip active" onclick="setMapType('roadmap')">Road Map</div>
+                <div class="chip" onclick="setMapType('satellite')">Satellite</div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Controls -->
+        <aside class="sidebar">
+            <div class="controls">
+                
+                <!-- Quick Search -->
+                <div class="search-box">
+                    <i class="ph ph-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search centre name or area...">
+                </div>
+
+                <!-- Smart Actions -->
+                <div class="action-row">
+                    <button id="dutyBtn" class="btn btn-accent" onclick="findNearestAndRoute()">
+                        <i class="ph ph-police-car"></i>
+                        Duty Mode (Nearest)
+                    </button>
+                    <button id="locateBtn" class="btn btn-primary" onclick="locateUser(true)">
+                        <i class="ph ph-crosshair"></i>
+                        My Location
+                    </button>
+                </div>
+                <div style="margin-top:8px; font-size:0.8rem; color:var(--text-sub); text-align:center;">
+                    <span id="userLocationStatus">Location not detected</span>
+                </div>
+            </div>
+
+            <div id="resultsList" class="results-list">
+                <div class="loader">
+                     <i class="ph ph-spinner-gap" style="font-size: 32px; animation: spin 1s linear infinite;"></i>
+                     <p>Loading centres...</p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        /* Google Maps Param Loader removed from here */
+
+        let map, directionsService, directionsRenderer;
+        let voteData = [];
+        let markers = [];
+        let userMarker = null;
+        let userLocation = null; // { lat, lng }
+        let currentRoute = null; // Store current route details
+        let selectedCentre = null;
+        
+        // Classes to be defined after map load
+        let CustomMarker, UserLocationMarker;
+
+        // Custom Marker Implementation (Reuse from previous version)
+        // Custom Marker Definitions wrapped in function to run after API load
+        function defineMapClasses() {
+            CustomMarker = class extends google.maps.OverlayView {
+                constructor(position, content, map, onClick) {
+                    super();
+                    this.position = position;
+                    this.content = content;
+                    this.markerDiv = null;
+                    this.onClick = onClick;
+                    this.highlighted = false;
+                    this.setMap(map);
+                }
+
+                onAdd() {
+                    const div = document.createElement('div');
+                    div.className = 'numbered-marker';
+                    div.textContent = this.content;
+                    div.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (this.onClick) this.onClick();
+                    });
+                    google.maps.OverlayView.preventMapHitsAndGesturesFrom(div);
+                    this.getPanes().overlayMouseTarget.appendChild(div);
+                    this.markerDiv = div;
+                }
+
+                draw() {
+                    if (!this.markerDiv || !this.position) return;
+                    const point = this.getProjection().fromLatLngToDivPixel(this.position);
+                    if (point) {
+                        this.markerDiv.style.left = point.x + 'px';
+                        this.markerDiv.style.top = point.y + 'px';
+                    }
+                }
+
+                onRemove() {
+                    if (this.markerDiv) {
+                        this.markerDiv.remove();
+                        this.markerDiv = null;
+                    }
+                }
+
+                setHighlight(isHighlighted) {
+                    this.highlighted = isHighlighted;
+                    if (this.markerDiv) {
+                        if (isHighlighted) this.markerDiv.classList.add('highlighted');
+                        else this.markerDiv.classList.remove('highlighted');
+                    }
+                }
+            };
+
+            UserLocationMarker = class extends google.maps.OverlayView {
+                constructor(position, map) {
+                    super();
+                    this.position = position;
+                    this.div = null;
+                    this.setMap(map);
+                }
+                onAdd() {
+                    this.div = document.createElement('div');
+                    this.div.className = 'user-marker';
+                    this.getPanes().overlayMouseTarget.appendChild(this.div);
+                }
+                draw() {
+                    if (!this.div || !this.position) return;
+                    const point = this.getProjection().fromLatLngToDivPixel(this.position);
+                    this.div.style.left = point.x + 'px';
+                    this.div.style.top = point.y + 'px';
+                    this.div.style.transform = 'translate(-50%, -50%)';
+                }
+                onRemove() {
+                    if (this.div) this.div.remove();
+                }
+            };
+        }
+
+        // --- Initialization ---
+
+        async function initApp() {
+            try {
+                // Wait for Maps API
+                await window.mapLoadedPromise;
+                // Now define classes that depend on google.maps
+                defineMapClasses();
+            
+                await initMap();
+                await loadData();
+            } catch (e) {
+                console.error("Initialization Failed:", e);
+                return;
+            }
+            await loadData();
+            
+            // Auto-locate on load implicitly for convenience, but silently
+            locateUser(false);
+            
+            // Search Listener
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                filterList(e.target.value);
+            });
+        }
+
+        async function initMap() {
+            await mapLoadedPromise;
+            
+            const defaultOptions = {
+                zoom: 12,
+                center: { lat: 23.0150, lng: 91.3967 }, // Feni
+                disableDefaultUI: true, // We will build our own controls
+                zoomControl: true,
+                styles: [
+                    { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+                ]
+            };
+            map = new google.maps.Map(document.getElementById("map"), defaultOptions);
+            
+            // Directions Init
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true, // We like our custom markers
+                polylineOptions: {
+                    strokeColor: '#2563eb',
+                    strokeWeight: 6,
+                    strokeOpacity: 0.8
+                }
+            });
+        }
+
+        async function loadData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('vote_centre')
+                    .select('*') // Get all fields
+                    .order('vote_centre_code', { ascending: true });
+
+                if (error) throw error;
+                
+                // Process coordinates once
+                voteData = data.map(d => {
+                    const coords = getCoordinates(d);
+                    return { ...d, coords };
+                }).filter(d => d.coords !== null); // Only keep items with valid coords
+                
+                renderList(voteData);
+                renderMarkers(voteData);
+                
+            } catch (err) {
+                console.error("Data load error", err);
+                document.getElementById('resultsList').innerHTML = `<div style="text-align:center; padding:20px; color:red;">Failed to load data.</div>`;
+            }
+        }
+
+        // --- Core Functions ---
+
+        function getCoordinates(centre) {
+            // Try DB LatLng first
+            if (centre.location_latitude_longitude) {
+                const parts = centre.location_latitude_longitude.split(',').map(Number);
+                if (parts.length === 2 && !isNaN(parts[0])) return { lat: parts[0], lng: parts[1] };
+            }
+            // Logic to extract from URL if needed (Simplified from previous version)
+            if (centre.location_url) {
+                const match = centre.location_url.match(/!3d(-?\d+\.\d+).*!4d(-?\d+\.\d+)/);
+                if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                
+                const qMatch = centre.location_url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if(qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+            }
+            return null; 
+        }
+
+        // Render Sidebar List
+        function renderList(data) {
+            const container = document.getElementById('resultsList');
+            if (data.length === 0) {
+                container.innerHTML = `<div style="padding:20px; text-align:center; color:#888;">No results found.</div>`;
+                return;
+            }
+            
+            container.innerHTML = data.map(item => `
+                <div class="place-card" id="card-${item.vote_centre_iid}" onclick="selectCentre(${item.vote_centre_iid})">
+                    <div class="place-title">${item.vote_centre_name}</div>
+                    <div class="place-meta">
+                        <i class="ph ph-hash"></i> Code: ${item.vote_centre_code}
+                        <span style="font-size:0.6rem; color:#ccc;">|</span>
+                        <i class="ph ph-map-pin"></i> ${item.vote_centre_area || 'Area not set'}
+                    </div>
+                    <div class="place-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); panToCentre(${item.vote_centre_iid})">
+                            View on Map
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); routeToCentre(${item.vote_centre_iid})">
+                            <i class="ph ph-arrow-bend-up-right"></i> Directions
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Map Markers
+        function renderMarkers(data) {
+            // Clear existing
+            markers.forEach(m => m.setMap(null));
+            markers = [];
+            
+            const bounds = new google.maps.LatLngBounds();
+            
+            data.forEach(item => {
+                const marker = new CustomMarker(
+                    item.coords, 
+                    item.vote_centre_code, 
+                    map, 
+                    () => selectCentre(item.vote_centre_iid)
+                );
+                // Attach metadata to marker instance for referencing
+                marker._id = item.vote_centre_iid; 
+                markers.push(marker);
+                bounds.extend(item.coords);
+            });
+            
+            if (!bounds.isEmpty()) map.fitBounds(bounds);
+        }
+
+        // --- Interaction Logic ---
+
+        function filterList(query) {
+            const lower = query.toLowerCase();
+            const filtered = voteData.filter(item => 
+                (item.vote_centre_name || '').toLowerCase().includes(lower) || 
+                (item.vote_centre_area || '').toLowerCase().includes(lower) ||
+                (item.vote_centre_code || '').toString().includes(lower)
+            );
+            renderList(filtered);
+        }
+
+        function selectCentre(id) {
+            // Highlight in List
+            document.querySelectorAll('.place-card').forEach(el => el.classList.remove('active'));
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                card.classList.add('active');
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Highlight Marker
+            markers.forEach(m => m.setHighlight(m._id === id));
+            
+            // Pan Map
+            const item = voteData.find(d => d.vote_centre_iid === id);
+            if (item) {
+                selectedCentre = item;
+                map.panTo(item.coords);
+                map.setZoom(15);
+            }
+        }
+        
+        function panToCentre(id) {
+             selectCentre(id);
+             // On mobile, maybe close sheet? Keeping it simple for now.
+        }
+
+        // --- Smart Directions & Duty Mode ---
+
+        function locateUser(zoomTo = true) {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
+                return;
+            }
+
+            const statusEl = document.getElementById('userLocationStatus');
+            statusEl.textContent = "Locating...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    userLocation = pos;
+                    statusEl.textContent = "Location found";
+
+                    // Update User Marker
+                    if (userMarker) userMarker.setMap(null);
+                    userMarker = new UserLocationMarker(pos, map);
+
+                    if (zoomTo) {
+                        map.panTo(pos);
+                        map.setZoom(14);
+                    }
+                },
+                (error) => {
+                    console.error("Location error", error);
+                    statusEl.textContent = "Location access denied or failed";
+                    if(zoomTo) alert("Could not get your location. Please enable GPS.");
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        async function routeToCentre(id) {
+            const item = voteData.find(d => d.vote_centre_iid === id);
+            if (!item) return;
+            selectedCentre = item; // ensure selected for external link
+
+            if (!userLocation) {
+                locateUser(false); 
+                if (!userLocation) {
+                    alert("We need your location first. Please click 'My Location' or allow permissions.");
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        if (userMarker) userMarker.setMap(null);
+                        userMarker = new UserLocationMarker(userLocation, map);
+                        routeToCentre(id); // Recursive retry once
+                    });
+                    return;
+                }
+            }
+
+            // Success Handler
+            const onRouteFound = (result, mode) => {
+                directionsRenderer.setDirections(result);
+                currentRoute = result;
+                
+                // Show Route Panel
+                const leg = result.routes[0].legs[0];
+                document.getElementById('routeDistance').textContent = leg.distance.text;
+                document.getElementById('routeDuration').textContent = `${leg.duration.text} (${mode})`;
+                document.getElementById('routePanel').style.display = 'flex';
+                
+                selectCentre(id); 
+            };
+
+            // 1. Try DRIVING
+            const requestDriving = {
+                origin: userLocation,
+                destination: item.coords,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(requestDriving, (result, status) => {
+                if (status === 'OK') {
+                    onRouteFound(result, 'Drive');
+                } else {
+                    console.log(`Driving route failed (${status}). Retrying WALKING...`);
+                    
+                    // 2. Retry with WALKING
+                    const requestWalking = {
+                        origin: userLocation,
+                        destination: item.coords,
+                        travelMode: google.maps.TravelMode.WALKING
+                    };
+
+                    directionsService.route(requestWalking, (resWalk, statusWalk) => {
+                        if (statusWalk === 'OK') {
+                            onRouteFound(resWalk, 'Walk');
+                        } else {
+                            console.warn("All route attempts failed:", statusWalk);
+                            // 3. Graceful Fallback
+                            const confirmExternal = confirm(`Direct route not found on map (${status}).\n\nOpen Google Maps App instead?`);
+                            if (confirmExternal) openExternalMap();
+                        }
+                    });
+                }
+            });
+        }
+
+        function clearRoute() {
+            directionsRenderer.setDirections({ routes: [] });
+            document.getElementById('routePanel').style.display = 'none';
+            currentRoute = null;
+        }
+
+        function openExternalMap() {
+            if (!selectedCentre) return;
+            // Create a universal Google Maps URL
+            const destination = `${selectedCentre.coords.lat},${selectedCentre.coords.lng}`;
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+            window.open(url, '_blank');
+        }
+
+        // "Duty Mode" - Finds nearest and routes instantly
+        function findNearestAndRoute() {
+            if (!userLocation) {
+                alert("Please click 'My Location' first to establish your position.");
+                locateUser(true);
+                return;
+            }
+            if (voteData.length === 0) return;
+
+            // Simple Haversine Check
+            let closest = null;
+            let minDist = Infinity;
+
+            voteData.forEach(item => {
+                const dist = haversineDistance(userLocation, item.coords);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = item;
+                }
+            });
+
+            if (closest) {
+                // Found it! Route to it.
+                routeToCentre(closest.vote_centre_iid);
+                // Show a toast or alert
+                // We rely on routeToCentre to highlight the UI
+            }
+        }
+
+        function haversineDistance(coords1, coords2) {
+            function toRad(x) { return x * Math.PI / 180; }
+            var lat1 = coords1.lat; var lon1 = coords1.lng;
+            var lat2 = coords2.lat; var lon2 = coords2.lng;
+            var R = 6371; // km
+            var x1 = lat2 - lat1; var dLat = toRad(x1);
+            var x2 = lon2 - lon1; var dLon = toRad(x2);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // Map Syles
+        function setMapType(type) {
+            if (!map) return;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            // simple toggle logic
+            if(type === 'roadmap') {
+                map.setMapTypeId('roadmap');
+                document.querySelector('.map-toggles .chip:nth-child(1)').classList.add('active');
+            } else {
+                map.setMapTypeId('satellite');
+                document.querySelector('.map-toggles .chip:nth-child(2)').classList.add('active');
+            }
+        }
+
+        // Start
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
