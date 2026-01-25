@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>প্রার্থী তালিকা ব্যবস্থাপনা - Uno Feni Sadar</title>
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'>C</text></svg>">
+    
+    <!-- Using same styles as dashboard for consistency -->
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(to right, #f8fafc, #e2e8f0);
+            padding: 20px 30px;
+            border-bottom: 1px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 1.5rem; color: var(--secondary); display: flex; align-items: center; gap: 10px; }
+        .back-btn { 
+            text-decoration: none; 
+            color: var(--primary); 
+            font-weight: 600; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            background: white; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            transition: 0.2s;
+        }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+
+        /* Content Layout */
+        .content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            flex: 1;
+        }
+
+        /* Sidebar Form */
+        .form-section {
+            background: #f1f5f9;
+            padding: 30px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .form-title { font-size: 1.2rem; margin-bottom: 20px; color: var(--secondary); font-weight: 700; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #475569; }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--secondary); }
+        
+        .btn-reset { background: #94a3b8; color: white; margin-top: 10px; }
+        .btn-reset:hover { background: #64748b; }
+
+        /* List Section */
+        .list-section {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; font-weight: 600; color: #475569; position: sticky; top: 0; }
+        tr:hover { background: #f8fafc; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #e2e8f0;
+        }
+
+        .actions { display: flex; gap: 8px; }
+        .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; cursor: pointer; border: none; }
+        .btn-edit { background: #e0e7ff; color: var(--primary); }
+        .btn-edit:hover { background: var(--primary); color: white; }
+        
+        .btn-delete { background: #fee2e2; color: var(--danger); }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .loading { text-align: center; padding: 20px; color: #64748b; }
+
+        @media (max-width: 768px) {
+            .content { grid-template-columns: 1fr; }
+            .form-section { border-right: none; border-bottom: 1px solid #e2e8f0; }
+            .container { margin: 0; border-radius: 0; min-height: 100vh; }
+        }
+
+        /* Thumbnail and image preview modal */
+        .thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+        .thumb:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .thumb.placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        /* Row animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .row-animate { animation: fadeInUp 360ms ease both; }
+
+        /* Image modal */
+        .img-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(2,6,23,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 24px;
+        }
+        .img-modal.active { display: flex; }
+        .img-modal img { max-width: 95%; max-height: 85%; border-radius: 8px; box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+
+        /* Subtle button hover */
+        .btn-sm { transition: transform 120ms ease, box-shadow 120ms ease; }
+        .btn-sm:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(16,185,129,0.08); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>👤 প্রার্থী তালিকা (Candidate List)</h1>
+        <a href="../dashboard.html" class="back-btn">⬅ Dashboard</a>
+    </div>
+
+    <div class="content">
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-title" id="formTitle">নতুন প্রার্থী যোগ করুন</div>
+            <form id="candidateForm">
+                <input type="hidden" id="candidateIid">
+                
+                <div class="form-group">
+                    <label>ক্রমিক নং (SL)</label>
+                    <input type="number" id="candidateSl" class="form-control" placeholder="1, 2, 3..." required>
+                </div>
+
+                <div class="form-group">
+                    <label>প্রার্থীর নাম</label>
+                    <input type="text" id="candidateName" class="form-control" placeholder="প্রার্থীর নাম লিখুন" required>
+                </div>
+
+                <div class="form-group">
+                    <label>প্রতীকের নাম</label>
+                    <input type="text" id="candidateSignName" class="form-control" placeholder="যেমন: উটপাখি, টিউবওয়েল">
+                </div>
+                
+                <div class="form-group">
+                    <label>দল (Party/Independent)</label>
+                    <input type="text" id="candidateParty" class="form-control" placeholder="দল বা স্বতন্ত্র">
+                </div>
+
+                <div class="form-group">
+                    <label>প্রতীক URL (Image Link)</label>
+                    <input type="text" id="candidateSignUrl" class="form-control" placeholder="https://example.com/logo.png">
+                </div>
+
+                <div class="form-group">
+                    <label>মন্তব্য</label>
+                    <textarea id="candidateComment" class="form-control" rows="2" placeholder="অতিরিক্ত তথ্য..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span id="btnText">সংরক্ষণ করুন (Save)</span>
+                </button>
+                <button type="button" class="btn btn-reset" onclick="resetForm()">
+                    নতুন ফর্ম (Reset)
+                </button>
+            </form>
+        </div>
+
+        <!-- List Section -->
+        <div class="list-section">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">SL</th>
+                            <th>প্রার্থীর নাম</th>
+                            <th>প্রতীক</th>
+                            <th>দল</th>
+                            <th>মন্তব্য</th>
+                            <th width="100">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidateList">
+                        <tr><td colspan="6" class="loading">Loading candidates...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../authentication.js"></script> <!-- Auth Check -->
+
+<script>
+    // Config
+    const SUPABASE_URL = window.SUPABASE_URL;
+    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
+    // Use the client initialized by `authentication.js` when available to avoid redeclaration
+    const supabaseClient = window.supabaseClient || (window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null);
+    if (!supabaseClient) {
+        console.error('Supabase client is not available. Ensure the CDN and authentication scripts are loaded.');
+    }
+
+    // Dom Elements
+    const form = document.getElementById('candidateForm');
+    const tableBody = document.getElementById('candidateList');
+    const formTitle = document.getElementById('formTitle');
+    const btnText = document.getElementById('btnText');
+
+    // State
+    let candidates = [];
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchCandidates();
+    });
+
+    // 1. Fetch Data
+    async function fetchCandidates() {
+        tableBody.innerHTML = `<tr><td colspan="6" class="loading">তথ্য লোড হচ্ছে...</td></tr>`;
+        
+        try {
+            const { data, error } = await supabaseClient
+                .from('candidate_db')
+                .select('*')
+                .order('candidate_sl', { ascending: true });
+
+            if (error) throw error;
+            
+            candidates = data;
+            renderTable(data);
+        } catch (err) {
+            console.error(err);
+            tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">ডেটা লোড করতে সমস্যা হয়েছে: ${err.message}</td></tr>`;
+        }
+    }
+
+    // 2. Render Table
+    function renderTable(data) {
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">কোনো প্রার্থী পাওয়া যায়নি।</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = data.map(item => `
+            <tr>
+                <td><span class="badge">${item.candidate_sl || '-'}</span></td>
+                <td style="font-weight:600;">${item.candidate_name || ''}</td>
+                <td style="display:flex;align-items:center;gap:8px;">
+                    ${item.candidate_sign_url ? `<img src="${item.candidate_sign_url}" alt="${item.candidate_sign_name || 'sign'}" class="thumb" onclick="viewImage('${item.candidate_sign_url}')" />` : `<div class="thumb placeholder">—</div>`}
+                    <div style="font-size:0.9rem;">
+                        <div style="font-weight:600;">${item.candidate_sign_name || ''}</div>
+                        ${item.candidate_sign_url ? `<a href="${item.candidate_sign_url}" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:underline;">Open</a>` : ''}
+                    </div>
+                </td>
+                <td>${item.candidate_party || '-'}</td>
+                <td><small>${item.candidate_comment || ''}</small></td>
+                <td>
+                    <div class="actions">
+                        <button class="btn-sm btn-edit" onclick="editCandidate(${item.candidate_iid})">Edit</button>
+                        <button class="btn-sm btn-delete" onclick="deleteCandidate(${item.candidate_iid})">Del</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // 3. Handle Form Submit (Create/Update)
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const iid = document.getElementById('candidateIid').value;
+        const payload = {
+            candidate_sl: document.getElementById('candidateSl').value,
+            candidate_name: document.getElementById('candidateName').value,
+            candidate_sign_name: document.getElementById('candidateSignName').value,
+            candidate_party: document.getElementById('candidateParty').value,
+            candidate_sign_url: document.getElementById('candidateSignUrl').value,
+            candidate_comment: document.getElementById('candidateComment').value
+        };
+
+        const btnOriginal = btnText.textContent;
+        btnText.textContent = 'Processing...';
+
+        try {
+            let error;
+            if (iid) {
+                // Update
+                const { error: updateError } = await supabaseClient
+                    .from('candidate_db')
+                    .update(payload)
+                    .eq('candidate_iid', iid);
+                error = updateError;
+            } else {
+                // Insert
+                const { error: insertError } = await supabaseClient
+                    .from('candidate_db')
+                    .insert([payload]);
+                error = insertError;
+            }
+
+            if (error) throw error;
+
+            // Success
+            resetForm();
+            fetchCandidates();
+            alert(iid ? 'আপডেট সফল হয়েছে!' : 'নতুন প্রার্থী যোগ করা হয়েছে!');
+
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            btnText.textContent = btnOriginal;
+        }
+    });
+
+    // 4. Edit Candidate
+    window.editCandidate = (iid) => {
+        const item = candidates.find(c => c.candidate_iid === iid);
+        if (!item) return;
+
+        document.getElementById('candidateIid').value = item.candidate_iid;
+        document.getElementById('candidateSl').value = item.candidate_sl;
+        document.getElementById('candidateName').value = item.candidate_name;
+        document.getElementById('candidateSignName').value = item.candidate_sign_name;
+        document.getElementById('candidateParty').value = item.candidate_party;
+        document.getElementById('candidateSignUrl').value = item.candidate_sign_url;
+        document.getElementById('candidateComment').value = item.candidate_comment;
+
+        formTitle.textContent = 'প্রার্থী তথ্য আপডেট করুন';
+        btnText.textContent = 'আপডেট করুন (Update)';
+        
+        // Scroll to form on mobile
+        if(window.innerWidth < 768) {
+            document.querySelector('.form-section').scrollIntoView({behavior: 'smooth'});
+        }
+    };
+
+    // 5. Delete Candidate
+    window.deleteCandidate = async (iid) => {
+        if (!confirm('আপনি কি নিশ্চিত যে এই প্রার্থীকে ডিলিট করতে চান?')) return;
+
+        try {
+            const { error } = await supabaseClient
+                .from('candidate_db')
+                .delete()
+                .eq('candidate_iid', iid);
+
+            if (error) throw error;
+            
+            fetchCandidates(); // Refresh
+
+        } catch (err) {
+            alert('Delete Error: ' + err.message);
+        }
+    };
+
+    // 6. Reset Form
+    window.resetForm = () => {
+        form.reset();
+        document.getElementById('candidateIid').value = '';
+        formTitle.textContent = 'নতুন প্রার্থী যোগ করুন';
+        btnText.textContent = 'সংরক্ষণ করুন (Save)';
+    };
+
+    /* Small enhancement: animate rows as they appear */
+    function animateRows() {
+        const rows = document.querySelectorAll('#candidateList tr');
+        rows.forEach((r, i) => {
+            r.classList.remove('row-animate');
+            // small stagger
+            r.style.animationDelay = (i * 60) + 'ms';
+            requestAnimationFrame(() => r.classList.add('row-animate'));
+        });
+    }
+
+    /* Image viewer helpers */
+    window.viewImage = (url) => {
+        const modal = document.getElementById('imageModal');
+        const img = document.getElementById('modalImage');
+        img.src = url;
+        modal.classList.add('active');
+    };
+
+    window.closeImageViewer = () => {
+        const modal = document.getElementById('imageModal');
+        const img = document.getElementById('modalImage');
+        modal.classList.remove('active');
+        img.src = '';
+    };
+
+    // Re-run animations after table render
+    const originalRenderTable = renderTable;
+    renderTable = function(data) {
+        originalRenderTable(data);
+        animateRows();
+    };
+
+</script>
+
+<!-- Image Modal -->
+<div id="imageModal" class="img-modal" onclick="closeImageViewer()">
+    <img id="modalImage" src="" alt="Preview" />
+</div>
+
+</body>
+</html>
