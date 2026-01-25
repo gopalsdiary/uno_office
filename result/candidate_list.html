@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>প্রার্থী তালিকা ব্যবস্থাপনা - Uno Feni Sadar</title>
-    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'>C</text></svg>">
-    
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'>C</text></svg>">    <!-- Kalpurush font -->
+    <link href="https://fonts.googleapis.com/css2?family=Kalpurush&display=swap" rel="stylesheet">    
     <!-- Using same styles as dashboard for consistency -->
     <style>
         :root {
@@ -18,7 +18,7 @@
             --light: #f8fafc;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kalpurush', 'Segoe UI', sans-serif; }
 
         body {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -160,9 +160,21 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             cursor: pointer;
-            transition: transform 180ms ease, box-shadow 180ms ease;
+            transition: transform 160ms ease, box-shadow 160ms ease;
+            transform-origin: center center;
+            display: inline-block;
+            will-change: transform;
         }
-        .thumb:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .thumb:hover { transform: scale(1.12); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+
+        /* Larger preview on hover/focus for previewable thumbs */
+        .thumb.preview:hover, .thumb.preview:focus {
+            transform: scale(3.2);
+            z-index: 99999;
+            box-shadow: 0 20px 40px rgba(2,6,23,0.4);
+            position: relative;
+        }
+        .thumb:focus { outline: 3px solid rgba(102,126,234,0.18); outline-offset: 2px; }
         .thumb.placeholder {
             display: inline-flex;
             align-items: center;
@@ -193,6 +205,31 @@
         .img-modal.active { display: flex; }
         .img-modal img { max-width: 95%; max-height: 85%; border-radius: 8px; box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
 
+        /* Candidate detail modal */
+        .detail-modal { position: fixed; inset: 0; background: rgba(2,6,23,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+        .detail-modal.active { display: flex; }
+        .detail-modal .card { background: white; border-radius: 12px; padding: 20px; max-width: 760px; width: 100%; box-shadow: 0 10px 30px rgba(2,6,23,0.6); color: var(--dark); }
+        .detail-modal .card h2 { margin: 0 0 10px 0; color: var(--secondary); }
+        .detail-modal img { border-radius: 8px; border: 1px solid #e2e8f0; }
+
+        /* PDF export styles */
+        .pdf-export { font-family: 'Kalpurush', 'Noto Sans Bengali', Arial, sans-serif; color: #000; }
+        .pdf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .pdf-card { border: 1px solid #000; padding: 10px; box-sizing: border-box; display: block; }
+        .pdf-card table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .pdf-card th, .pdf-card td { padding: 4px 6px; vertical-align: top; }
+        .pdf-card .sym { width: 88px; text-align: center; }
+        .pdf-card img { max-width: 80px; max-height: 80px; object-fit: contain; display:block; margin:0 auto; }
+        .pdf-card .name { font-weight:700; font-size:14px; }
+        /* Avoid splitting a card across pages */
+        .pdf-card { page-break-inside: avoid; -webkit-column-break-inside: avoid; break-inside: avoid; }
+
+        @media print {
+            .pdf-grid { grid-template-columns: repeat(2, 1fr); }
+            body > *:not(#pdfExport) { display: none !important; }
+            #pdfExport { display:block !important; }
+        }
+
         /* Subtle button hover */
         .btn-sm { transition: transform 120ms ease, box-shadow 120ms ease; }
         .btn-sm:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(16,185,129,0.08); }
@@ -203,7 +240,10 @@
 <div class="container">
     <div class="header">
         <h1>👤 প্রার্থী তালিকা (Candidate List)</h1>
-        <a href="../dashboard.html" class="back-btn">⬅ Dashboard</a>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button id="downloadPdfBtn" class="btn btn-primary" onclick="downloadPdf()">PDF ডাউনলোড</button>
+            <a href="../dashboard.html" class="back-btn">Dashboard</a>
+        </div>
     </div>
 
     <div class="content">
@@ -221,6 +261,16 @@
                 <div class="form-group">
                     <label>প্রার্থীর নাম</label>
                     <input type="text" id="candidateName" class="form-control" placeholder="প্রার্থীর নাম লিখুন" required>
+                </div>
+
+                <div class="form-group">
+                    <label>পিতার নাম</label>
+                    <input type="text" id="candidateFather" class="form-control" placeholder="পিতার নাম লিখুন">
+                </div>
+
+                <div class="form-group">
+                    <label>ঠিকানা</label>
+                    <input type="text" id="candidateAddress" class="form-control" placeholder="ঠিকানা লিখুন">
                 </div>
 
                 <div class="form-group">
@@ -260,6 +310,7 @@
                         <tr>
                             <th width="50">SL</th>
                             <th>প্রার্থীর নাম</th>
+                            <th>পিতার নাম</th>
                             <th>প্রতীক</th>
                             <th>দল</th>
                             <th>মন্তব্য</th>
@@ -267,7 +318,7 @@
                         </tr>
                     </thead>
                     <tbody id="candidateList">
-                        <tr><td colspan="6" class="loading">Loading candidates...</td></tr>
+                        <tr><td colspan="7" class="loading">Loading candidates...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -277,6 +328,7 @@
 
 <!-- Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 <script src="../authentication.js"></script> <!-- Auth Check -->
 
 <script>
@@ -297,6 +349,8 @@
 
     // State
     let candidates = [];
+    // Address column name - detect at runtime for compatibility with legacy typo
+    let addressColumnName = 'candidate_address';
 
     // Init
     document.addEventListener('DOMContentLoaded', () => {
@@ -305,7 +359,7 @@
 
     // 1. Fetch Data
     async function fetchCandidates() {
-        tableBody.innerHTML = `<tr><td colspan="6" class="loading">তথ্য লোড হচ্ছে...</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="loading">তথ্য লোড হচ্ছে...</td></tr>`;
         
         try {
             const { data, error } = await supabaseClient
@@ -316,37 +370,48 @@
             if (error) throw error;
             
             candidates = data;
+            // detect which column name is present for the address (backwards-compatibility for typo 'candidate_addreess')
+            if (candidates.length > 0) {
+                const sample = candidates[0];
+                if (!Object.prototype.hasOwnProperty.call(sample, 'candidate_address') && Object.prototype.hasOwnProperty.call(sample, 'candidate_addreess')) {
+                    addressColumnName = 'candidate_addreess';
+                    console.warn('Using legacy column name "candidate_addreess". Consider renaming it to "candidate_address" in DB.');
+                } else {
+                    addressColumnName = 'candidate_address';
+                }
+            } else {
+                addressColumnName = 'candidate_address';
+            }
             renderTable(data);
         } catch (err) {
             console.error(err);
-            tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">ডেটা লোড করতে সমস্যা হয়েছে: ${err.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">ডেটা লোড করতে সমস্যা হয়েছে: ${err.message}</td></tr>`;
         }
     }
 
     // 2. Render Table
     function renderTable(data) {
         if (data.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">কোনো প্রার্থী পাওয়া যায়নি।</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">কোনো প্রার্থী পাওয়া যায়নি।</td></tr>`;
             return;
         }
 
         tableBody.innerHTML = data.map(item => `
             <tr>
                 <td><span class="badge">${item.candidate_sl || '-'}</span></td>
-                <td style="font-weight:600;">${item.candidate_name || ''}</td>
+                <td style="font-weight:600;"><a href="#" onclick="viewCandidate(${JSON.stringify(item.candidate_iid)})" style="color:var(--primary); text-decoration:underline;">${item.candidate_name || ''}</a></td>
+                <td>${item.candidate_father || '-'}</td>
                 <td style="display:flex;align-items:center;gap:8px;">
-                    ${item.candidate_sign_url ? `<img src="${item.candidate_sign_url}" alt="${item.candidate_sign_name || 'sign'}" class="thumb" onclick="viewImage('${item.candidate_sign_url}')" />` : `<div class="thumb placeholder">—</div>`}
+                    ${item.candidate_sign_url ? `<img src="${item.candidate_sign_url}" alt="${item.candidate_sign_name || 'sign'}" class="thumb preview" tabindex="0" aria-label="${item.candidate_sign_name || 'প্রতীক'}" onclick="viewImage('${item.candidate_sign_url}')" />` : `<div class="thumb placeholder">—</div>`}
                     <div style="font-size:0.9rem;">
                         <div style="font-weight:600;">${item.candidate_sign_name || ''}</div>
-                        ${item.candidate_sign_url ? `<a href="${item.candidate_sign_url}" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:underline;">Open</a>` : ''}
                     </div>
                 </td>
                 <td>${item.candidate_party || '-'}</td>
                 <td><small>${item.candidate_comment || ''}</small></td>
                 <td>
                     <div class="actions">
-                        <button class="btn-sm btn-edit" onclick="editCandidate(${item.candidate_iid})">Edit</button>
-                        <button class="btn-sm btn-delete" onclick="deleteCandidate(${item.candidate_iid})">Del</button>
+                        <button class="btn-sm btn-edit" onclick="editCandidate(${JSON.stringify(item.candidate_iid)})">Edit</button>
                     </div>
                 </td>
             </tr>
@@ -358,32 +423,43 @@
         e.preventDefault();
         
         const iid = document.getElementById('candidateIid').value;
+        // Normalize IID to avoid malformed REST filters (e.g., "2:1")
+        const cleanIid = iid == null ? '' : String(iid).split(':')[0].trim();
+
         const payload = {
             candidate_sl: document.getElementById('candidateSl').value,
             candidate_name: document.getElementById('candidateName').value,
+            candidate_father: document.getElementById('candidateFather').value,
             candidate_sign_name: document.getElementById('candidateSignName').value,
             candidate_party: document.getElementById('candidateParty').value,
             candidate_sign_url: document.getElementById('candidateSignUrl').value,
             candidate_comment: document.getElementById('candidateComment').value
         };
+        // assign address to the detected column name (handles legacy typo if it exists in DB)
+        payload[addressColumnName] = document.getElementById('candidateAddress').value;
 
         const btnOriginal = btnText.textContent;
         btnText.textContent = 'Processing...';
 
         try {
             let error;
-            if (iid) {
-                // Update
-                const { error: updateError } = await supabaseClient
+            if (cleanIid) {
+                // Update (convert to number when appropriate)
+                const targetId = isFinite(cleanIid) ? Number(cleanIid) : cleanIid;
+                console.log('Updating candidate', { targetId, payload });
+                const { data: updateData, error: updateError } = await supabaseClient
                     .from('candidate_db')
                     .update(payload)
-                    .eq('candidate_iid', iid);
+                    .eq('candidate_iid', targetId);
+                console.log('Update response', { updateData, updateError });
                 error = updateError;
             } else {
                 // Insert
-                const { error: insertError } = await supabaseClient
+                console.log('Inserting candidate', payload);
+                const { data: insertData, error: insertError } = await supabaseClient
                     .from('candidate_db')
                     .insert([payload]);
+                console.log('Insert response', { insertData, insertError });
                 error = insertError;
             }
 
@@ -392,10 +468,11 @@
             // Success
             resetForm();
             fetchCandidates();
-            alert(iid ? 'আপডেট সফল হয়েছে!' : 'নতুন প্রার্থী যোগ করা হয়েছে!');
+            alert(cleanIid ? 'আপডেট সফল হয়েছে!' : 'নতুন প্রার্থী যোগ করা হয়েছে!');
 
         } catch (err) {
-            alert('Error: ' + err.message);
+            console.error('Save Error details:', err);
+            alert('Error: ' + (err.message || JSON.stringify(err)));
         } finally {
             btnText.textContent = btnOriginal;
         }
@@ -403,12 +480,14 @@
 
     // 4. Edit Candidate
     window.editCandidate = (iid) => {
-        const item = candidates.find(c => c.candidate_iid === iid);
-        if (!item) return;
+        const item = candidates.find(c => String(c.candidate_iid) === String(iid));
+        if (!item) { console.warn('Candidate not found for id', iid); return; }
 
         document.getElementById('candidateIid').value = item.candidate_iid;
         document.getElementById('candidateSl').value = item.candidate_sl;
         document.getElementById('candidateName').value = item.candidate_name;
+        document.getElementById('candidateFather').value = item.candidate_father || '';
+        document.getElementById('candidateAddress').value = item.candidate_address || item.candidate_addreess || ''; 
         document.getElementById('candidateSignName').value = item.candidate_sign_name;
         document.getElementById('candidateParty').value = item.candidate_party;
         document.getElementById('candidateSignUrl').value = item.candidate_sign_url;
@@ -425,20 +504,24 @@
 
     // 5. Delete Candidate
     window.deleteCandidate = async (iid) => {
-        if (!confirm('আপনি কি নিশ্চিত যে এই প্রার্থীকে ডিলিট করতে চান?')) return;
+        console.log('deleteCandidate called with', iid);
+        // Normalize id to avoid malformed REST queries (e.g., "2:1")
+        const cleanIid = iid == null ? iid : String(iid).split(':')[0];
+        if (!confirm(`আপনি কি নিশ্চিত যে এই প্রার্থীকে ডিলিট করতে চান? (ID: ${cleanIid})`)) return;
 
         try {
             const { error } = await supabaseClient
                 .from('candidate_db')
                 .delete()
-                .eq('candidate_iid', iid);
+                .eq('candidate_iid', isFinite(cleanIid) ? Number(cleanIid) : cleanIid);
 
             if (error) throw error;
             
             fetchCandidates(); // Refresh
 
         } catch (err) {
-            alert('Delete Error: ' + err.message);
+            console.error('Delete Error details:', err);
+            alert('Delete Error: ' + (err.message || JSON.stringify(err)));
         }
     };
 
@@ -476,6 +559,148 @@
         img.src = '';
     };
 
+    // Show full candidate details in a modal (fetches fresh record from Supabase)
+    window.viewCandidate = async (iid) => {
+        try {
+            const { data, error } = await supabaseClient
+                .from('candidate_db')
+                .select('*')
+                .eq('candidate_iid', iid)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            let item = data || candidates.find(c => String(c.candidate_iid) === String(iid));
+            if (!item) return alert('প্রার্থী পাওয়া যায়নি');
+
+            document.getElementById('candidateModalName').textContent = item.candidate_name || '-';
+            document.getElementById('candidateModalSl').textContent = item.candidate_sl || '-';
+            document.getElementById('candidateModalFather').textContent = item.candidate_father || '-';
+            document.getElementById('candidateModalAddress').textContent = item.candidate_address || item.candidate_addreess || '-';
+            document.getElementById('candidateModalSignName').textContent = item.candidate_sign_name || '-';
+            document.getElementById('candidateModalParty').textContent = item.candidate_party || '-';
+            document.getElementById('candidateModalComment').textContent = item.candidate_comment || '-';
+            document.getElementById('candidateModalImg').src = item.candidate_sign_url || '';
+
+            document.getElementById('candidateDetailModal').classList.add('active');
+        } catch (err) {
+            console.error('View candidate error', err);
+            alert('View Error: ' + (err.message || JSON.stringify(err)));
+        }
+    };
+
+    window.closeCandidateModal = () => {
+        document.getElementById('candidateDetailModal').classList.remove('active');
+        document.getElementById('candidateModalImg').src = '';
+    };
+
+    // PDF export: build printable HTML and trigger html2pdf
+    async function buildPdfContent(items) {
+        const container = document.createElement('div');
+        container.className = 'pdf-export';
+
+        const header = document.createElement('h2');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '8px';
+        header.textContent = 'প্রার্থী তালিকা';
+        container.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'pdf-grid';
+
+        for (const it of items) {
+            const card = document.createElement('div');
+            card.className = 'pdf-card';
+
+            // Create inner table layout resembling the sample
+            const hasComment = it.candidate_comment && String(it.candidate_comment).trim() !== '';
+            const rowspan = hasComment ? 5 : 4;
+            card.innerHTML = `
+                <table>
+                    <tr>
+                        <th style="width:40px;">ক্রমিক</th>
+                        <td class="name">${it.candidate_sl || ''}. ${escapeHtml(it.candidate_name || '')}</td>
+                        <td class="sym" rowspan="${rowspan}">${it.candidate_sign_url ? `<img src="${it.candidate_sign_url}" alt="sign" />` : ''}</td>
+                    </tr>
+                    <tr>
+                        <th>দল</th>
+                        <td>${escapeHtml(it.candidate_party || '')}</td>
+                    </tr>
+                    <tr>
+                        <th>পিতা/স্বামী</th>
+                        <td>${escapeHtml(it.candidate_father || '')}</td>
+                    </tr>
+                    <tr>
+                        <th>ঠিকানা</th>
+                        <td>${escapeHtml(it.candidate_address || it.candidate_addreess || '')}</td>
+                    </tr>
+                    ${hasComment ? `<tr>
+                        <th>মন্তব্য</th>
+                        <td colspan="2">${escapeHtml(it.candidate_comment)}</td>
+                    </tr>` : ''}
+                </table>
+            `;
+
+            grid.appendChild(card);
+        }
+
+        container.appendChild(grid);
+        return container;
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    async function downloadPdf() {
+        if (!candidates || candidates.length === 0) return alert('কোনো প্রার্থী পাওয়া যায়নি');
+
+        const btn = document.getElementById('downloadPdfBtn');
+        const oldText = btn.textContent;
+        btn.textContent = 'প্রসেস হচ্ছে...';
+        btn.disabled = true;
+
+        try {
+            // Ensure web fonts are loaded so html2canvas captures them correctly
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
+            // Build content
+            const content = await buildPdfContent(candidates);
+
+            const exportContainer = document.getElementById('pdfExport');
+            exportContainer.innerHTML = '';
+            exportContainer.appendChild(content);
+            exportContainer.style.display = 'block';
+
+            // html2pdf options
+            const opt = {
+                margin:       [8, 8, 8, 8],
+                filename:     'candidates.pdf',
+                image:        { type: 'jpeg', quality: 0.92 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opt).from(exportContainer).save();
+
+        } catch (err) {
+            console.error('PDF Error:', err);
+            alert('PDF তৈরিতে সমস্যা হয়েছে: ' + (err.message || JSON.stringify(err)));
+        } finally {
+            const exportContainer = document.getElementById('pdfExport');
+            exportContainer.style.display = 'none';
+            exportContainer.innerHTML = '';
+            btn.textContent = oldText;
+            btn.disabled = false;
+        }
+    } 
+
     // Re-run animations after table render
     const originalRenderTable = renderTable;
     renderTable = function(data) {
@@ -489,6 +714,26 @@
 <div id="imageModal" class="img-modal" onclick="closeImageViewer()">
     <img id="modalImage" src="" alt="Preview" />
 </div>
+
+<!-- Candidate Detail Modal -->
+<div id="candidateDetailModal" class="detail-modal" onclick="if(event.target.id==='candidateDetailModal') closeCandidateModal()">
+    <div class="card" role="dialog" aria-modal="true">
+        <button style="position:absolute; right:12px; top:12px; border:none; background:transparent; font-size:18px; cursor:pointer;" onclick="closeCandidateModal()">✕</button>
+        <h2 id="candidateModalName">প্রার্থী</h2>
+        <div style="display:flex; gap:16px; align-items:flex-start; margin-top:8px;">
+            <img id="candidateModalImg" src="" alt="sign" style="width:120px; height:120px; object-fit:cover;">
+            <div style="flex:1;"><p><strong>ক্রমিক (SL):</strong> <span id="candidateModalSl"></span></p>
+            <p><strong>পিতার নাম:</strong> <span id="candidateModalFather"></span></p>
+            <p><strong>ঠিকানা:</strong> <span id="candidateModalAddress"></span></p>
+            <p><strong>প্রতীকের নাম:</strong> <span id="candidateModalSignName"></span></p>
+            <p><strong>দল:</strong> <span id="candidateModalParty"></span></p>
+            <p><strong>মন্তব্য:</strong> <span id="candidateModalComment"></span></p></div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden container used to build the PDF layout -->
+<div id="pdfExport" style="display:none;"></div> 
 
 </body>
 </html>

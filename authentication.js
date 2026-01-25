@@ -60,7 +60,7 @@ async function handleLogout() {
   } catch (err) {
     console.error('Logout failed:', err);
     // Still redirect even if there's an error
-    window.location.href = 'index.html';
+    window.location.href = '/index.html';
   }
 }
 
@@ -76,7 +76,7 @@ async function checkAuth() {
     
     if (error || !session) {
       // No valid session, redirect to login
-      window.location.href = 'index.html';
+      window.location.href = '/index.html';
       return;
     }
     
@@ -85,7 +85,7 @@ async function checkAuth() {
     
   } catch (err) {
     console.error('Auth check failed:', err);
-    window.location.href = 'index.html';
+    window.location.href = '/index.html';
   }
 }
 
