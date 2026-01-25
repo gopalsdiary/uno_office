@@ -1,0 +1,11 @@
+[build]
+  # This command builds the React app in the subdirectory
+  command = "cd postal_ballet/smart-map-react && npm install && npm run build"
+  # The publish directory is the root because your main dashboard is there
+  publish = "."
+
+[[redirects]]
+  # Redirect default Netlify subdomain to dashboard (optional)
+  from = "/"
+  to = "/dashboard.html"
+  status = 200
