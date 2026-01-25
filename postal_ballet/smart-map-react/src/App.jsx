@@ -37,11 +37,13 @@ function App() {
 
       // Define Custom Classes
       class CustomMarker extends google.maps.OverlayView {
-           constructor(position, content, map, onClick) {
+           constructor(position, content, title, map, onClick) {
                super();
                this.position = position;
                this.content = content;
+               this.title = title; // Centre name
                this.markerDiv = null;
+               this.labelDiv = null;
                this.onClick = onClick;
                this.setMap(map);
            }
@@ -49,6 +51,14 @@ function App() {
                const div = document.createElement('div');
                div.className = 'numbered-marker';
                div.textContent = this.content;
+
+               // Create Label (Hidden by default)
+               const label = document.createElement('div');
+               label.className = 'marker-label';
+               label.textContent = this.title;
+               div.appendChild(label);
+               this.labelDiv = label;
+
                div.addEventListener('click', (e) => {
                    e.stopPropagation();
                    if (this.onClick) this.onClick();
@@ -74,8 +84,13 @@ function App() {
            }
            setHighlight(isHighlighted) {
                if (this.markerDiv) {
-                   if (isHighlighted) this.markerDiv.classList.add('highlighted');
-                   else this.markerDiv.classList.remove('highlighted');
+                   if (isHighlighted) {
+                       this.markerDiv.classList.add('highlighted');
+                       if(this.labelDiv) this.labelDiv.style.display = 'block';
+                   } else {
+                       this.markerDiv.classList.remove('highlighted');
+                       if(this.labelDiv) this.labelDiv.style.display = 'none';
+                   }
                }
            }
        }
@@ -200,6 +215,7 @@ function App() {
           const marker = new CustomMarkerClass.current(
              item.coords,
              item.vote_centre_code,
+             item.vote_centre_name, // Pass name
              mapInstance.current,
              () => handleSelectCentre(item.vote_centre_iid)
           );
