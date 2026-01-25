@@ -12,6 +12,9 @@ function App() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [selectedCentreId, setSelectedCentreId] = useState(null);
   const [mapType, setMapType] = useState('roadmap');
+  // Area Filtering
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState('');
 
   const mapContainerRef = useRef(null);
   const mapInstance = useRef(null);
@@ -143,6 +146,13 @@ function App() {
           }).filter(d => d.coords !== null);
 
           setVoteData(processed);
+          
+          // Extract Unique Areas
+          const uniqueAreas = [...new Set(processed.map(p => 
+              p.vote_centre_area ? p.vote_centre_area.trim() : 'Unknown'
+          ))].sort();
+          setAreas(uniqueAreas);
+          
           setLoading(false);
       } catch (err) {
           console.error(err);
@@ -340,15 +350,65 @@ function App() {
   }
 
   // Filter
-  const filteredData = voteData.filter(item => 
-      (item.vote_centre_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.vote_centre_area || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = voteData.filter(item => {
+      const matchSearch = (item.vote_centre_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (item.vote_centre_area || '').toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const itemArea = item.vote_centre_area ? item.vote_centre_area.trim() : 'Unknown';
+      const matchArea = selectedArea ? itemArea === selectedArea : true;
+      
+      return matchSearch && matchArea;
+  });
 
   const toggleMapType = (type) => {
       setMapType(type);
       if (mapInstance.current) mapInstance.current.setMapTypeId(type);
   }
+
+  // Mobile Bottom Sheet Logic
+  const [sheetHeight, setSheetHeight] = useState('45vh');
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef(0);
+  const dragStartHeight = useRef(0);
+  const sidebarRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    dragStartY.current = e.touches[0].clientY;
+    dragStartHeight.current = sidebarRef.current.getBoundingClientRect().height;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const deltaY = dragStartY.current - e.touches[0].clientY; // Up is positive (increase height)
+    const newH = dragStartHeight.current + deltaY;
+    
+    // Limits
+    const maxH = window.innerHeight * 0.95;
+    const minH = 120; // Enough for handle + search
+    
+    if (newH >= minH && newH <= maxH) {
+         setSheetHeight(`${newH}px`);
+    }
+  };
+
+  const handleTouchEnd = () => {
+      setIsDragging(false);
+      const h = sidebarRef.current.offsetHeight;
+      const windowH = window.innerHeight;
+      
+      const small = 150; 
+      const medium = windowH * 0.45;
+      const large = windowH * 0.9;
+
+      const dists = [Math.abs(h - small), Math.abs(h - medium), Math.abs(h - large)];
+      const minD = Math.min(...dists);
+      
+      if (minD === dists[0]) setSheetHeight(`${small}px`);
+      else if (minD === dists[1]) setSheetHeight(`${medium}px`);
+      else setSheetHeight(`${large}px`);
+  };
+
 
   return (
     <>
@@ -390,7 +450,21 @@ function App() {
                )}
           </div>
 
-          <aside className="sidebar">
+          <aside 
+            className={`sidebar ${isDragging ? 'dragging' : ''}`}
+            ref={sidebarRef}
+            style={{ height: window.innerWidth <= 768 ? sheetHeight : undefined }}
+          >   
+              {/* Drag Handle */}
+              <div 
+                className="drag-handle-container"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                  <div className="drag-handle"></div>
+              </div>
+
               <div className="controls">
                   <div className="search-box">
                       <i className="ph ph-magnifying-glass search-icon"></i>
@@ -400,7 +474,21 @@ function App() {
                          placeholder="Search centre..."
                          value={searchTerm}
                          onChange={e => setSearchTerm(e.target.value)}
+                         style={{marginBottom:8}}
                       />
+                      
+                      {/* Area Filter Dropdown */}
+                      <select 
+                        className="search-input" 
+                        value={selectedArea} 
+                        onChange={e => setSelectedArea(e.target.value)}
+                        style={{paddingLeft:12}} // Reduce padding as it has no icon
+                      >
+                          <option value="">All Areas</option>
+                          {areas.map(a => (
+                              <option key={a} value={a}>{a}</option>
+                          ))}
+                      </select>
                   </div>
                   <div className="action-row">
                       <button className="btn btn-accent" onClick={findNearestAndRoute}>
