@@ -175,6 +175,17 @@ function App() {
       return null;
   };
 
+  // Filter Logic (Moved up to use in Effect)
+  const filteredData = voteData.filter(item => {
+      const matchSearch = (item.vote_centre_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (item.vote_centre_area || '').toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const itemArea = item.vote_centre_area ? item.vote_centre_area.trim() : 'Unknown';
+      const matchArea = selectedArea ? itemArea === selectedArea : true;
+      
+      return matchSearch && matchArea;
+  });
+
   // 3. Render Markers when data changes
   useEffect(() => {
       if (!mapInstance.current || !CustomMarkerClass.current) return;
@@ -185,7 +196,7 @@ function App() {
 
       const bounds = new window.google.maps.LatLngBounds();
 
-      voteData.forEach(item => {
+      filteredData.forEach(item => {
           const marker = new CustomMarkerClass.current(
              item.coords,
              item.vote_centre_code,
@@ -200,7 +211,7 @@ function App() {
       if (!bounds.isEmpty()) {
           mapInstance.current.fitBounds(bounds);
       }
-  }, [voteData]);
+  }, [filteredData]);
 
   // 4. Interaction Handlers
   const handleSelectCentre = (id) => {
@@ -349,16 +360,7 @@ function App() {
       }
   }
 
-  // Filter
-  const filteredData = voteData.filter(item => {
-      const matchSearch = (item.vote_centre_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (item.vote_centre_area || '').toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const itemArea = item.vote_centre_area ? item.vote_centre_area.trim() : 'Unknown';
-      const matchArea = selectedArea ? itemArea === selectedArea : true;
-      
-      return matchSearch && matchArea;
-  });
+
 
   const toggleMapType = (type) => {
       setMapType(type);
