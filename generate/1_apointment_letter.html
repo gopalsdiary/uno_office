@@ -107,6 +107,24 @@
             font-size: 10pt;
         }
 
+        /* Prevent vote centre info from breaking into multiple lines */
+        .no-wrap {
+            white-space: nowrap;
+            display: inline-block;
+            overflow: visible;
+        }
+
+        /* Slightly smaller text for long header labels */
+        .small-85 {
+            font-size: 80%;
+        }
+        /* Small comment style (under the total) */
+        .small-comment {
+            font-size: 10pt;
+            display: block;
+            margin-top: 3px;
+            color: inherit;
+        }
         /* Hide optional area rows (area2 and area3) */
         .hide-area {
             display: none !important;
@@ -180,11 +198,11 @@
         <!-- Vote Centre Info Table -->
         <table class="size-11">
             <tr>
-                <td colspan="5" style="border: 1px solid #000; padding: 5px;">
-                    <span class="bold">ভোট কেন্দ্রের নম্বর, নাম ও অবস্থানঃ </span><br>
-                    <span class="size-10"><span class="vote_centre_code">vote_centre_code</span>, <span
+                <td colspan="5" style="border: 1px solid #000; padding: 5px; white-space: nowrap; overflow: visible;">
+                    <span class="bold">ভোট কেন্দ্রের নম্বর, নাম ও অবস্থানঃ </span>
+                    <span class="size-10 no-wrap"><span class="vote_centre_code">vote_centre_code</span>, <span
                             class="vote_centre_name">vote_centre_name</span>, <span
-                            class="vote_centre_location">vote_centre_location</span></span>
+                            class="vote_centre_area">vote_centre_area</span>, ফেনী সদর, ফেনী</span>
                 </td>
                 <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 80px;">কেন্দ্রের ধরনঃ</td>
                 <td class="center" style="border: 1px solid #000; padding: 5px; width: 160px;"><span
@@ -193,190 +211,105 @@
             <tr>
                 <td colspan="6" class="center bold" style="border: 1px solid #000; padding: 5px;">যে সকল এলাকার ভোটারগণ
                     ভোট প্রদান করবেন সে এলাকার নাম ও ভোটার সংখ্যা</td>
-                <td rowspan="2" class="center bold" style="border: 1px solid #000; padding: 5px;">মোট বুথ (ভোটকক্ষ) এর
-                    সংখ্যা</td>
-            </tr>
-            <tr>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">ভোটার এলাকার নাম</td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">পুরুষ</td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">মহিলা</td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">হিজড়া</td>
-                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px;">মোট ভোটার সংখ্যা</td>
-            </tr>
-            <tr>
-                <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <font face="Times New Roman, serif"><span lang="ar-SA">
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>১।</b></span></font>
-                                </font>
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>
-                                            </b></span></font>
-                                </font>
-                            </span></font>
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt"><span class="vote_centre_location">vote_centre_location</span></font>
-                        </font>
-                    </p>
+                <td rowspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; text-align:center; vertical-align: middle;">
+                    <p style="margin:0;">মোট বুথ (ভোটকক্ষ) এর সংখ্যা</p>
                 </td>
-                <td width="88" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+            </tr>
+            <tr>
+                <td width="220" class="center" style="border: 1px solid #000; padding: 5px;">ভোটার এলাকার নাম</td>
+                <td width="60" class="center" style="border: 1px solid #000; padding: 5px;">পুরুষ</td>
+                <td width="72" class="center" style="border: 1px solid #000; padding: 5px;">মহিলা</td>
+                <td width="48" class="center" style="border: 1px solid #000; padding: 5px;">হিজড়া</td>
+                <td colspan="2" width="150" class="center middle" style="border: 1px solid #000; padding: 5px;">মোট ভোটার সংখ্যা</td>
+            </tr>
+            <tr>
+                <td width="220" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western"><b>১।</b> <span class="vote_centre_location">vote_centre_location</span></p>
+                </td>
+                <td width="60" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
                             <font size="2" style="font-size: 10pt"><span class="male_voter">male_voter</span></font>
                         </font>
                     </p>
                 </td>
-                <td width="102" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                <td width="72" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
                             <font size="2" style="font-size: 10pt"><span class="female_voter">female_voter</span></font>
                         </font>
                     </p>
                 </td>
-                <td width="78" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                <td width="48" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
                             <font size="2" style="font-size: 10pt"><span class="hizra_voter">hizra_voter</span></font>
                         </font>
                     </p>
                 </td>
-                <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt"><span class="total_voter">total_voter</span></font>
-                        </font>
-                    </p>
+                <td colspan="2" width="150" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western" align="center"><span class="total_voter">total_voter</span></p>
                 </td>
                 <td rowspan="4" width="161" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt"><span
-                                    class="voter_both_total">voter_both_total</span>
-                            </font>
-                        </font>
-                        <br>
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">(<span class="centre_comment"></span>)</font>
-                        </font>
+                    <p class="western center" style="text-align:center; margin:0;">
+                        <span class="voter_both_total">voter_both_total</span><br>
+                        <span class="centre_comment small-comment"></span>
                     </p>
                 </td>
             </tr>
-            <tr class="hide-area">
-                <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <font face="Times New Roman, serif"><span lang="ar-SA">
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>২।</b></span></font>
-                                </font>
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>
-                                            </b></span></font>
-                                </font>
-                            </span></font>
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt">*area2</font>
-                        </font>
-                    </p>
+            <tr class="hide-area" data-area="2">
+                <td width="220" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western"><b>২।</b> <span class="area2_name">&nbsp;</span></p>
                 </td>
-                <td width="88" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*male_voter</font>
-                        </font>
-                    </p>
+                <td width="60" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area2_male">&nbsp;</span></p>
                 </td>
-                <td width="102" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*female_voter</font>
-                        </font>
-                    </p>
+                <td width="72" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area2_female">&nbsp;</span></p>
                 </td>
-                <td width="78" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*3rd_voter</font>
-                        </font>
-                    </p>
+                <td width="62" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area2_hizra">&nbsp;</span></p>
                 </td>
-                <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">Total_voter</font>
-                        </font>
-                    </p>
+                <td colspan="2" width="150" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western"><span class="area2_total">&nbsp;</span></p>
                 </td>
             </tr>
-            <tr class="hide-area">
-                <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <font face="Times New Roman, serif"><span lang="ar-SA">
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>৩।</b></span></font>
-                                </font>
-                                <font face="Nikosh">
-                                    <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>
-                                            </b></span></font>
-                                </font>
-                            </span></font>
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt">*area3</font>
-                        </font>
-                    </p>
+            <tr class="hide-area" data-area="3">
+                <td width="220" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western"><b>৩।</b> <span class="area3_name">&nbsp;</span></p>
                 </td>
-                <td width="88" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*male_voter</font>
-                        </font>
-                    </p>
+                <td width="60" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area3_male">&nbsp;</span></p>
                 </td>
-                <td width="102" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*female_voter</font>
-                        </font>
-                    </p>
+                <td width="72" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area3_female">&nbsp;</span></p>
                 </td>
-                <td width="78" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western" align="center">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*3rd_voter</font>
-                        </font>
-                    </p>
+                <td width="48" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western center"><span class="area3_hizra">&nbsp;</span></p>
                 </td>
-                <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">Total_voter</font>
-                        </font>
-                    </p>
+                <td colspan="2" width="150" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western"><span class="area3_total">&nbsp;</span></p>
                 </td>
             </tr>
             <tr>
-                <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
-                    <p class="western">
-                        <br />
-
-                    </p>
+                <td width="220" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                    <p class="western">&nbsp;</p>
                 </td>
                 <td colspan="3" width="295" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>কেন্দ্র
-                                        মোট ভোটার সংখ্যা</b></span></font>
+                            <font size="2" style="font-size: 11pt"><span lang="bn-IN"><b>কেন্দ্রে মোট ভোটার সংখ্যা</b></span></font>
                         </font>
                     </p>
                 </td>
-                <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
+                <td colspan="2" width="150" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh"><span class="total_voter">total_voter</span></font>
                     </p>
                 </td>
             </tr>
         </table>
-        <div class="justify size-11" style="margin: 10px 0;">
+        <div class="justify size-11" style="margin: 6px 0;">
             গণপ্রতিনিধিত্ব আদেশ, ১৯৭২ এর অনুচ্ছেদ ৯ এর দফা (১খ) এ প্রদত্ত ক্ষমতা বলে আমি <span>মনিরা
                 হক</span>, <span>জেলা প্রশাসক</span>, <span>ফেনী</span>, ২৬৬ ফেনী-২ (ফেনী সদর)
             নির্বাচনি এলাকার রিটার্নিং অফিসার নিম্নবর্ণিত ব্যক্তিগণকে উপরোল্লিখিত ভোটকেন্দ্রে ভোটগ্রহণের জন্য এতদ্বারা
@@ -384,34 +317,31 @@
             হিসাবে নিয়োগ করিলামঃ
         </div>
         <p class="western" style="margin-bottom: 0in">
-        <table id="officerTable" class="size-11" style="margin-top: 10px;">
+        <table id="officerTable" class="size-11" style="margin-top: 6px;">
             <tr>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 15%;">প্রিজাইডিং অফিসারের
-                    নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</td>
-                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; width: 25%;">সহকারী
-                    প্রিজাইডিং অফিসারের নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</td>
-                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; width: 35%;">পোলিং
-                    অফিসারের নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 25%;">সহকারী প্রিজাইডিং
-                    অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে প্রিজাইডিং অফিসার হিসেবে দায়িত্ব পালন করবেন</td>
+                <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 15%; vertical-align: middle;">
+                    <p style="margin:0;">প্রিজাইডিং অফিসারের নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</p>
+                </td>
+                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; width: 25%; vertical-align: middle;">
+                    <p style="margin:0;">সহকারী প্রিজাইডিং অফিসারের নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</p>
+                </td>
+                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; width: 35%; vertical-align: middle;">
+                    <p style="margin:0;">পোলিং অফিসারের নাম, পদবী, প্রতিষ্ঠানের নাম ও মোবাইল নম্বর</p>
+                </td>
+                <td class="center bold small-85" style="border: 1px solid #000; padding: 5px; width: 25%; vertical-align: middle;">
+                    <p class="small-85" style="margin:0;">সহকারী প্রিজাইডিং অফিসারের নাম যিনি প্রিজাইডিং অফিসারের অনুপস্থিতিতে প্রিজাইডিং অফিসার হিসেবে দায়িত্ব পালন করবেন</p>
+                </td>
             </tr>
             <tr>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">০১</td>
-                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px;">০২</td>
-                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px;">০৩</td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px;">০৪</td>
+                <td class="center bold" style="border: 1px solid #000; padding: 5px; vertical-align: middle;">০১</td>
+                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; vertical-align: middle;">০২</td>
+                <td colspan="2" class="center bold" style="border: 1px solid #000; padding: 5px; vertical-align: middle;">০৩</td>
+                <td class="center bold" style="border: 1px solid #000; padding: 5px; vertical-align: middle;">০৪</td>
             </tr>
             <!-- Dynamic rows will be inserted here by JS -->
-        </table><br />
-
-        </p>
-        <p class="western" style="margin-left: 0.06in; margin-bottom: 0.03in">
-
-        </p>
-        <p class="western" style="margin-bottom: 0in"><br />
-
-        </p>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 5px;" class="size-11">
+        </table>
+        <p class="western" style="margin:4px 0 2px 0"></p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 2px;" class="size-11">
             <tr>
                 <td
                     style="border: 1px dashed #000; padding: 5px; width: 32%; text-align: center; vertical-align: middle;">
@@ -653,15 +583,68 @@
                 setTextByClass('vote_centre_code', toBengaliNumber(centre.vote_centre_code || ''));
                 setTextByClass('vote_centre_name', centre.vote_centre_name || '');
                 setTextByClass('vote_centre_location', centre.vote_centre_location || '');
+                setTextByClass('vote_centre_area', centre.vote_centre_area || '');
                 setTextByClass('vote_centre_quality', centre.vote_centre_quality || '');
-                setTextByClass('voter_both_total', toBengaliNumber(centre.voter_both_total || 0));
-                setTextByClass('centre_comment', centre.comment || '');
+                setTextByClass('voter_both_total', `মোট ${toBengaliNumber(centre.voter_both_total || 0)} টি`);
+                setTextByClass('centre_comment', centre.comment ? `(${centre.comment})` : '');
+
+
                 
                 // Populate voter data from vote_centre table columns
                 setTextByClass('male_voter', toBengaliNumber(centre.male_voter || 0));
                 setTextByClass('female_voter', toBengaliNumber(centre.female_voter || 0));
                 setTextByClass('hizra_voter', toBengaliNumber(centre.hizra_voter || 0));
                 setTextByClass('total_voter', toBengaliNumber(centre.total_voter || 0));
+            }
+
+            // Populate optional area rows (area2, area3) if data exists in the centre record
+            function populateAreaRows(centre) {
+                function getFirst(obj, keys) {
+                    for (const k of keys) {
+                        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k];
+                    }
+                    return null;
+                }
+
+                // Generic handler for an area index (2 or 3)
+                function handleArea(idx) {
+                    const row = document.querySelector(`tr.hide-area[data-area="${idx}"]`);
+                    if (!row) return;
+
+                    const nameCandidates = [`area${idx}`, `area${idx}_name`, `vote_centre_area${idx}`, `vote_centre_area_${idx}`, `area_${idx}`];
+                    const maleCandidates = [`area${idx}_male`, `male_voter${idx}`, `male_voter_${idx}`];
+                    const femaleCandidates = [`area${idx}_female`, `female_voter${idx}`, `female_voter_${idx}`];
+                    const hizraCandidates = [`area${idx}_hizra`, `hizra_voter${idx}`, `hizra_voter_${idx}`, `area${idx}_hijra`, `hijra_voter${idx}`];
+                    const totalCandidates = [`area${idx}_total`, `total_voter${idx}`, `total_voter_${idx}`];
+
+                    const name = getFirst(centre, nameCandidates);
+                    const male = getFirst(centre, maleCandidates);
+                    const female = getFirst(centre, femaleCandidates);
+                    const hizra = getFirst(centre, hizraCandidates);
+                    const total = getFirst(centre, totalCandidates);
+
+                    // If any meaningful data exists, show and populate the row
+                    if (name || male || female || hizra || total) {
+                        row.classList.remove('hide-area');
+                        const nameEl = row.querySelector(`.area${idx}_name`);
+                        if (nameEl) nameEl.textContent = name || '';
+
+                        const maleEl = row.querySelector(`.area${idx}_male`);
+                        if (maleEl) maleEl.textContent = male !== null ? toBengaliNumber(male) : '';
+
+                        const femaleEl = row.querySelector(`.area${idx}_female`);
+                        if (femaleEl) femaleEl.textContent = female !== null ? toBengaliNumber(female) : '';
+
+                        const hizraEl = row.querySelector(`.area${idx}_hizra`);
+                        if (hizraEl) hizraEl.textContent = hizra !== null ? toBengaliNumber(hizra) : '';
+
+                        const totalEl = row.querySelector(`.area${idx}_total`);
+                        if (totalEl) totalEl.textContent = total !== null ? toBengaliNumber(total) : '';
+                    }
+                }
+
+                handleArea(2);
+                handleArea(3);
             }
 
             function renderOfficerTable(data) {
@@ -705,6 +688,7 @@
                     tdIndex.className = "center";
                     tdIndex.style.border = "1px solid #000";
                     tdIndex.style.padding = "5px";
+                    tdIndex.style.verticalAlign = "middle";
                     tdIndex.innerText = toBengaliNumber(i + 1);
                     tr1.appendChild(tdIndex);
 
@@ -713,6 +697,10 @@
                     tdAss.setAttribute('rowspan', 2);
                     tdAss.style.border = "1px solid #000";
                     tdAss.style.padding = "5px";
+                    // Align assistant presiding name to left and vertically center
+                    tdAss.style.verticalAlign = "middle";
+                    tdAss.style.textAlign = "left";
+                    tdAss.className = "left";
                     tdAss.innerText = formatOfficer(ass, 'ass_presiding');
                     tr1.appendChild(tdAss);
 
@@ -721,6 +709,7 @@
                     tdPollIndex1.className = "center";
                     tdPollIndex1.style.border = "1px solid #000";
                     tdPollIndex1.style.padding = "5px";
+                    tdPollIndex1.style.verticalAlign = "middle";
                     tdPollIndex1.innerText = toBengaliNumber(1);
                     tr1.appendChild(tdPollIndex1);
 
@@ -753,6 +742,7 @@
                     tdPollIndex2.className = "center";
                     tdPollIndex2.style.border = "1px solid #000";
                     tdPollIndex2.style.padding = "5px";
+                    tdPollIndex2.style.verticalAlign = "middle";
                     tdPollIndex2.innerText = toBengaliNumber(2);
                     tr2.appendChild(tdPollIndex2);
 
@@ -779,6 +769,7 @@
                 try {
                     const freshData = await loadCentreDataFromSupabase(centreCode);
                     renderCentreInfo(freshData.centre);
+                    populateAreaRows(freshData.centre);
                     renderOfficerTable(freshData);
                     
                     // Convert all English numbers to Bengali after data is loaded
