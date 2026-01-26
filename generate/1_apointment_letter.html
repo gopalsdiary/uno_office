@@ -107,6 +107,11 @@
             font-size: 10pt;
         }
 
+        /* Hide optional area rows (area2 and area3) */
+        .hide-area {
+            display: none !important;
+        }
+
         @media print {
             body {
                 background: none;
@@ -181,9 +186,9 @@
                             class="vote_centre_name">vote_centre_name</span>, <span
                             class="vote_centre_location">vote_centre_location</span></span>
                 </td>
-                <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 80px;">কেন্দ্রর ধরনঃ</td>
+                <td class="center bold" style="border: 1px solid #000; padding: 5px; width: 80px;">কেন্দ্রের ধরনঃ</td>
                 <td class="center" style="border: 1px solid #000; padding: 5px; width: 160px;"><span
-                        class="vote_centre_qualtiy">vote_centre_qualtiy</span></td>
+                        class="vote_centre_quality">vote_centre_quality</span></td>
             </tr>
             <tr>
                 <td colspan="6" class="center bold" style="border: 1px solid #000; padding: 5px;">যে সকল এলাকার ভোটারগণ
@@ -211,35 +216,35 @@
                                 </font>
                             </span></font>
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 11pt">*area1</font>
+                            <font size="2" style="font-size: 11pt"><span class="vote_centre_location">vote_centre_location</span></font>
                         </font>
                     </p>
                 </td>
                 <td width="88" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*male_voter</font>
+                            <font size="2" style="font-size: 10pt"><span class="male_voter">male_voter</span></font>
                         </font>
                     </p>
                 </td>
                 <td width="102" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*female_voter</font>
+                            <font size="2" style="font-size: 10pt"><span class="female_voter">female_voter</span></font>
                         </font>
                     </p>
                 </td>
                 <td width="78" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">*3rd_voter</font>
+                            <font size="2" style="font-size: 10pt"><span class="hizra_voter">hizra_voter</span></font>
                         </font>
                     </p>
                 </td>
                 <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
                         <font face="Nikosh">
-                            <font size="2" style="font-size: 10pt">Total_voter</font>
+                            <font size="2" style="font-size: 10pt"><span class="total_voter">total_voter</span></font>
                         </font>
                     </p>
                 </td>
@@ -250,10 +255,14 @@
                                     class="voter_both_total">voter_both_total</span>
                             </font>
                         </font>
+                        <br>
+                        <font face="Nikosh">
+                            <font size="2" style="font-size: 10pt">(<span class="centre_comment"></span>)</font>
+                        </font>
                     </p>
                 </td>
             </tr>
-            <tr>
+            <tr class="hide-area">
                 <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western">
                         <font face="Times New Roman, serif"><span lang="ar-SA">
@@ -299,7 +308,7 @@
                     </p>
                 </td>
             </tr>
-            <tr>
+            <tr class="hide-area">
                 <td width="145" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western">
                         <font face="Times New Roman, serif"><span lang="ar-SA">
@@ -362,7 +371,7 @@
                 </td>
                 <td colspan="2" width="106" valign="top" style="border: 1px solid #000000; padding: 0in 0.08in">
                     <p class="western" align="center">
-                        <font face="Nikosh">*total</font>
+                        <font face="Nikosh"><span class="total_voter">total_voter</span></font>
                     </p>
                 </td>
             </tr>
@@ -539,6 +548,35 @@
                 return designation ? `${name}, ${designation}` : name;
             }
 
+            // Convert all English numbers to Bengali throughout the entire page
+            function convertAllNumbersToBengali() {
+                const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+                
+                function replaceNumbers(text) {
+                    return text.replace(/\d/g, digit => bengaliDigits[Number(digit)]);
+                }
+                
+                function traverseNodes(node) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        // Only convert if the text contains English digits
+                        if (/\d/.test(node.textContent)) {
+                            node.textContent = replaceNumbers(node.textContent);
+                        }
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Skip script and style tags
+                        if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+                            Array.from(node.childNodes).forEach(traverseNodes);
+                        }
+                    }
+                }
+                
+                // Start traversing from the page container
+                const pageContainer = document.querySelector('.page-container');
+                if (pageContainer) {
+                    traverseNodes(pageContainer);
+                }
+            }
+
             // Load centre data from Supabase using centre_assignments table
             async function loadCentreDataFromSupabase(centreCode) {
                 if (!window.supabaseClient) {
@@ -615,8 +653,15 @@
                 setTextByClass('vote_centre_code', toBengaliNumber(centre.vote_centre_code || ''));
                 setTextByClass('vote_centre_name', centre.vote_centre_name || '');
                 setTextByClass('vote_centre_location', centre.vote_centre_location || '');
-                setTextByClass('vote_centre_qualtiy', centre.vote_centre_qualtiy || '');
+                setTextByClass('vote_centre_quality', centre.vote_centre_quality || '');
                 setTextByClass('voter_both_total', toBengaliNumber(centre.voter_both_total || 0));
+                setTextByClass('centre_comment', centre.comment || '');
+                
+                // Populate voter data from vote_centre table columns
+                setTextByClass('male_voter', toBengaliNumber(centre.male_voter || 0));
+                setTextByClass('female_voter', toBengaliNumber(centre.female_voter || 0));
+                setTextByClass('hizra_voter', toBengaliNumber(centre.hizra_voter || 0));
+                setTextByClass('total_voter', toBengaliNumber(centre.total_voter || 0));
             }
 
             function renderOfficerTable(data) {
@@ -735,6 +780,11 @@
                     const freshData = await loadCentreDataFromSupabase(centreCode);
                     renderCentreInfo(freshData.centre);
                     renderOfficerTable(freshData);
+                    
+                    // Convert all English numbers to Bengali after data is loaded
+                    setTimeout(() => {
+                        convertAllNumbersToBengali();
+                    }, 100);
                 } catch (error) {
                     console.error('Error loading centre data:', error);
                 }
