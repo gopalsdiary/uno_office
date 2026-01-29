@@ -194,15 +194,15 @@
 					<!-- Dynamic candidate columns will be added here -->
 				</tr>
 				<tr class="gray-bg" id="columnNumbersRow">
-					<td></td>
 					<td>১</td>
 					<td>২</td>
+					<td>৩</td>
 					<!-- Dynamic column numbers will be added here -->
-					<td>৪</td>
 					<td>৫</td>
 					<td>৬</td>
 					<td>৭</td>
 					<td>৮</td>
+					<td>৯</td>
 				</tr>
 			</thead>
 			<tbody id="resultsTableBody">
@@ -396,15 +396,15 @@
 
 			// Update column numbers row
 			const currentNumbers = numbersRow.querySelectorAll('td');
-			// Remove old candidate number columns (between column 2 and column 4)
-			while (currentNumbers.length > 3 && currentNumbers[3].textContent !== '৪') {
+			// Remove old candidate number columns (between column 3 and column 5)
+			while (currentNumbers.length > 3 && currentNumbers[3].textContent !== '৫') {
 				currentNumbers[3].remove();
 			}
 
-			// Insert candidate column numbers after column 2
+			// Insert candidate column numbers after column 3
 			candidates.forEach((candidate, index) => {
 				const td = document.createElement('td');
-				td.textContent = `৩ (${bengaliLetters[index] || index + 1})`;
+				td.textContent = `৪ (${bengaliLetters[index] || index + 1})`;
 				numbersRow.insertBefore(td, currentNumbers[3]);
 			});
 		}
