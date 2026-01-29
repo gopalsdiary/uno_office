@@ -287,14 +287,6 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="officerSearch">নাম বা মোবাইল/ID দিয়ে খুঁজুন</label>
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <select id="searchFilter" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;">
-                                <option value="all">সকল কর্মকর্তা</option>
-                                <option value="presiding">প্রিজাইডিং</option>
-                                <option value="ass_presiding">সহ-প্রিজাইডিং</option>
-                                <option value="polling">পোলিং</option>
-                            </select>
-                        </div>
                         <div style="display: flex; gap: 10px;">
                             <input type="text" id="officerSearch" placeholder="নাম বা মোবাইল/ID লিখুন..." style="flex: 1;" onkeyup="handleSearchKeyup(event)">
                             <button type="button" class="btn btn-primary" onclick="searchOfficers()" style="padding: 12px 20px;">🔍 খুঁজুন</button>
@@ -344,15 +336,7 @@
 
         <!-- Table Section -->
         <div class="table-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-                <h2 style="margin: 0; color: #667eea;">📋 সংরক্ষিত রেকর্ডসমূহ</h2>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('all')" id="filterAll" style="background: #667eea;">সকল</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('presiding')" id="filterPresiding">প্রিজাইডিং</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('ass_presiding')" id="filterAssPresiding">সহ-প্রিজাইডিং</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('polling')" id="filterPolling">পোলিং</button>
-                </div>
-            </div>
+            <h2 style="margin-bottom: 15px; color: #667eea;">📋 সংরক্ষিত রেকর্ডসমূহ</h2>
             <table class="data-table">
                 <thead>
                     <tr>
@@ -389,8 +373,6 @@
         let allOfficers = [];
         let searchResultsData = [];
         let selectedOfficer = null;
-        let currentFilterType = 'all'; // Filter state
-        let allTableData = []; // Store all data for filtering
 
         // Helper function to show status
         function showStatus(message, type = 'info') {
@@ -427,7 +409,6 @@
         // Search officers across all tables (server-side, like postal_ballet)
         async function searchOfficers() {
             const searchTerm = document.getElementById('officerSearch').value.trim();
-            const searchFilter = document.getElementById('searchFilter').value;
             const resultsContainer = document.getElementById('searchResults');
 
             if (!searchTerm) {
@@ -441,66 +422,60 @@
 
             try {
                 // presiding
-                if (searchFilter === 'all' || searchFilter === 'presiding') {
-                    const { data: presidingData, error: presidingError } = await window.supabaseClient
-                        .from('presiding_list')
-                        .select('*')
-                        .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
-                    if (presidingError) throw presidingError;
-                    if (presidingData && presidingData.length) {
-                        presidingData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'presiding_list',
-                                iid: off.presiding_iid,
-                                name: off.presiding_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.presiding_designation || ''
-                            });
+                const { data: presidingData, error: presidingError } = await window.supabaseClient
+                    .from('presiding_list')
+                    .select('*')
+                    .or(`presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (presidingError) throw presidingError;
+                if (presidingData && presidingData.length) {
+                    presidingData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'presiding_list',
+                            iid: off.presiding_iid,
+                            name: off.presiding_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.presiding_designation || ''
                         });
-                    }
+                    });
                 }
 
                 // ass_presiding
-                if (searchFilter === 'all' || searchFilter === 'ass_presiding') {
-                    const { data: assData, error: assError } = await window.supabaseClient
-                        .from('ass_presiding_list')
-                        .select('*')
-                        .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
-                    if (assError) throw assError;
-                    if (assData && assData.length) {
-                        assData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'ass_presiding_list',
-                                iid: off.ass_presiding_iid,
-                                name: off.ass_presiding_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.ass_presiding_designation || ''
-                            });
+                const { data: assData, error: assError } = await window.supabaseClient
+                    .from('ass_presiding_list')
+                    .select('*')
+                    .or(`ass_presiding_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (assError) throw assError;
+                if (assData && assData.length) {
+                    assData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'ass_presiding_list',
+                            iid: off.ass_presiding_iid,
+                            name: off.ass_presiding_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.ass_presiding_designation || ''
                         });
-                    }
+                    });
                 }
 
                 // polling
-                if (searchFilter === 'all' || searchFilter === 'polling') {
-                    const { data: pollData, error: pollError } = await window.supabaseClient
-                        .from('polling_list')
-                        .select('*')
-                        .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
-                    if (pollError) throw pollError;
-                    if (pollData && pollData.length) {
-                        pollData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'polling_list',
-                                iid: off.polling_iid,
-                                name: off.polling_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.polling_designation || ''
-                            });
+                const { data: pollData, error: pollError } = await window.supabaseClient
+                    .from('polling_list')
+                    .select('*')
+                    .or(`polling_name.ilike.%${searchTerm}%,mobile_number.ilike.%${searchTerm}%`);
+                if (pollError) throw pollError;
+                if (pollData && pollData.length) {
+                    pollData.forEach(off => {
+                        searchResultsData.push({
+                            ...off,
+                            table: 'polling_list',
+                            iid: off.polling_iid,
+                            name: off.polling_name,
+                            mobile: off.mobile_number || '',
+                            designation: off.polling_designation || ''
                         });
-                    }
+                    });
                 }
 
                 displaySearchResults();
@@ -778,90 +753,43 @@
 
                 console.log(`✅ Total ${allData.length} records loaded from request_table`);
 
-                // Store all data for filtering
-                allTableData = allData;
+                if (!allData || allData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
+                    return;
+                }
 
-                // Render table with current filter
-                renderTableData();
+                let html = '';
+                allData.forEach((row, index) => {
+                    const date = new Date(row.created_at).toLocaleDateString('bn-BD');
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.officer_name || ''}</td>
+                            <td>${getOfficerTypeLabel(row.officer_table_name)}</td>
+                            <td>${row.vote_centre_code || ''}</td>
+                            <td>${row.vote_centre_name || ''}</td>
+                            <td>${(row.request_comment && row.request_comment.length>100) ? row.request_comment.substring(0,100) + '...' : (row.request_comment || '')}</td>
+                            <td>${date}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn btn-primary btn-sm" onclick="editRecord(${row.request_id})">
+                                        ✏️ সম্পাদনা
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteRecord(${row.request_id})">
+                                        🗑️ মুছুন
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
 
             } catch (error) {
                 console.error('Error loading table data:', error);
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
             }
-        }
-
-        // Render table data based on current filter
-        function renderTableData() {
-            const tbody = document.getElementById('dataTableBody');
-
-            // Filter data based on current filter type
-            let filteredData = allTableData;
-            if (currentFilterType !== 'all') {
-                filteredData = allTableData.filter(row => row.officer_table_name === currentFilterType);
-            }
-
-            if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
-                return;
-            }
-
-            let html = '';
-            filteredData.forEach((row, index) => {
-                const date = new Date(row.created_at).toLocaleDateString('bn-BD');
-                html += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${row.officer_name || ''}</td>
-                        <td>${getOfficerTypeLabel(row.officer_table_name)}</td>
-                        <td>${row.vote_centre_code || ''}</td>
-                        <td>${row.vote_centre_name || ''}</td>
-                        <td>${(row.request_comment && row.request_comment.length>100) ? row.request_comment.substring(0,100) + '...' : (row.request_comment || '')}</td>
-                        <td>${date}</td>
-                        <td>
-                            <div class="action-btns">
-                                <button class="btn btn-primary btn-sm" onclick="editRecord(${row.request_id})">
-                                    ✏️ সম্পাদনা
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteRecord(${row.request_id})">
-                                    🗑️ মুছুন
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = html;
-        }
-
-        // Filter by officer type
-        function filterByType(type) {
-            currentFilterType = type;
-
-            // Update button styles
-            const buttons = ['filterAll', 'filterPresiding', 'filterAssPresiding', 'filterPolling'];
-            buttons.forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                if (btn) {
-                    btn.style.background = '#cbd5e1';
-                    btn.style.opacity = '0.8';
-                }
-            });
-
-            // Highlight active filter button
-            let activeButtonId = 'filterAll';
-            if (type === 'presiding') activeButtonId = 'filterPresiding';
-            else if (type === 'ass_presiding') activeButtonId = 'filterAssPresiding';
-            else if (type === 'polling') activeButtonId = 'filterPolling';
-
-            const activeBtn = document.getElementById(activeButtonId);
-            if (activeBtn) {
-                activeBtn.style.background = '#667eea';
-                activeBtn.style.opacity = '1';
-            }
-
-            // Re-render table with filter
-            renderTableData();
         }
 
         // Edit record
