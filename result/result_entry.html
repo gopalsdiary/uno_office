@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Entry - Election Result Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+            overflow: hidden;
+            border: 1px solid #eef2f7;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #0b1220;
+            padding: 24px 30px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 6px;
+            text-shadow: none;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #475569;
+            margin: 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .search-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,0.12);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16,185,129,0.12);
+        }
+
+        .btn-info {
+            background: #06b6d4;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(6,182,212,0.12);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(245,158,11,0.12);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #f8fafc;
+            color: #0b1220;
+        }
+
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+            color: #374151;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eef2f7;
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+            color: #0f172a;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            background: #fff;
+            color: #0b1220;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #eef2f7;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+        }
+
+        .stat-item h3 {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+        }
+
+        .stat-item p {
+            opacity: 0.9;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .candidate-symbol {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3b82f6;
+            font-size: 1.1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            background: #fff;
+            border: 1px dashed #e6eef7;
+            border-radius: 8px;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .table-container {
+                font-size: 0.85em;
+            }
+
+            thead th,
+            tbody td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ Result Entry System</h1>
+            <p>Election Result Entry and Management System</p>
+        </div>
+
+        <div class="content">
+            <!-- Statistics Cards -->
+            <div class="stats-card">
+                <div class="stat-item">
+                    <h3 id="totalEntries">0</h3>
+                    <p>Total Entries</p>
+                </div>
+                <div class="stat-item">
+                    <h3 id="totalVotes">0</h3>
+                    <p>Total Votes</p>
+                </div>
+                <div class="stat-item">
+                    <h3 id="totalCentres">0</h3>
+                    <p>Total Centres</p>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="form-group">
+                    <label for="searchCentre">Search Centre</label>
+                    <input type="text" id="searchCentre" placeholder="Enter centre code or name...">
+                </div>
+                <div class="form-group">
+                    <label for="filterStatus">Status</label>
+                    <select id="filterStatus">
+                        <option value="">All</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="searchResults()">
+                    🔍 Search
+                </button>
+                <button class="btn btn-success" onclick="showAddNewForm()">
+                    ➕ New Entry
+                </button>
+            </div>
+
+            <!-- Table Section -->
+            <div class="table-container">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th id="thCentreCode" style="cursor: pointer; user-select: none;" onclick="toggleSort('vote_centre_code')">Centre Code <span id="centreSortIndicator">▲</span></th>
+                            <th>Centre Name</th>
+                            <th>Valid Votes</th>
+                            <th>Invalid Votes</th>
+                            <th>Tendered Votes</th>
+                            <th>Total Votes</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loadingState" class="loading" style="display: none;">
+                ⏳ Loading...
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3>No data found</h3>
+                <p>No data found. Please add a new entry.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // Initialize Supabase client (using project values)
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        function isValidUrl(u) {
+            try { const url = new URL(u); return url.protocol === 'http:' || url.protocol === 'https:'; } catch (e) { return false; }
+        }
+
+        if (isValidUrl(SUPABASE_URL) && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                // Expose to non-module scripts (authentication.js expects window.supabase.createClient and window.supabaseClient)
+                window.supabase = window.supabase || {};
+                window.supabase.createClient = createClient;
+                window.supabaseClient = supabase;
+                // Keep window keys in sync
+                window.SUPABASE_KEY = window.SUPABASE_KEY || SUPABASE_KEY;
+                window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || SUPABASE_KEY;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+                supabase = null;
+            }
+        } else {
+            console.warn('Supabase not configured. Set SUPABASE_URL and SUPABASE_KEY on window or replace placeholders.');
+        }
+
+        // Load results on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadResults();
+        });
+
+        // Sorting state (default: sort by centre code ascending)
+        window.currentSort = { field: 'vote_centre_code', order: 'asc' };
+
+        // Sort helper: returns sorted array (does not mutate original input)
+        function sortData(data) {
+            const sorted = [...(data || [])];
+            const field = window.currentSort.field || 'vote_centre_code';
+            const order = window.currentSort.order === 'desc' ? -1 : 1;
+
+            sorted.sort((a, b) => {
+                const va = a[field] == null ? '' : String(a[field]).trim();
+                const vb = b[field] == null ? '' : String(b[field]).trim();
+
+                // Try numeric compare first
+                const na = parseFloat(va.replace(/[^0-9.-]/g, ''));
+                const nb = parseFloat(vb.replace(/[^0-9.-]/g, ''));
+                if (!isNaN(na) && !isNaN(nb)) {
+                    return (na - nb) * order;
+                }
+
+                return va.localeCompare(vb, undefined, { numeric: true }) * order;
+            });
+
+            // Update UI indicator
+            const indicator = document.getElementById('centreSortIndicator');
+            if (indicator) indicator.textContent = window.currentSort.order === 'desc' ? '▼' : '▲';
+
+            return sorted;
+        }
+
+        // Toggle sort order for given field
+        function toggleSort(field) {
+            if (window.currentSort.field === field) {
+                window.currentSort.order = window.currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                window.currentSort.field = field;
+                window.currentSort.order = 'asc';
+            }
+
+            // Re-render current table using the active data source
+            // Try to get currently displayed rows, otherwise reload
+            try {
+                const tableBody = document.getElementById('resultsTableBody');
+                const rows = [...tableBody.querySelectorAll('tr')];
+                // If there are rendered rows, just reload data to ensure proper sorting
+                loadResults();
+            } catch (e) {
+                loadResults();
+            }
+        }
+
+        // Load results from database
+        async function loadResults() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('resultsTableBody');
+
+            loadingState.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            if (!supabase) {
+                console.warn('Supabase client not initialized. Skipping loadResults.');
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h3').textContent = 'Supabase not configured';
+                emptyState.querySelector('p').textContent = 'Please provide SUPABASE_URL and SUPABASE_KEY in authentication.js or via window variables.';
+                return;
+            }
+
+            try {
+                // Fetch results and centres separately (no FK relationship exists)
+                const { data: resultsOnly, error: err2 } = await supabase
+                    .from('election_result')
+                    .select('*')
+                    .order('result_iid', { ascending: false });
+                
+                if (err2) throw err2;
+
+                // Fetch centre information separately
+                const centreIds = [...new Set((resultsOnly || []).map(r => r.vote_centre_iid).filter(Boolean))];
+                let centres = [];
+                if (centreIds.length) {
+                    const { data: centreRows, error: err3 } = await supabase
+                        .from('vote_centre')
+                        .select('vote_centre_iid, vote_centre_name, vote_centre_code')
+                        .in('vote_centre_iid', centreIds);
+                    if (err3) {
+                        console.warn('Error fetching centres:', err3);
+                    }
+                    centres = centreRows || [];
+                }
+
+                // Merge centre data with results
+                const centreMap = new Map((centres || []).map(c => [
+                    c.vote_centre_iid, 
+                    { 
+                        centre_name: c.vote_centre_name, 
+                        centre_code: c.vote_centre_code 
+                    }
+                ]));
+                
+                const data = (resultsOnly || []).map(r => {
+                    const centre = centreMap.get(r.vote_centre_iid) || null;
+                    return { 
+                        ...r, 
+                        vote_centre: centre,
+                        // Use vote_centre_code from vote_centre table if available
+                        vote_centre_code: (centre && centre.centre_code) || r.vote_centre_code || 'N/A'
+                    };
+                });
+
+                loadingState.style.display = 'none';
+
+                if (!data || data.length === 0) {
+                    emptyState.style.display = 'block';
+                    tableBody.innerHTML = '';
+                    updateStats(0, 0, 0);
+                    return;
+                }
+
+                // Sort data by current sort settings (default: centre code ascending)
+                const sortedData = sortData(data);
+
+                // Render table rows
+                renderTableRows(sortedData);
+                
+                // Update statistics
+                const totalVotes = sortedData.reduce((sum, item) => {
+                    return sum + (parseFloat(item.valid_counted_vote) || 0) + (parseFloat(item.invalid_counted_vote) || 0);
+                }, 0);
+                const uniqueCentres = new Set(data.map(item => item.vote_centre_code)).size;
+                updateStats(data.length, totalVotes, uniqueCentres);
+
+            } catch (error) {
+                console.error('Error loading results:', error);
+                loadingState.style.display = 'none';
+                alert('Error loading data: ' + error.message);
+            }
+        }
+
+        // Render table rows
+        function renderTableRows(data) {
+            const tableBody = document.getElementById('resultsTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const validVotes = parseFloat(item.valid_counted_vote) || 0;
+                const invalidVotes = parseFloat(item.invalid_counted_vote) || 0;
+                const totalVotes = validVotes + invalidVotes;
+                const centreName = item.vote_centre?.centre_name || 'N/A';
+                const status = totalVotes > 0 ? 'completed' : 'pending';
+
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.vote_centre_code || 'N/A'}</strong></td>
+                        <td>${centreName}</td>
+                        <td>${validVotes.toLocaleString()}</td>
+                        <td>${invalidVotes.toLocaleString()}</td>
+                        <td>${item.tenderd_counted_vote || '0'}</td>
+                        <td><strong>${totalVotes.toLocaleString()}</strong></td>
+                        <td>
+                            <span class="badge ${status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                                ${status === 'completed' ? '✓ Completed' : '⏳ Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-info" onclick="viewResult(${item.result_iid})">
+                                    👁️ View
+                                </button>
+                                <button class="btn btn-warning" onclick="editResult(${item.result_iid})">
+                                    ✏️ Edit
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Update statistics
+        function updateStats(entries, votes, centres) {
+            document.getElementById('totalEntries').textContent = entries;
+            document.getElementById('totalVotes').textContent = votes.toLocaleString();
+            document.getElementById('totalCentres').textContent = centres;
+        }
+
+        // Search results
+        window.searchResults = async function() {
+            const searchValue = document.getElementById('searchCentre').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const loadingState = document.getElementById('loadingState');
+            loadingState.style.display = 'block';
+
+            if (!supabase) {
+                loadingState.style.display = 'none';
+                alert('Supabase not configured. Search disabled.');
+                return;
+            }
+
+            try { 
+                // Fetch results (we'll merge centre info separately to handle missing FK relationships)
+                let query = supabase
+                    .from('election_result')
+                    .select('*');
+
+                // Apply search filter
+                if (searchValue) {
+                    query = query.or(`vote_centre_code.ilike.%${searchValue}%`);
+                }
+
+                const { data, error } = await query.order('result_iid', { ascending: false });
+
+                if (error) throw error;
+
+                // Merge centre info if available
+                const centreIds = [...new Set((data || []).map(r => r.vote_centre_iid).filter(Boolean))];
+                let centres = [];
+                if (centreIds.length) {
+                    const { data: centreRows, error: centreErr } = await supabase
+                        .from('vote_centre')
+                        .select('vote_centre_iid, vote_centre_name, vote_centre_code')
+                        .in('vote_centre_iid', centreIds);
+                    if (centreErr) console.warn('Error fetching centres:', centreErr);
+                    centres = centreRows || [];
+                }
+                const centreMap = new Map((centres || []).map(c => [c.vote_centre_iid, { centre_name: c.vote_centre_name, centre_code: c.vote_centre_code }]));
+                const mergedData = (data || []).map(r => {
+                    const centre = centreMap.get(r.vote_centre_iid) || null;
+                    return { ...r, vote_centre: centre, vote_centre_code: r.vote_centre_code || (centre && centre.centre_code) || r.vote_centre_code };
+                });
+
+                loadingState.style.display = 'none';
+
+                // Apply status filter
+                let filteredData = mergedData;
+                if (statusFilter) {
+                    filteredData = mergedData.filter(item => {
+                        const totalVotes = (parseFloat(item.valid_counted_vote) || 0) + (parseFloat(item.invalid_counted_vote) || 0);
+                        if (statusFilter === 'completed') return totalVotes > 0;
+                        if (statusFilter === 'pending') return totalVotes === 0;
+                        return true;
+                    });
+                }
+
+                if (filteredData.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('resultsTableBody').innerHTML = '';
+                } else {
+                    document.getElementById('emptyState').style.display = 'none';
+                    const sortedFiltered = sortData(filteredData);
+                    renderTableRows(sortedFiltered);
+                }
+
+            } catch (error) {
+                console.error('Error searching results:', error);
+                loadingState.style.display = 'none';
+                alert('Error searching data: ' + error.message);
+            }
+        };
+
+        // View result details
+        window.viewResult = function(resultId) {
+            // Redirect to result view page
+            window.location.href = `result_view.html?id=${resultId}`;
+        };
+
+        // Edit result
+        window.editResult = function(resultId) {
+            // Redirect to edit page or open modal
+            window.location.href = `result_edit.html?id=${resultId}`;
+        };
+
+        // Show add new form
+        window.showAddNewForm = function() {
+            // Redirect to add new page
+            window.location.href = 'result_add.html';
+        };
+
+        // Export functions for external use
+        window.loadResults = loadResults;
+    </script>
+</body>
+</html>

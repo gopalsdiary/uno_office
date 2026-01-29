@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Result - Election Result Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+            overflow: hidden;
+            border: 1px solid #eef2f7;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #0b1220;
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        .btn-back {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #475569;
+        }
+
+        .btn-edit {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #d97706;
+        }
+
+        .btn-print {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #2563eb;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #3b82f6;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #fcc;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #0b1220;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .centre-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #3b82f6;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #0b1220;
+        }
+
+        .candidates-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .candidate-card {
+            background: #fff;
+            border: 2px solid #eef2f7;
+            border-radius: 10px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .candidate-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.08);
+        }
+
+        .candidate-symbol {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 2px solid #eef2f7;
+            background: #f8fafc;
+        }
+
+        .candidate-details {
+            flex: 1;
+        }
+
+        .candidate-details h4 {
+            margin: 0 0 8px 0;
+            color: #0b1220;
+            font-size: 1.1em;
+        }
+
+        .candidate-details .party {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .candidate-details .symbol-name {
+            color: #3b82f6;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .vote-badge {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 15px 25px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .vote-badge label {
+            display: block;
+            font-size: 0.75em;
+            color: #64748b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .vote-badge .vote-count {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border: 2px solid #eef2f7;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card.highlight {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-color: #3b82f6;
+        }
+
+        .summary-card label {
+            display: block;
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .summary-card .count {
+            font-size: 2em;
+            font-weight: 700;
+            color: #0b1220;
+        }
+
+        .summary-card.highlight .count {
+            color: #3b82f6;
+            font-size: 2.5em;
+        }
+
+        .comment-box {
+            background: #fffbeb;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .comment-box h4 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+            font-size: 1em;
+        }
+
+        .comment-box p {
+            margin: 0;
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .header-actions,
+            .btn {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .candidate-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .vote-badge {
+                width: 100%;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👁️ View Result Entry</h1>
+            <div class="header-actions">
+                <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
+                <a href="#" id="editLink" class="btn btn-edit">✏️ Edit</a>
+                <a href="result_entry.html" class="btn btn-back">← Back to List</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="loadingState" class="loading">
+                ⏳ Loading result data...
+            </div>
+
+            <div id="errorState" class="error-message" style="display: none;">
+                <strong>Error:</strong> <span id="errorMessage"></span>
+            </div>
+
+            <div id="resultView" style="display: none;">
+                <!-- Centre Information -->
+                <div class="centre-card">
+                    <h3 style="margin: 0 0 20px 0; color: #0b1220;">📍 Vote Centre Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Result ID</label>
+                            <div class="value" id="displayResultId">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Centre Code</label>
+                            <div class="value" id="displayCentreCode">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Centre Name</label>
+                            <div class="value" id="displayCentreName">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Candidates Section -->
+                <div class="section">
+                    <div class="section-title">
+                        🗳️ Candidate Votes
+                    </div>
+                    <div class="candidates-list" id="candidatesList">
+                        <!-- Candidates will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Vote Summary -->
+                <div class="section">
+                    <div class="section-title">
+                        📊 Vote Summary
+                    </div>
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <label>Valid Votes</label>
+                            <div class="count" id="validVotesDisplay">0</div>
+                        </div>
+                        <div class="summary-card">
+                            <label>Invalid Votes</label>
+                            <div class="count" id="invalidVotesDisplay">0</div>
+                        </div>
+                        <div class="summary-card">
+                            <label>Tendered Votes</label>
+                            <div class="count" id="tenderedVotesDisplay">0</div>
+                        </div>
+                        <div class="summary-card highlight">
+                            <label>Total Counted Votes</label>
+                            <div class="count" id="totalVotesDisplay">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Comments -->
+                    <div id="commentsSection" style="display: none;">
+                        <div class="comment-box">
+                            <h4>💬 Comments</h4>
+                            <p id="commentsText"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // Initialize Supabase
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+            }
+        }
+
+        // Get result ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const resultId = urlParams.get('id');
+
+        if (!resultId) {
+            showError('No result ID provided in URL');
+        } else {
+            // Set edit link
+            document.getElementById('editLink').href = `result_edit.html?id=${resultId}`;
+            loadResultData(resultId);
+        }
+
+        // Load result data
+        async function loadResultData(resultId) {
+            const loadingState = document.getElementById('loadingState');
+            const resultView = document.getElementById('resultView');
+
+            if (!supabase) {
+                showError('Supabase not configured');
+                return;
+            }
+
+            try {
+                // Fetch result data
+                const { data: result, error: resultError } = await supabase
+                    .from('election_result')
+                    .select('*')
+                    .eq('result_iid', resultId)
+                    .single();
+
+                if (resultError) throw resultError;
+                if (!result) throw new Error('Result not found');
+
+                // Fetch centre information
+                let centreName = 'N/A';
+                let centreCode = result.vote_centre_code || 'N/A';
+
+                if (result.vote_centre_iid) {
+                    const { data: centre, error: centreError } = await supabase
+                        .from('vote_centre')
+                        .select('vote_centre_name, vote_centre_code')
+                        .eq('vote_centre_iid', result.vote_centre_iid)
+                        .single();
+
+                    if (!centreError && centre) {
+                        centreName = centre.vote_centre_name || 'N/A';
+                        centreCode = centre.vote_centre_code || centreCode;
+                    }
+                }
+
+                // Fetch candidates
+                const { data: candidateData, error: candidateError } = await supabase
+                    .from('candidate_db')
+                    .select('*')
+                    .order('candidate_identity');
+
+                if (candidateError) throw candidateError;
+                const candidates = candidateData || [];
+
+                // Display data
+                displayResult(result, centreName, centreCode, candidates);
+
+                loadingState.style.display = 'none';
+                resultView.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading result:', error);
+                showError(error.message);
+            }
+        }
+
+        // Display result data
+        function displayResult(result, centreName, centreCode, candidates) {
+            // Centre info
+            document.getElementById('displayResultId').textContent = result.result_iid;
+            document.getElementById('displayCentreCode').textContent = centreCode;
+            document.getElementById('displayCentreName').textContent = centreName;
+
+            // Candidates list
+            const candidatesList = document.getElementById('candidatesList');
+            candidatesList.innerHTML = '';
+
+            let hasCandidateVotes = false;
+
+            candidates.forEach((candidate, index) => {
+                const candidateNum = index + 1;
+                const voteCount = result[`candidate_${candidateNum}`];
+
+                if (voteCount !== null && voteCount !== undefined) {
+                    hasCandidateVotes = true;
+                    const candidateHtml = `
+                        <div class="candidate-card">
+                            <img src="${candidate.candidate_sign_url || 'https://via.placeholder.com/80?text=No+Image'}" 
+                                 alt="${candidate.candidate_sign_name || 'Symbol'}" 
+                                 class="candidate-symbol"
+                                 onerror="this.src='https://via.placeholder.com/80?text=No+Image'">
+                            <div class="candidate-details">
+                                <h4>${candidate.candidate_name || 'Candidate ' + candidateNum}</h4>
+                                <div class="party">${candidate.candidate_party || '-'}</div>
+                                <div class="symbol-name">🔰 ${candidate.candidate_sign_name || '-'}</div>
+                            </div>
+                            <div class="vote-badge">
+                                <label>Votes</label>
+                                <div class="vote-count">${parseFloat(voteCount).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                    candidatesList.innerHTML += candidateHtml;
+                }
+            });
+
+            if (!hasCandidateVotes) {
+                candidatesList.innerHTML = '<div class="no-data">No candidate votes recorded</div>';
+            }
+
+            // Vote summary
+            const validVotes = parseFloat(result.valid_counted_vote) || 0;
+            const invalidVotes = parseFloat(result.invalid_counted_vote) || 0;
+            const tenderedVotes = parseFloat(result.tenderd_counted_vote) || 0;
+            const totalVotes = validVotes + invalidVotes;
+
+            document.getElementById('validVotesDisplay').textContent = validVotes.toLocaleString();
+            document.getElementById('invalidVotesDisplay').textContent = invalidVotes.toLocaleString();
+            document.getElementById('tenderedVotesDisplay').textContent = tenderedVotes.toLocaleString();
+            document.getElementById('totalVotesDisplay').textContent = totalVotes.toLocaleString();
+
+            // Comments
+            if (result.s_comment) {
+                document.getElementById('commentsSection').style.display = 'block';
+                document.getElementById('commentsText').textContent = result.s_comment;
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+    </script>
+</body>
+</html>

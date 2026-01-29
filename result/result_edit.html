@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Result - Election Result Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+            overflow: hidden;
+            border: 1px solid #eef2f7;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #0b1220;
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .btn-back {
+            background: #64748b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #475569;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #3b82f6;
+            font-size: 1.2em;
+        }
+
+        .centre-info {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #eef2f7;
+        }
+
+        .centre-info h3 {
+            margin-bottom: 15px;
+            color: #0b1220;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-item .value {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: #0b1220;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        .candidates-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .candidate-item {
+            background: #fff;
+            border: 2px solid #eef2f7;
+            border-radius: 10px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 80px 1fr 150px;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .candidate-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.08);
+        }
+
+        .candidate-symbol {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 2px solid #eef2f7;
+            background: #f8fafc;
+        }
+
+        .candidate-info-text {
+            flex: 1;
+        }
+
+        .candidate-info-text h4 {
+            margin: 0 0 5px 0;
+            color: #0b1220;
+            font-size: 1.1em;
+        }
+
+        .candidate-info-text .party {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .candidate-info-text .symbol-name {
+            color: #3b82f6;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .vote-input {
+            width: 150px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+
+        .form-group input[readonly] {
+            background: #f8fafc;
+            cursor: not-allowed;
+        }
+
+        .votes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .total-display {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .total-display h3 {
+            margin-bottom: 10px;
+            color: #0b1220;
+        }
+
+        .total-display .total-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 2px solid #eef2f7;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            box-shadow: 0 8px 20px rgba(59,130,246,0.12);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fcc;
+        }
+
+        @media (max-width: 768px) {
+            .candidate-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .vote-input {
+                width: 100%;
+            }
+
+            .votes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✏️ Edit Result Entry</h1>
+            <a href="result_entry.html" class="btn-back">← Back to List</a>
+        </div>
+
+        <div class="content">
+            <div id="loadingState" class="loading">
+                ⏳ Loading result data...
+            </div>
+
+            <div id="errorState" class="error-message" style="display: none;">
+                <strong>Error:</strong> <span id="errorMessage"></span>
+            </div>
+
+            <form id="editForm" style="display: none;">
+                <!-- Centre Information -->
+                <div class="centre-info">
+                    <h3>📍 Vote Centre Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Centre Code</label>
+                            <div class="value" id="displayCentreCode">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Centre Name</label>
+                            <div class="value" id="displayCentreName">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Candidates Section -->
+                <div class="form-section">
+                    <h3>🗳️ Candidate Votes</h3>
+                    <div class="candidates-grid" id="candidatesContainer">
+                        <!-- Candidates will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Vote Counts -->
+                <div class="form-section">
+                    <h3>📊 Vote Summary</h3>
+                    <div class="votes-grid">
+                        <div class="form-group">
+                            <label for="valid_votes">Valid Votes</label>
+                            <input type="number" id="valid_votes" name="valid_counted_vote" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invalid_votes">Invalid Votes</label>
+                            <input type="number" id="invalid_votes" name="invalid_counted_vote" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tendered_votes">Tendered Votes</label>
+                            <input type="number" id="tendered_votes" name="tenderd_counted_vote" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Total Display -->
+                    <div class="total-display">
+                        <h3>Total Counted Votes</h3>
+                        <div class="total-value" id="totalCountedVotes">0</div>
+                        <p style="color: #64748b; margin-top: 10px; font-size: 0.9em;">
+                            (Valid Votes + Invalid Votes)
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="s_comment">Comments (Optional)</label>
+                        <textarea id="s_comment" name="s_comment" rows="3" placeholder="Enter any comments..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='result_entry.html'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // Initialize Supabase
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+            }
+        }
+
+        let currentResultId = null;
+        let currentResult = null;
+        let candidates = [];
+
+        // Get result ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        currentResultId = urlParams.get('id');
+
+        if (!currentResultId) {
+            showError('No result ID provided');
+        } else {
+            loadResultData();
+        }
+
+        // Load result data
+        async function loadResultData() {
+            const loadingState = document.getElementById('loadingState');
+            const editForm = document.getElementById('editForm');
+
+            if (!supabase) {
+                showError('Supabase not configured');
+                return;
+            }
+
+            try {
+                // Fetch result data
+                const { data: result, error: resultError } = await supabase
+                    .from('election_result')
+                    .select('*')
+                    .eq('result_iid', currentResultId)
+                    .single();
+
+                if (resultError) throw resultError;
+                if (!result) throw new Error('Result not found');
+
+                currentResult = result;
+
+                // Fetch centre information
+                let centreName = 'N/A';
+                let centreCode = result.vote_centre_code || 'N/A';
+
+                if (result.vote_centre_iid) {
+                    const { data: centre, error: centreError } = await supabase
+                        .from('vote_centre')
+                        .select('vote_centre_name, vote_centre_code')
+                        .eq('vote_centre_iid', result.vote_centre_iid)
+                        .single();
+
+                    if (!centreError && centre) {
+                        centreName = centre.vote_centre_name || 'N/A';
+                        centreCode = centre.vote_centre_code || centreCode;
+                    }
+                }
+
+                // Fetch candidates
+                const { data: candidateData, error: candidateError } = await supabase
+                    .from('candidate_db')
+                    .select('*')
+                    .order('candidate_identity');
+
+                if (candidateError) throw candidateError;
+                candidates = candidateData || [];
+
+                // Display data
+                document.getElementById('displayCentreCode').textContent = centreCode;
+                document.getElementById('displayCentreName').textContent = centreName;
+
+                // Populate form
+                populateForm(result);
+
+                loadingState.style.display = 'none';
+                editForm.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading result:', error);
+                showError(error.message);
+            }
+        }
+
+        // Populate form with existing data
+        function populateForm(result) {
+            // Render candidates with vote inputs
+            const container = document.getElementById('candidatesContainer');
+            container.innerHTML = '';
+
+            candidates.forEach((candidate, index) => {
+                const candidateNum = index + 1;
+                const voteValue = result[`candidate_${candidateNum}`] || 0;
+
+                const candidateHtml = `
+                    <div class="candidate-item">
+                        <img src="${candidate.candidate_sign_url || 'https://via.placeholder.com/80?text=No+Image'}" 
+                             alt="${candidate.candidate_sign_name || 'Symbol'}" 
+                             class="candidate-symbol"
+                             onerror="this.src='https://via.placeholder.com/80?text=No+Image'">
+                        <div class="candidate-info-text">
+                            <h4>${candidate.candidate_name || 'Candidate ' + candidateNum}</h4>
+                            <div class="party">${candidate.candidate_party || '-'}</div>
+                            <div class="symbol-name">🔰 ${candidate.candidate_sign_name || '-'}</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="candidate_${candidateNum}">Votes</label>
+                            <input type="number" 
+                                   id="candidate_${candidateNum}" 
+                                   name="candidate_${candidateNum}" 
+                                   class="vote-input" 
+                                   min="0" 
+                                   value="${voteValue}"
+                                   placeholder="0">
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += candidateHtml;
+            });
+
+            // Fill other fields
+            document.getElementById('valid_votes').value = result.valid_counted_vote || 0;
+            document.getElementById('invalid_votes').value = result.invalid_counted_vote || 0;
+            document.getElementById('tendered_votes').value = result.tenderd_counted_vote || 0;
+            document.getElementById('s_comment').value = result.s_comment || '';
+
+            // Calculate and display total
+            updateTotal();
+
+            // Add event listeners for auto-calculation
+            document.getElementById('valid_votes').addEventListener('input', updateTotal);
+            document.getElementById('invalid_votes').addEventListener('input', updateTotal);
+        }
+
+        // Update total counted votes
+        function updateTotal() {
+            const validVotes = parseFloat(document.getElementById('valid_votes').value) || 0;
+            const invalidVotes = parseFloat(document.getElementById('invalid_votes').value) || 0;
+            const total = validVotes + invalidVotes;
+            document.getElementById('totalCountedVotes').textContent = total.toLocaleString();
+        }
+
+        // Handle form submission
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!supabase || !currentResultId) {
+                alert('Cannot save: Missing data');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            const updateData = {};
+
+            // Collect all candidate votes
+            for (let i = 1; i <= 11; i++) {
+                const value = formData.get(`candidate_${i}`);
+                updateData[`candidate_${i}`] = value ? parseFloat(value) : null;
+            }
+
+            // Add other fields
+            updateData.valid_counted_vote = parseFloat(formData.get('valid_counted_vote')) || 0;
+            updateData.invalid_counted_vote = parseFloat(formData.get('invalid_counted_vote')) || 0;
+            updateData.tenderd_counted_vote = formData.get('tenderd_counted_vote') || null;
+            updateData.s_comment = formData.get('s_comment') || null;
+
+            try {
+                const { error } = await supabase
+                    .from('election_result')
+                    .update(updateData)
+                    .eq('result_iid', currentResultId);
+
+                if (error) throw error;
+
+                alert('✅ Result updated successfully!');
+                window.location.href = 'result_entry.html';
+
+            } catch (error) {
+                console.error('Error updating result:', error);
+                alert('❌ Failed to update result: ' + error.message);
+            }
+        });
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+    </script>
+</body>
+</html>
