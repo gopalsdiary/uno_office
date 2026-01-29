@@ -360,11 +360,19 @@
 					centre: centreMap.get(r.vote_centre_iid) || {}
 				}));
 
+				// Sort by centre code so duplicates stay adjacent
+				const sortedResults = mergedResults.slice().sort((a, b) => {
+					const codeA = Number(a.centre?.vote_centre_code ?? a.vote_centre_code ?? 0);
+					const codeB = Number(b.centre?.vote_centre_code ?? b.vote_centre_code ?? 0);
+					if (codeA !== codeB) return codeA - codeB;
+					return (a.vote_centre_iid ?? 0) - (b.vote_centre_iid ?? 0);
+				});
+
 				// Render dynamic candidate headers
 				renderCandidateHeaders(candidates);
 
 				// Render table rows
-				renderTableData(mergedResults, candidates, agents || []);
+				renderTableData(sortedResults, candidates, agents || []);
 
 			} catch (error) {
 				console.error('Error loading data:', error);
@@ -425,7 +433,7 @@
 				tr.className = 'center';
 
 				const centreName = result.centre?.vote_centre_name || 'N/A';
-				const voteCentreCode = result.centre?.vote_centre_code || '';
+				const voteCentreCode = result.centre?.vote_centre_code ?? result.vote_centre_code ?? '';
 				const totalVoter = parseFloat(result.centre?.total_voter || 0);
 				const validVotes = parseFloat(result.valid_counted_vote || 0);
 				const invalidVotes = parseFloat(result.invalid_counted_vote || 0);

@@ -120,10 +120,26 @@
 			display: inline-block;
 			width: 100%;
 		}
+
+		@media print {
+			.no-print {
+				display: none;
+			}
+		}
 	</style>
 </head>
 
 <body>
+	<div class="no-print" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px; border-radius: 8px;">
+		<h3 style="margin-bottom: 10px;">ফরম-৬ প্রিন্ট প্রিভিউ</h3>
+		<button onclick="window.print()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+			🖨️ প্রিন্ট করুন
+		</button>
+		<button onclick="window.location.href='result_entry.html'" style="padding: 10px 20px; background: #64748b; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 10px;">
+			← ফিরে যান
+		</button>
+	</div>
+
 	<div class="container">
 		<!-- Header -->
 		<div class="header">
@@ -183,26 +199,7 @@
 			</thead>
 			<tbody>
 				<tr>
-					<td>1</td>
-					<td>vote_centre_name</td>
-					<td>total_voter</td>
-					<td>yes_vote</td>
-					<td>no_vote</td>
-					<td>Sum of yes+no</td>
-					<td>rejected_gonovote</td>
-					<td>yes_vote+ no_vote+ rejected_gonovote</td>
-					<td>% of total_voter and 8 no colm</td>
-				</tr>
-				<tr>
-					<td>2</td>
-					<td>vote_centre_name</td>
-					<td>total_voter</td>
-					<td>yes_vote</td>
-					<td>no_vote</td>
-					<td>Sum of yes+no</td>
-					<td>rejected_gonovote</td>
-					<td>yes_vote+no_vote+ rejected_gonovote</td>
-					<td>% of total_voter and 8 no colm</td>
+					<td colspan="9" style="text-align: center;">⏳ ডেটা লোড হচ্ছে...</td>
 				</tr>
 			</tbody>
 			<tfoot>
@@ -242,6 +239,150 @@
 			</div>
 		</div>
 	</div>
+
+	<script type="module">
+		import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+		const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+		const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+		let supabase = null;
+		if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+			try {
+				supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+				window.supabaseClient = supabase;
+			} catch (err) {
+				console.error('Supabase init error:', err);
+			}
+		}
+
+		const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+		function toBengaliNumber(num) {
+			return String(num).split('').map(d => bengaliNumbers[parseInt(d)] || d).join('');
+		}
+
+		async function loadFormData() {
+			if (!supabase) {
+				alert('Supabase not configured');
+				return;
+			}
+
+			try {
+				// Fetch all election results with centre info
+				const { data: results, error: resultsError } = await supabase
+					.from('election_result')
+					.select('*')
+					.order('vote_centre_code', { ascending: true });
+
+				if (resultsError) throw resultsError;
+
+				// Fetch all vote centres
+				const { data: centres, error: centresError } = await supabase
+					.from('vote_centre')
+					.select('*');
+
+				if (centresError) throw centresError;
+
+				// Create centre map
+				const centreMap = new Map(centres.map(c => [c.vote_centre_iid, c]));
+
+				// Merge data
+				const mergedResults = results.map(r => ({
+					...r,
+					centre: centreMap.get(r.vote_centre_iid) || {}
+				}));
+
+				// Sort by centre code so duplicates stay adjacent
+				const sortedResults = mergedResults.slice().sort((a, b) => {
+					const codeA = Number(a.centre?.vote_centre_code ?? a.vote_centre_code ?? 0);
+					const codeB = Number(b.centre?.vote_centre_code ?? b.vote_centre_code ?? 0);
+					if (codeA !== codeB) return codeA - codeB;
+					return (a.vote_centre_iid ?? 0) - (b.vote_centre_iid ?? 0);
+				});
+
+				// Render table rows
+				renderTableData(sortedResults);
+
+			} catch (error) {
+				console.error('Error loading data:', error);
+				const tbody = document.querySelector('.main-table tbody');
+				tbody.innerHTML = `
+					<tr>
+						<td colspan="9" style="color: red; text-align: center;">ত্রুটি: ${error.message}</td>
+					</tr>
+				`;
+			}
+		}
+
+		function renderTableData(results) {
+			const tbody = document.querySelector('.main-table tbody');
+			const tfoot = document.querySelector('.main-table tfoot');
+			tbody.innerHTML = '';
+
+			let totalVoters = 0;
+			let totalYesVotes = 0;
+			let totalNoVotes = 0;
+			let totalValidVotes = 0;
+			let totalRejectedVotes = 0;
+			let totalAllVotes = 0;
+
+			results.forEach((result, index) => {
+				const tr = document.createElement('tr');
+
+				const centreName = result.centre?.vote_centre_name || 'N/A';
+				const voteCentreCode = result.centre?.vote_centre_code ?? result.vote_centre_code ?? '';
+				const totalVoter = parseFloat(result.centre?.total_voter || 0);
+				const yesVote = parseFloat(result.yes_vote || 0);
+				const noVote = parseFloat(result.no_vote || 0);
+				const validVotes = yesVote + noVote;
+				const rejectedVotes = parseFloat(result.rejected_gonovote || 0);
+				const allVotes = validVotes + rejectedVotes;
+
+				const percentage = totalVoter > 0 ? ((allVotes / totalVoter) * 100).toFixed(2) : '0.00';
+
+				totalVoters += totalVoter;
+				totalYesVotes += yesVote;
+				totalNoVotes += noVote;
+				totalValidVotes += validVotes;
+				totalRejectedVotes += rejectedVotes;
+				totalAllVotes += allVotes;
+
+				tr.innerHTML = `
+					<td>${toBengaliNumber(index + 1)}</td>
+					<td style="text-align: left;">${centreName}</td>
+					<td>${toBengaliNumber(totalVoter)}</td>
+					<td>${toBengaliNumber(yesVote)}</td>
+					<td>${toBengaliNumber(noVote)}</td>
+					<td>${toBengaliNumber(validVotes)}</td>
+					<td>${toBengaliNumber(rejectedVotes)}</td>
+					<td>${toBengaliNumber(allVotes)}</td>
+					<td>${toBengaliNumber(percentage)}%</td>
+				`;
+
+				tbody.appendChild(tr);
+			});
+
+			// Update totals row
+			const avgPercentage = totalVoters > 0 ? ((totalAllVotes / totalVoters) * 100).toFixed(2) : '0.00';
+			tfoot.innerHTML = `
+				<tr style="font-weight: bold;">
+					<td colspan="2" style="text-align: right;">মোট:</td>
+					<td>${toBengaliNumber(totalVoters)}</td>
+					<td>${toBengaliNumber(totalYesVotes)}</td>
+					<td>${toBengaliNumber(totalNoVotes)}</td>
+					<td>${toBengaliNumber(totalValidVotes)}</td>
+					<td>${toBengaliNumber(totalRejectedVotes)}</td>
+					<td>${toBengaliNumber(totalAllVotes)}</td>
+					<td>${toBengaliNumber(avgPercentage)}%</td>
+				</tr>
+			`;
+		}
+
+		// Load data on page load
+		window.addEventListener('DOMContentLoaded', loadFormData);
+	</script>
+
 </body>
 
 </html>
