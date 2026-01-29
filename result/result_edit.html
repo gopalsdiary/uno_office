@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Nikosh', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f4f6f8;
             padding: 20px;
             min-height: 100vh;
@@ -526,6 +526,11 @@
                 container.innerHTML += candidateHtml;
             });
 
+            // Add listeners to candidate inputs so their sum updates "Valid Votes"
+            container.querySelectorAll('.vote-input').forEach(el => el.addEventListener('input', updateValidFromCandidates));
+            // Initialize valid votes from candidate sums
+            updateValidFromCandidates();
+
             // Fill other fields
             document.getElementById('valid_votes').value = result.valid_counted_vote || 0;
             document.getElementById('invalid_votes').value = result.invalid_counted_vote || 0;
@@ -546,6 +551,19 @@
             const invalidVotes = parseFloat(document.getElementById('invalid_votes').value) || 0;
             const total = validVotes + invalidVotes;
             document.getElementById('totalCountedVotes').textContent = total.toLocaleString();
+        }
+
+        // Sum candidate votes and update the Valid Votes field
+        function updateValidFromCandidates() {
+            const inputs = document.querySelectorAll('#candidatesContainer .vote-input');
+            let sum = 0;
+            inputs.forEach(inp => {
+                const v = parseFloat(inp.value);
+                if (!isNaN(v)) sum += v;
+            });
+            document.getElementById('valid_votes').value = sum;
+            // After updating valid, refresh total
+            updateTotal();
         }
 
         // Handle form submission
