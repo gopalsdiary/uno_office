@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Management - এজেন্ট ম্যানেজমেন্ট</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            color: #0b1220;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .form-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            margin-bottom: 15px;
+            color: #0b1220;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .agents-table {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .agents-table h2 {
+            margin-bottom: 15px;
+            color: #0b1220;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3b82f6;
+            font-size: 1.1em;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 এজেন্ট ম্যানেজমেন্ট (Agent Management)</h1>
+            <a href="result_entry.html" class="btn btn-secondary">← ফিরে যান</a>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Add/Edit Form -->
+        <div class="form-section">
+            <h2 id="formTitle">➕ নতুন এজেন্ট যুক্ত করুন (Add New Agent)</h2>
+            <form id="agentForm">
+                <input type="hidden" id="agent_iid" name="agent_iid">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="agent_name">এজেন্টের নাম (Agent Name) *</label>
+                        <input type="text" id="agent_name" name="agent_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_party">দল/পার্টি (Party)</label>
+                        <input type="text" id="agent_party" name="agent_party">
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_mobile_number">মোবাইল নম্বর (Mobile Number)</label>
+                        <input type="tel" id="agent_mobile_number" name="agent_mobile_number" pattern="[0-9]{11}">
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_nid">এনআইডি (NID)</label>
+                        <input type="text" id="agent_nid" name="agent_nid">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="agent_address">ঠিকানা (Address)</label>
+                        <textarea id="agent_address" name="agent_address" rows="2"></textarea>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="agent_comment">মন্তব্য (Comments)</label>
+                        <textarea id="agent_comment" name="agent_comment" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_status">স্ট্যাটাস (Status)</label>
+                        <select id="agent_status" name="agent_status">
+                            <option value="true">সক্রিয় (Active)</option>
+                            <option value="false">নিষ্ক্রিয় (Inactive)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn" style="display:none;">বাতিল (Cancel)</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">সংরক্ষণ করুন (Save)</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Agents List -->
+        <div class="agents-table">
+            <h2>📜 এজেন্ট তালিকা (Agent List)</h2>
+            <div id="loadingState" class="loading">⏳ ডেটা লোড হচ্ছে...</div>
+            <div id="tableContainer" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>নাম (Name)</th>
+                            <th>দল (Party)</th>
+                            <th>মোবাইল (Mobile)</th>
+                            <th>এনআইডি (NID)</th>
+                            <th>ঠিকানা (Address)</th>
+                            <th>স্ট্যাটাস (Status)</th>
+                            <th>অ্যাকশন (Actions)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentsTableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+            }
+        }
+
+        let editingAgentId = null;
+
+        // Load agents on page load
+        window.addEventListener('DOMContentLoaded', loadAgents);
+
+        // Form submission
+        document.getElementById('agentForm').addEventListener('submit', handleSubmit);
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
+
+        async function loadAgents() {
+            if (!supabase) {
+                showAlert('Supabase not configured', 'error');
+                return;
+            }
+
+            try {
+                const { data: agents, error } = await supabase
+                    .from('agent_name_db')
+                    .select('*')
+                    .order('agent_iid', { ascending: true });
+
+                if (error) throw error;
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('tableContainer').style.display = 'block';
+
+                const tbody = document.getElementById('agentsTableBody');
+                
+                if (!agents || agents.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="no-data">কোন এজেন্ট পাওয়া যায়নি</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = agents.map(agent => `
+                    <tr>
+                        <td>${agent.agent_iid}</td>
+                        <td>${agent.agent_name || '-'}</td>
+                        <td>${agent.agent_party || '-'}</td>
+                        <td>${agent.agent_mobile_number || '-'}</td>
+                        <td>${agent.agent_nid || '-'}</td>
+                        <td>${agent.agent_address || '-'}</td>
+                        <td>
+                            <span class="status-badge ${agent.agent_status ? 'status-active' : 'status-inactive'}">
+                                ${agent.agent_status ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-warning btn-sm" onclick="editAgent(${agent.agent_iid})">✏️ Edit</button>
+                                <button class="btn ${agent.agent_status ? 'btn-secondary' : 'btn-success'} btn-sm" 
+                                        onclick="toggleStatus(${agent.agent_iid}, ${!agent.agent_status})">
+                                    ${agent.agent_status ? '🚫 Disable' : '✅ Enable'}
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteAgent(${agent.agent_iid})">🗑️ Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                showAlert('Error loading agents: ' + error.message, 'error');
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const agentData = {
+                agent_name: formData.get('agent_name'),
+                agent_party: formData.get('agent_party') || null,
+                agent_address: formData.get('agent_address') || null,
+                agent_mobile_number: formData.get('agent_mobile_number') ? parseFloat(formData.get('agent_mobile_number')) : null,
+                agent_nid: formData.get('agent_nid') || null,
+                agent_comment: formData.get('agent_comment') || null,
+                agent_status: formData.get('agent_status') === 'true'
+            };
+
+            try {
+                if (editingAgentId) {
+                    // Update existing agent
+                    const { error } = await supabase
+                        .from('agent_name_db')
+                        .update(agentData)
+                        .eq('agent_iid', editingAgentId);
+
+                    if (error) throw error;
+                    showAlert('এজেন্ট সফলভাবে আপডেট হয়েছে!', 'success');
+                } else {
+                    // Insert new agent
+                    const { error } = await supabase
+                        .from('agent_name_db')
+                        .insert([agentData]);
+
+                    if (error) throw error;
+                    showAlert('নতুন এজেন্ট সফলভাবে যুক্ত হয়েছে!', 'success');
+                }
+
+                // Reset form and reload
+                e.target.reset();
+                cancelEdit();
+                loadAgents();
+
+            } catch (error) {
+                console.error('Error saving agent:', error);
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        window.editAgent = async function(agentId) {
+            try {
+                const { data: agent, error } = await supabase
+                    .from('agent_name_db')
+                    .select('*')
+                    .eq('agent_iid', agentId)
+                    .single();
+
+                if (error) throw error;
+
+                // Populate form
+                document.getElementById('agent_iid').value = agent.agent_iid;
+                document.getElementById('agent_name').value = agent.agent_name || '';
+                document.getElementById('agent_party').value = agent.agent_party || '';
+                document.getElementById('agent_mobile_number').value = agent.agent_mobile_number || '';
+                document.getElementById('agent_nid').value = agent.agent_nid || '';
+                document.getElementById('agent_address').value = agent.agent_address || '';
+                document.getElementById('agent_comment').value = agent.agent_comment || '';
+                document.getElementById('agent_status').value = agent.agent_status ? 'true' : 'false';
+
+                // Update UI
+                editingAgentId = agentId;
+                document.getElementById('formTitle').textContent = '✏️ এজেন্ট সম্পাদনা করুন (Edit Agent)';
+                document.getElementById('submitBtn').textContent = 'আপডেট করুন (Update)';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+
+                // Scroll to form
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error loading agent:', error);
+                showAlert('Error: ' + error.message, 'error');
+            }
+        };
+
+        window.toggleStatus = async function(agentId, newStatus) {
+            if (!confirm(`আপনি কি নিশ্চিত যে এই এজেন্টকে ${newStatus ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করতে চান?`)) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('agent_name_db')
+                    .update({ agent_status: newStatus })
+                    .eq('agent_iid', agentId);
+
+                if (error) throw error;
+
+                showAlert(`এজেন্ট সফলভাবে ${newStatus ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে!`, 'success');
+                loadAgents();
+
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                showAlert('Error: ' + error.message, 'error');
+            }
+        };
+
+        window.deleteAgent = async function(agentId) {
+            if (!confirm('আপনি কি নিশ্চিত যে এই এজেন্টকে মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('agent_name_db')
+                    .delete()
+                    .eq('agent_iid', agentId);
+
+                if (error) throw error;
+
+                showAlert('এজেন্ট সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+                loadAgents();
+
+            } catch (error) {
+                console.error('Error deleting agent:', error);
+                showAlert('Error: ' + error.message, 'error');
+            }
+        };
+
+        function cancelEdit() {
+            editingAgentId = null;
+            document.getElementById('agentForm').reset();
+            document.getElementById('agent_iid').value = '';
+            document.getElementById('formTitle').textContent = '➕ নতুন এজেন্ট যুক্ত করুন (Add New Agent)';
+            document.getElementById('submitBtn').textContent = 'সংরক্ষণ করুন (Save)';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
