@@ -198,8 +198,8 @@
       <table id="data-table" style="display: none;">
         <thead>
           <tr>
-            <th>presiding_iid</th>
-            <th>presiding_name</th>
+            <th>ass_presiding_iid</th>
+            <th>ass_presiding_name</th>
             <th>Extracted Mobile</th>
             <th>Current mobile_number</th>
           </tr>
@@ -274,7 +274,7 @@
 
         // Get total count
         const { count } = await supabaseClient
-          .from('presiding_list')
+          .from('ass_presiding_list')
           .select('*', { count: 'exact', head: true });
         
         totalRecords = count || 0;
@@ -284,9 +284,9 @@
         const end = start + recordsPerPage - 1;
 
         const { data, error } = await supabaseClient
-          .from('presiding_list')
-          .select('presiding_iid, presiding_name, mobile_number')
-          .order('presiding_iid', { ascending: true })
+          .from('ass_presiding_list')
+          .select('ass_presiding_iid, ass_presiding_name, mobile_number')
+          .order('ass_presiding_iid', { ascending: true })
           .range(start, end);
 
         if (error) throw error;
@@ -305,7 +305,7 @@
         allData.forEach(row => {
           const tr = document.createElement('tr');
           
-          const extractedMobile = extractMobileNumber(row.presiding_name);
+          const extractedMobile = extractMobileNumber(row.ass_presiding_name);
           
           // Highlight rows where extracted mobile differs from current
           if (extractedMobile && extractedMobile !== row.mobile_number) {
@@ -313,8 +313,8 @@
           }
           
           tr.innerHTML = `
-            <td>${row.presiding_iid}</td>
-            <td>${row.presiding_name || ''}</td>
+            <td>${row.ass_presiding_iid}</td>
+            <td>${row.ass_presiding_name || ''}</td>
             <td style="font-weight: 600; color: ${extractedMobile ? '#059669' : '#991b1b'};">
               ${extractedMobile || 'Not found'}
             </td>
@@ -360,15 +360,15 @@
         let updatedCount = 0;
 
         for (const row of allData) {
-          const extractedMobile = extractMobileNumber(row.presiding_name);
+          const extractedMobile = extractMobileNumber(row.ass_presiding_name);
           
           // Only update if we found a mobile number and it's different
           if (extractedMobile && extractedMobile !== row.mobile_number) {
             updates.push(
               supabaseClient
-                .from('presiding_list')
+                .from('ass_presiding_list')
                 .update({ mobile_number: extractedMobile })
-                .eq('presiding_iid', row.presiding_iid)
+                .eq('ass_presiding_iid', row.ass_presiding_iid)
             );
             updatedCount++;
           }
