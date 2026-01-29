@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নির্বাচন ফলাফল বোর্ড - Election Result Billboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #0b1220;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .header .election-info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            background: #f0f9ff;
+            padding: 10px 25px;
+            border-radius: 8px;
+            border: 2px solid #3b82f6;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .info-item .value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #0b1220;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auto-refresh label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #fff;
+            font-size: 1.5em;
+        }
+
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .candidate-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .candidate-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #e8a87c); color: #fff; }
+        .rank-other { background: linear-gradient(135deg, #64748b, #94a3b8); }
+
+        .candidate-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .candidate-symbol {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            object-fit: contain;
+            border: 3px solid #e2e8f0;
+            background: #f8fafc;
+            padding: 5px;
+        }
+
+        .candidate-info {
+            flex: 1;
+        }
+
+        .candidate-info h3 {
+            font-size: 1.4em;
+            color: #0b1220;
+            margin-bottom: 5px;
+        }
+
+        .candidate-info .party {
+            color: #64748b;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .candidate-info .symbol-name {
+            color: #3b82f6;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vote-display {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 3px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .vote-display label {
+            display: block;
+            font-size: 0.9em;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .vote-display .vote-count {
+            font-size: 3em;
+            font-weight: 700;
+            color: #0b1220;
+            line-height: 1;
+        }
+
+        .vote-display .bengali-count {
+            font-size: 1.2em;
+            color: #3b82f6;
+            margin-top: 5px;
+        }
+
+        .summary-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+        }
+
+        .summary-section h2 {
+            font-size: 1.8em;
+            color: #0b1220;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e1;
+            text-align: center;
+        }
+
+        .summary-card.highlight {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #fbbf24;
+        }
+
+        .summary-card label {
+            display: block;
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-card .count {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #0b1220;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #fff;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .controls, .btn {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+            .header .election-info {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 নির্বাচন ফলাফল বোর্ড</h1>
+            <p class="subtitle">Election Result Billboard</p>
+            <div class="election-info">
+                <div class="info-item">
+                    <label>নির্বাচনী এলাকা</label>
+                    <div class="value">২৬৬, ফেনী-০২</div>
+                </div>
+                <div class="info-item">
+                    <label>মোট ভোট কেন্দ্র</label>
+                    <div class="value" id="totalCentres">-</div>
+                </div>
+                <div class="info-item">
+                    <label>শেষ আপডেট</label>
+                    <div class="value" id="lastUpdate">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls no-print">
+            <div>
+                <button class="btn btn-primary" onclick="loadResults()">🔄 রিফ্রেশ করুন</button>
+                <button class="btn btn-success" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+                <a href="result_entry.html" class="btn btn-secondary">← ফিরে যান</a>
+            </div>
+            <div class="auto-refresh">
+                <label for="autoRefresh">অটো রিফ্রেশ:</label>
+                <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                <span id="refreshTimer"></span>
+            </div>
+        </div>
+
+        <div id="loadingState" class="loading">⏳ ডেটা লোড হচ্ছে...</div>
+
+        <div id="summarySection" style="display:none;">
+            <div class="summary-section">
+                <h2>📊 সামগ্রিক পরিসংখ্যান</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <label>মোট বৈধ ভোট</label>
+                        <div class="count" id="totalValidVotes">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <label>মোট বাতিল ভোট</label>
+                        <div class="count" id="totalInvalidVotes">0</div>
+                    </div>
+                    <div class="summary-card highlight">
+                        <label>সর্বমোট ভোট</label>
+                        <div class="count" id="grandTotalVotes">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <label>টেন্ডার্ড ভোট</label>
+                        <div class="count" id="totalTenderedVotes">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="candidatesSection" style="display:none;">
+            <div class="candidates-grid" id="candidatesGrid">
+                <!-- Candidate cards will be loaded here -->
+            </div>
+        </div>
+
+        <div id="noDataSection" style="display:none;" class="no-data">
+            কোন ফলাফল পাওয়া যায়নি
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+            }
+        }
+
+        const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+        function toBengaliNumber(num) {
+            return String(num).split('').map(d => bengaliNumbers[parseInt(d)] || d).join('');
+        }
+
+        let autoRefreshInterval = null;
+        let refreshCountdown = 30;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadResults();
+            updateLastUpdate();
+        });
+
+        window.loadResults = async function() {
+            if (!supabase) {
+                alert('Supabase not configured');
+                return;
+            }
+
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('summarySection').style.display = 'none';
+            document.getElementById('candidatesSection').style.display = 'none';
+            document.getElementById('noDataSection').style.display = 'none';
+
+            try {
+                // Fetch candidates
+                const { data: candidates, error: candidateError } = await supabase
+                    .from('candidate_db')
+                    .select('*')
+                    .order('candidate_identity');
+
+                if (candidateError) throw candidateError;
+
+                // Fetch all results
+                const { data: results, error: resultsError } = await supabase
+                    .from('election_result')
+                    .select('*');
+
+                if (resultsError) throw resultsError;
+
+                // Calculate totals for each candidate
+                const candidateTotals = [];
+                let totalValid = 0;
+                let totalInvalid = 0;
+                let totalTendered = 0;
+                let totalCentres = results.length;
+
+                candidates.forEach((candidate, index) => {
+                    const candidateNum = index + 1;
+                    let totalVotes = 0;
+
+                    results.forEach(result => {
+                        const votes = parseFloat(result[`candidate_${candidateNum}`] || 0);
+                        totalVotes += votes;
+                    });
+
+                    candidateTotals.push({
+                        ...candidate,
+                        totalVotes: totalVotes
+                    });
+                });
+
+                // Calculate overall totals
+                results.forEach(result => {
+                    totalValid += parseFloat(result.valid_counted_vote || 0);
+                    totalInvalid += parseFloat(result.invalid_counted_vote || 0);
+                    totalTendered += parseFloat(result.tenderd_counted_vote || 0);
+                });
+
+                // Sort by votes (descending)
+                candidateTotals.sort((a, b) => b.totalVotes - a.totalVotes);
+
+                // Display results
+                displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres);
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('summarySection').style.display = 'block';
+                document.getElementById('candidatesSection').style.display = 'block';
+
+                updateLastUpdate();
+
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('loadingState').innerHTML = `<div style="color: #ef4444;">❌ Error: ${error.message}</div>`;
+            }
+        };
+
+        function displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres) {
+            // Update summary
+            document.getElementById('totalCentres').textContent = toBengaliNumber(totalCentres);
+            document.getElementById('totalValidVotes').textContent = totalValid.toLocaleString();
+            document.getElementById('totalInvalidVotes').textContent = totalInvalid.toLocaleString();
+            document.getElementById('grandTotalVotes').textContent = (totalValid + totalInvalid).toLocaleString();
+            document.getElementById('totalTenderedVotes').textContent = totalTendered.toLocaleString();
+
+            // Display candidates
+            const grid = document.getElementById('candidatesGrid');
+            grid.innerHTML = '';
+
+            if (candidateTotals.length === 0) {
+                document.getElementById('candidatesSection').style.display = 'none';
+                document.getElementById('noDataSection').style.display = 'block';
+                return;
+            }
+
+            candidateTotals.forEach((candidate, index) => {
+                const rank = index + 1;
+                const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+
+                const card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.innerHTML = `
+                    <div class="rank-badge ${rankClass}">#${rank}</div>
+                    <div class="candidate-header">
+                        <img src="${candidate.candidate_sign_url || 'https://via.placeholder.com/100?text=No+Image'}" 
+                             alt="${candidate.candidate_sign_name || 'Symbol'}" 
+                             class="candidate-symbol"
+                             onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                        <div class="candidate-info">
+                            <h3>${candidate.candidate_name || 'প্রার্থী ' + rank}</h3>
+                            <div class="party">${candidate.candidate_party || '-'}</div>
+                            <div class="symbol-name">
+                                <span>🔰</span>
+                                <span>${candidate.candidate_sign_name || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vote-display">
+                        <label>মোট ভোট সংখ্যা</label>
+                        <div class="vote-count">${candidate.totalVotes.toLocaleString()}</div>
+                        <div class="bengali-count">${toBengaliNumber(candidate.totalVotes)}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('lastUpdate').textContent = timeStr;
+        }
+
+        window.toggleAutoRefresh = function() {
+            const checkbox = document.getElementById('autoRefresh');
+            if (checkbox.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        };
+
+        function startAutoRefresh() {
+            refreshCountdown = 30;
+            updateRefreshTimer();
+            
+            autoRefreshInterval = setInterval(() => {
+                refreshCountdown--;
+                updateRefreshTimer();
+                
+                if (refreshCountdown <= 0) {
+                    loadResults();
+                    refreshCountdown = 30;
+                }
+            }, 1000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                document.getElementById('refreshTimer').textContent = '';
+            }
+        }
+
+        function updateRefreshTimer() {
+            const timerEl = document.getElementById('refreshTimer');
+            if (refreshCountdown > 0) {
+                timerEl.textContent = `(${refreshCountdown}s)`;
+            } else {
+                timerEl.textContent = '(Refreshing...)';
+            }
+        }
+    </script>
+</body>
+</html>
+) TABLESPACE pg_default;
