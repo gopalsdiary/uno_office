@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>ফরম-১৮</title>
+	<title>ফরম-১৮ - প্রিজাইডিং অফিসার কর্তৃক সরবরাহকৃত ভোট গণনার ফলাফলের একীভূত বিবরণী</title>
 	<style>
 		@page {
 			size: 8.5in 14in;
@@ -137,10 +137,24 @@
 				display: none;
 			}
 		}
+
+		.left {
+			text-align: left;
+		}
 	</style>
 </head>
 
 <body>
+
+	<div class="no-print" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px; border-radius: 8px;">
+		<h3 style="margin-bottom: 10px;">ফরম-১৮ প্রিন্ট প্রিভিউ</h3>
+		<button onclick="window.print()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+			🖨️ প্রিন্ট করুন
+		</button>
+		<button onclick="window.location.href='result_entry.html'" style="padding: 10px 20px; background: #64748b; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 10px;">
+			← ফিরে যান
+		</button>
+	</div>
 
 	<div class="doc-header">
 		<p class="form-num"><sup>১</sup>ফরম-১৮</p>
@@ -159,119 +173,41 @@
 		</table>
 
 		<!-- Main Results Table -->
-		<table>
+		<table id="mainResultsTable">
 			<thead class="center bold">
 				<tr>
-					<td rowspan="3" style="width: 5%;">ক্রমিক</td>
-					<td rowspan="3" style="width: 25%;">ভোটকেন্দ্রের নাম</td>
-					<td rowspan="3" style="width: 12%;">মোট ভোটার সংখ্যা</td>
-					<td colspan="3">প্রতিদ্বন্দ্বী প্রার্থীর অনুকূলে প্রদত্ত বৈধ ভোটের সংখ্যা (আপত্তিকৃত ভোটসহ)</td>
+					<td rowspan="3" style="width: 5%;">কেন্দ্র কোড</td>
+					<td rowspan="3" style="width: 20%;">ভোটকেন্দ্রের নাম</td>
+					<td rowspan="3" style="width: 8%;">মোট ভোটার সংখ্যা</td>
+					<td id="candidateHeaderColspan" colspan="11">প্রতিদ্বন্দ্বী প্রার্থীর অনুকূলে প্রদত্ত বৈধ ভোটের সংখ্যা (আপত্তিকৃত ভোটসহ)</td>
 					<td colspan="4">প্রত্যেক কেন্দ্রে মোট ভোটের সংখ্যা</td>
-					<td rowspan="3" style="width: 10%;">মন্তব্য</td>
+					<td rowspan="3" style="width: 8%;">মন্তব্য</td>
 				</tr>
 				<tr>
-					<td colspan="3">প্রার্থীর নাম (প্রতীক)</td>
+					<td id="candidateNamesRow" colspan="11">প্রার্থীর নাম (প্রতীক)</td>
 					<td rowspan="2" style="width: 5%;">বৈধ</td>
-					<td rowspan="2" style="width: 8%;">বাতিলকৃত</td>
-					<td rowspan="2" style="width: 6%;">মোট</td>
-					<td rowspan="2" style="width: 8%;">টেন্ডার্ড ভোটের সংখ্যা</td>
+					<td rowspan="2" style="width: 5%;">বাতিলকৃত</td>
+					<td rowspan="2" style="width: 5%;">মোট</td>
+					<td rowspan="2" style="width: 5%;">টেন্ডার্ড ভোটের সংখ্যা</td>
 				</tr>
-				<tr>
-					<td style="width: 7%;">&nbsp;</td>
-					<td style="width: 7%;">&nbsp;</td>
-					<td style="width: 7%;">&nbsp;</td>
+				<tr id="candidateSymbolsRow">
+					<!-- Dynamic candidate columns will be added here -->
 				</tr>
-				<tr class="gray-bg">
+				<tr class="gray-bg" id="columnNumbersRow">
+					<td></td>
 					<td>১</td>
 					<td>২</td>
-					<td>৩</td>
-					<td>৪ (ক)</td>
-					<td>৪ (খ)</td>
-					<td>৪ (গ)</td>
+					<!-- Dynamic column numbers will be added here -->
+					<td>৪</td>
 					<td>৫</td>
 					<td>৬</td>
 					<td>৭</td>
 					<td>৮</td>
-					<td>৯</td>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="resultsTableBody">
 				<tr class="center">
-					<td>১</td>
-					<td class="left">Vote_centre_name</td>
-					<td>Total_voter</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td class="percentage">0.00%</td>
-				</tr>
-				<tr class="center">
-					<td>২</td>
-					<td class="left">Vote_centre_name</td>
-					<td>Total_voter</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td class="percentage">0.00%</td>
-				</tr>
-				<tr class="center">
-					<td>৩</td>
-					<td class="left">Vote_centre_name</td>
-					<td>Total_voter</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td class="percentage">0.00%</td>
-				</tr>
-				<tr class="center">
-					<td>৪</td>
-					<td class="left">Vote_centre_name</td>
-					<td>Total_voter</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td class="percentage">0.00%</td>
-				</tr>
-				<tr class="center">
-					<td>৫</td>
-					<td class="left">Vote_centre_name</td>
-					<td>Total_voter</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td>০</td>
-					<td class="percentage">0.00%</td>
-				</tr>
-				<tr class="bold">
-					<td colspan="2" class="right">সর্বমোট</td>
-					<td class="center">৪০০৬৩১</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center">০</td>
-					<td class="center percentage">0.00%</td>
+					<td colspan="24">⏳ ডেটা লোড হচ্ছে...</td>
 				</tr>
 			</tbody>
 		</table>
@@ -281,16 +217,16 @@
 			<tr>
 				<td style="width: 40%; border: none; border-right: 1px solid #000;" class="bold">ভোট কেন্দ্রসমূহে
 					প্রদত্ত ভোটের মোট সংখ্যা :</td>
-				<td style="border: 1px solid #000;">&nbsp;</td>
+				<td style="border: 1px solid #000;" id="totalCentreVotes">&nbsp;</td>
 			</tr>
 			<tr>
 				<td style="border: none; border-right: 1px solid #000;" class="bold">পোস্টাল ব্যালট পেপারযোগে প্রদত্ত
 					ভোটের মোট সংখ্যা :</td>
-				<td style="border: 1px solid #000;">&nbsp;</td>
+				<td style="border: 1px solid #000;" id="totalPostalVotes">০</td>
 			</tr>
 			<tr>
 				<td style="border: none; border-right: 1px solid #000;" class="bold">সর্বমোট :</td>
-				<td style="border: 1px solid #000;">&nbsp;</td>
+				<td style="border: 1px solid #000;" id="grandTotalVotes">&nbsp;</td>
 			</tr>
 		</table>
 
@@ -334,7 +270,7 @@
 					<td style="width: 25%;">স্বাক্ষর</td>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="candidateSignaturesBody">
 				<tr>
 					<td style="height: 0.3in;">&nbsp;</td>
 					<td>&nbsp;</td>
@@ -353,6 +289,244 @@
 			</tbody>
 		</table>
 	</div>
+
+	<script type="module">
+		import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+		const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+		const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+		let supabase = null;
+		if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+			try {
+				supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+				window.supabaseClient = supabase;
+			} catch (err) {
+				console.error('Supabase init error:', err);
+			}
+		}
+
+		const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+		const bengaliLetters = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ', 'ছ', 'জ', 'ঝ', 'ঞ', 'ট'];
+
+		function toBengaliNumber(num) {
+			return String(num).split('').map(d => bengaliNumbers[parseInt(d)] || d).join('');
+		}
+
+		async function loadFormData() {
+			if (!supabase) {
+				alert('Supabase not configured');
+				return;
+			}
+
+			try {
+				// Fetch candidates
+				const { data: candidates, error: candidateError } = await supabase
+					.from('candidate_db')
+					.select('*')
+					.order('candidate_identity');
+
+				if (candidateError) throw candidateError;
+
+				// Fetch all election results with centre info
+				const { data: results, error: resultsError } = await supabase
+					.from('election_result')
+					.select('*')
+					.order('vote_centre_code', { ascending: true });
+
+				if (resultsError) throw resultsError;
+
+				// Fetch all vote centres
+				const { data: centres, error: centresError } = await supabase
+					.from('vote_centre')
+					.select('*');
+
+				if (centresError) throw centresError;
+
+				// Fetch agents
+				const { data: agents, error: agentsError } = await supabase
+					.from('agent_name_db')
+					.select('*')
+					.eq('agent_status', true);
+
+				if (agentsError) console.warn('Error fetching agents:', agentsError);
+
+				// Create centre map
+				const centreMap = new Map(centres.map(c => [c.vote_centre_iid, c]));
+
+				// Merge data
+				const mergedResults = results.map(r => ({
+					...r,
+					centre: centreMap.get(r.vote_centre_iid) || {}
+				}));
+
+				// Render dynamic candidate headers
+				renderCandidateHeaders(candidates);
+
+				// Render table rows
+				renderTableData(mergedResults, candidates, agents || []);
+
+			} catch (error) {
+				console.error('Error loading data:', error);
+				document.getElementById('resultsTableBody').innerHTML = `
+					<tr class="center">
+						<td colspan="24" style="color: red;">ত্রুটি: ${error.message}</td>
+					</tr>
+				`;
+			}
+		}
+
+		function renderCandidateHeaders(candidates) {
+			const symbolsRow = document.getElementById('candidateSymbolsRow');
+			const numbersRow = document.getElementById('columnNumbersRow');
+			
+			// Update colspan
+			document.getElementById('candidateHeaderColspan').setAttribute('colspan', candidates.length);
+			document.getElementById('candidateNamesRow').setAttribute('colspan', candidates.length);
+
+			// Clear and add candidate symbol columns
+			symbolsRow.innerHTML = '';
+			candidates.forEach((candidate, index) => {
+				const td = document.createElement('td');
+				td.style.width = '4%';
+				td.style.fontSize = '8pt';
+				td.innerHTML = `${candidate.candidate_name || ''}<br>(${candidate.candidate_sign_name || ''})`;
+				symbolsRow.appendChild(td);
+			});
+
+			// Update column numbers row
+			const currentNumbers = numbersRow.querySelectorAll('td');
+			// Remove old candidate number columns (between column 2 and column 4)
+			while (currentNumbers.length > 3 && currentNumbers[3].textContent !== '৪') {
+				currentNumbers[3].remove();
+			}
+
+			// Insert candidate column numbers after column 2
+			candidates.forEach((candidate, index) => {
+				const td = document.createElement('td');
+				td.textContent = `৩ (${bengaliLetters[index] || index + 1})`;
+				numbersRow.insertBefore(td, currentNumbers[3]);
+			});
+		}
+
+		function renderTableData(results, candidates, agents) {
+			const tbody = document.getElementById('resultsTableBody');
+			tbody.innerHTML = '';
+
+			let totalVoters = 0;
+			let totalValid = 0;
+			let totalInvalid = 0;
+			let totalCounted = 0;
+			let totalTendered = 0;
+			const candidateTotals = new Array(candidates.length).fill(0);
+
+			results.forEach((result, index) => {
+				const tr = document.createElement('tr');
+				tr.className = 'center';
+
+				const centreName = result.centre?.vote_centre_name || 'N/A';
+				const voteCentreCode = result.centre?.vote_centre_code || '';
+				const totalVoter = parseFloat(result.centre?.total_voter || 0);
+				const validVotes = parseFloat(result.valid_counted_vote || 0);
+				const invalidVotes = parseFloat(result.invalid_counted_vote || 0);
+				const tenderedVotes = parseFloat(result.tenderd_counted_vote || 0);
+				const totalVotes = validVotes + invalidVotes;
+
+				const percentage = totalVoter > 0 ? ((totalVotes / totalVoter) * 100).toFixed(2) : '0.00';
+
+				totalVoters += totalVoter;
+				totalValid += validVotes;
+				totalInvalid += invalidVotes;
+				totalCounted += totalVotes;
+				totalTendered += tenderedVotes;
+
+				// Centre code from vote_centre table
+				tr.innerHTML += `<td>${voteCentreCode ? toBengaliNumber(voteCentreCode) : ''}</td>`;
+				
+				// Centre name
+				tr.innerHTML += `<td class="left">${centreName}</td>`;
+				
+				// Total voter
+				tr.innerHTML += `<td>${toBengaliNumber(totalVoter)}</td>`;
+
+				// Candidate votes
+				candidates.forEach((candidate, idx) => {
+					const voteCount = parseFloat(result[`candidate_${idx + 1}`] || 0);
+					candidateTotals[idx] += voteCount;
+					tr.innerHTML += `<td>${toBengaliNumber(voteCount)}</td>`;
+				});
+
+				// Valid, Invalid, Total, Tendered
+				tr.innerHTML += `<td>${toBengaliNumber(validVotes)}</td>`;
+				tr.innerHTML += `<td>${toBengaliNumber(invalidVotes)}</td>`;
+				tr.innerHTML += `<td>${toBengaliNumber(totalVotes)}</td>`;
+				tr.innerHTML += `<td>${toBengaliNumber(tenderedVotes)}</td>`;
+
+				// Comment (percentage) shown in Bengali numerals
+				tr.innerHTML += `<td class="percentage">${toBengaliNumber(percentage)}%</td>`;
+
+				tbody.appendChild(tr);
+			});
+
+			// Add total row
+			const totalRow = document.createElement('tr');
+			totalRow.className = 'bold';
+			totalRow.innerHTML = `<td colspan="2" class="right">সর্বমোট</td>`;
+			totalRow.innerHTML += `<td class="center">${toBengaliNumber(totalVoters)}</td>`;
+
+			// Candidate totals
+			candidateTotals.forEach(total => {
+				totalRow.innerHTML += `<td class="center">${toBengaliNumber(total)}</td>`;
+			});
+
+			totalRow.innerHTML += `<td class="center">${toBengaliNumber(totalValid)}</td>`;
+			totalRow.innerHTML += `<td class="center">${toBengaliNumber(totalInvalid)}</td>`;
+			totalRow.innerHTML += `<td class="center">${toBengaliNumber(totalCounted)}</td>`;
+			totalRow.innerHTML += `<td class="center">${toBengaliNumber(totalTendered)}</td>`;
+
+			const avgPercentage = totalVoters > 0 ? ((totalCounted / totalVoters) * 100).toFixed(2) : '0.00';
+			totalRow.innerHTML += `<td class="center percentage">${toBengaliNumber(avgPercentage)}%</td>`;
+
+			tbody.appendChild(totalRow);
+
+			// Update totals breakdown
+			document.getElementById('totalCentreVotes').textContent = toBengaliNumber(totalCounted);
+			document.getElementById('grandTotalVotes').textContent = toBengaliNumber(totalCounted);
+
+			// Render candidate signatures
+			renderCandidateSignatures(candidates, agents);
+		}
+
+		function renderCandidateSignatures(candidates, agents) {
+			const tbody = document.getElementById('candidateSignaturesBody');
+			tbody.innerHTML = '';
+
+			// Display agents if available
+			if (agents && agents.length > 0) {
+				agents.forEach((agent, index) => {
+					const tr = document.createElement('tr');
+					tr.innerHTML = `
+						<td style="height: 0.3in;">${toBengaliNumber(index + 1)}। ${agent.agent_name || ''}</td>
+						<td> ${agent.agent_party || ''}</td>
+						<td>&nbsp;</td>
+					`;
+					tbody.appendChild(tr);
+				});
+			} else {
+				// If no agents, show one empty row
+				const tr = document.createElement('tr');
+				tr.innerHTML = `
+					<td style="height: 0.3in;">&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				`;
+				tbody.appendChild(tr);
+			}
+		}
+
+		// Load data on page load
+		window.addEventListener('DOMContentLoaded', loadFormData);
+	</script>
 
 </body>
 
