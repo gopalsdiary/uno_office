@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>নিদিষ্ট কেন্দ্রে দায়িত্ব নিয়োগ</title>
+    <title>Assignment to Specific Voting Centre</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="../authentication.js"></script>
     <style>
@@ -15,27 +15,29 @@
         
         body {
             font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f8;
+            color: #0f172a;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 98%;
+            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e6e9ee;
         }
         
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
-            font-size: 32px;
+            margin-bottom: 20px;
+            font-size: 28px;
             border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
         }
 
         .form-section {
@@ -200,19 +202,34 @@
             background: white;
             border-radius: 8px;
             overflow: hidden;
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            font-size: 13px;
         }
 
         .data-table th {
-            background: #667eea;
-            color: white;
-            padding: 12px;
+            background: #f1f5f9;
+            color: #0f172a;
+            padding: 10px 8px;
             text-align: left;
-            font-weight: bold;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 13px;
+            white-space: nowrap;
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            border-bottom: 1px solid #e6eef6;
         }
 
         .data-table td {
-            padding: 10px 12px;
+            padding: 8px;
             border-bottom: 1px solid #e9ecef;
+            font-size: 15px;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            max-width: 200px;
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
         }
 
         .data-table tbody tr:hover {
@@ -265,78 +282,107 @@
         .selected-officer strong {
             color: #0c5460;
         }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge.presiding {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.ass-presiding {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge.polling {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .matched-tick {
+            color: #1e90ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🗳️ নিদিষ্ট কেন্দ্রে দায়িত্ব নিয়োগ/তদবির</h1>
+        <h1>🗳️ Assignment to Specific Voting Centre</h1>
         
         <div class="status" id="status"></div>
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>প্রসেস হচ্ছে... অপেক্ষা করুন...</p>
+            <p>Processing... please wait...</p>
         </div>
 
         <!-- Form Section -->
         <div class="form-section">
-            <h2 id="formTitle">নতুন এন্ট্রি যোগ করুন</h2>
+            <h2 id="formTitle">Add New Entry</h2>
             
             <form id="assignmentForm">
                 <input type="hidden" id="requestId">
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="officerSearch">নাম বা মোবাইল/ID দিয়ে খুঁজুন</label>
+                        <label for="officerSearch">Search by name or mobile/ID</label>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <select id="searchFilter" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; background: white;">
-                                <option value="all">সকল কর্মকর্তা</option>
-                                <option value="presiding">প্রিজাইডিং</option>
-                                <option value="ass_presiding">সহ-প্রিজাইডিং</option>
-                                <option value="polling">পোলিং</option>
+                                <option value="all">All Officers</option>
+                                <option value="presiding">Presiding</option>
+                                <option value="ass_presiding">Ass. Presiding</option>
+                                <option value="polling">Polling</option>
                             </select>
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <input type="text" id="officerSearch" placeholder="নাম বা মোবাইল/ID লিখুন..." style="flex: 1;" onkeyup="handleSearchKeyup(event)">
-                            <button type="button" class="btn btn-primary" onclick="searchOfficers()" style="padding: 12px 20px;">🔍 খুঁজুন</button>
+                            <input type="text" id="officerSearch" placeholder="Type name or mobile/ID..." style="flex: 1;" onkeydown="handleSearchKeydown(event)">
+                            <button type="button" class="btn btn-primary" onclick="searchOfficers()" style="padding: 12px 20px;">Search</button>
                         </div>
                         <input type="hidden" id="officerSelect" required>
                         <div id="searchResults" style="max-height: 260px; overflow-y: auto; margin-top: 10px; border: 2px solid #ddd; border-radius: 8px; display: none; background: white;"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="officerName">কর্মকর্তার নাম *</label>
+                        <label for="officerName">Officer Name *</label>
                         <input type="text" id="officerName" required readonly>
                     </div>
 
                     <div class="form-group">
-                        <label for="voteCentreSelect">ভোট কেন্দ্র *</label>
+                        <label for="voteCentreSelect">Vote Centre *</label>
                         <select id="voteCentreSelect" required onchange="loadCentreDetails()">
-                            <option value="">-- নির্বাচন করুন --</option>
+                            <option value="">-- Select --</option>
                         </select>
-                    </div>
+                    </div> 
 
                     <div class="form-group">
-                        <label for="voteCentreCode">কেন্দ্র কোড</label>
+                        <label for="voteCentreCode">Centre Code</label>
                         <input type="text" id="voteCentreCode" readonly>
                     </div>
 
                     <div class="form-group">
-                        <label for="voteCentreName">কেন্দ্রের নাম</label>
+                        <label for="voteCentreName">Centre Name</label>
                         <input type="text" id="voteCentreName" readonly>
                     </div>
 
                     <div class="form-group" id="commentGroup">
-                        <label for="requestComment">অনুরোধ/মন্তব্য *</label>
-                        <textarea id="requestComment" required rows="3" placeholder="মন্তব্য লিখুন..." style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"></textarea>
+                        <label for="requestComment">Request/Comment *</label>
+                        <textarea id="requestComment" required rows="3" placeholder="Write comment..." style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"></textarea>
                     </div>
                 </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success">
-                        <span id="submitBtnText">💾 সংরক্ষণ করুন</span>
+                        <span id="submitBtnText">💾 Save</span>
                     </button>
                     <button type="button" class="btn btn-warning" onclick="resetForm()">
-                        🔄 রিসেট
+                        🔄 Reset
                     </button>
                 </div>
             </form>
@@ -345,31 +391,36 @@
         <!-- Table Section -->
         <div class="table-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-                <h2 style="margin: 0; color: #667eea;">📋 সংরক্ষিত রেকর্ডসমূহ</h2>
+                <h2 style="margin: 0; color: #667eea;">📋 Saved Records</h2>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('all')" id="filterAll" style="background: #667eea;">সকল</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('presiding')" id="filterPresiding">প্রিজাইডিং</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('ass_presiding')" id="filterAssPresiding">সহ-প্রিজাইডিং</button>
-                    <button class="btn btn-primary btn-sm" onclick="filterByType('polling')" id="filterPolling">পোলিং</button>
+                    <button class="btn btn-primary btn-sm" onclick="filterByType('all')" id="filterAll" style="background: #667eea;">All</button>
+                    <button class="btn btn-primary btn-sm" onclick="filterByType('presiding')" id="filterPresiding">Presiding</button>
+                    <button class="btn btn-primary btn-sm" onclick="filterByType('ass_presiding')" id="filterAssPresiding">Ass. Presiding</button>
+                    <button class="btn btn-primary btn-sm" onclick="filterByType('polling')" id="filterPolling">Polling</button>
                 </div>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ক্রমিক</th>
-                        <th>কর্মকর্তার নাম</th>
-                        <th>কর্মকর্তার ধরন</th>
-                        <th>Officer IID</th>
-                        <th>কেন্দ্র কোড</th>
-                        <th>কেন্দ্রের নাম</th>
-                        <th>Ref/মন্তব্য *</th>
-                        <th>তারিখ</th>
-                        <th>কার্যক্রম</th>
+                        <th>No.</th>
+                        <th>Officer Name</th>
+                        <th>Officer Type</th>
+                        <th>Off Sl</th>
+                        <th>Centre Code</th>
+                        <th>Centre Name</th>
+                        <th>District</th>
+                        <th>Address</th>
+                        <th>Previous Election</th>
+                        <th>DOB</th>
+                        <th>Comment/Ref</th>
+                        <th>Date</th>
+                        <th style="text-align: center">Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
                     <tr>
-                        <td colspan="9" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
+                        <td colspan="9" style="text-align: center; padding: 20px;">Loading...</td>
                     </tr>
                 </tbody>
             </table>
@@ -416,9 +467,9 @@
         // Get officer type label in Bengali
         function getOfficerTypeLabel(type) {
             const labels = {
-                'presiding': 'প্রিজাইডিং',
-                'ass_presiding': 'সহ-প্রিজাইডিং',
-                'polling': 'পোলিং'
+                'presiding': 'Presiding',
+                'ass_presiding': 'Ass. Presiding',
+                'polling': 'Polling'
             };
             return labels[type] || type;
         }
@@ -433,7 +484,7 @@
 
             if (!searchTerm) {
                 resultsContainer.style.display = 'none';
-                showStatus('অনুগ্রহ করে নাম বা মোবাইল লিখুন।', 'error');
+                showStatus('Please enter a name or mobile number.', 'error');
                 return;
             }
 
@@ -508,7 +559,7 @@
 
             } catch (error) {
                 console.error('Search error:', error);
-                showStatus('খোঁজার সময় ত্রুটি হয়েছে: ' + error.message, 'error');
+                showStatus('Search error: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
@@ -519,7 +570,7 @@
             const resultsContainer = document.getElementById('searchResults');
 
             if (searchResultsData.length === 0) {
-                resultsContainer.innerHTML = '<div style="padding: 12px; text-align: center; color: #999;">কোনো ফলাফল পাওয়া যায়নি</div>';
+                resultsContainer.innerHTML = '<div style="padding: 12px; text-align: center; color: #999;">No results found</div>';
                 resultsContainer.style.display = 'block';
                 return;
             }
@@ -535,7 +586,7 @@
             });
 
             if (searchResultsData.length > 50) {
-                html += '<div style="padding: 12px; text-align: center; color: #666; font-size: 14px;">আরও ' + (searchResultsData.length - 50) + ' জন... আরও নির্দিষ্ট করে খুঁজুন</div>';
+                html += '<div style="padding: 12px; text-align: center; color: #666; font-size: 14px;">More ' + (searchResultsData.length - 50) + ' results... refine search</div>';
             }
 
             resultsContainer.innerHTML = html;
@@ -543,9 +594,9 @@
         }
 
         function getOfficerTypeLabelByTable(table) {
-            if (table === 'presiding_list') return 'প্রিজাইডিং';
-            if (table === 'ass_presiding_list') return 'সহ-প্রিজাইডিং';
-            if (table === 'polling_list') return 'পোলিং';
+            if (table === 'presiding_list') return 'Presiding';
+            if (table === 'ass_presiding_list') return 'Ass. Presiding';
+            if (table === 'polling_list') return 'Polling';
             return table;
         }
 
@@ -560,7 +611,7 @@
 
             document.getElementById('officerSelect').value = officer.iid;
             document.getElementById('officerName').value = officer.name || '';
-            document.getElementById('officerSearch').value = officer.name || '';
+            document.getElementById('officerSearch').value = '';
             // clear existing comment so user must provide one
             document.getElementById('requestComment').value = '';
             document.getElementById('requestComment').focus();
@@ -568,7 +619,7 @@
         }
 
         // Handle Enter key in search box
-        function handleSearchKeyup(event) {
+        function handleSearchKeydown(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 searchOfficers();
@@ -630,7 +681,7 @@
                 console.log(`✅ Total ${allData.length} vote centres loaded`);
 
                 voteCentreData = {};
-                let options = '<option value="">-- নির্বাচন করুন --</option>';
+                let options = '<option value="">-- Select --</option>'; 
                 
                 allData.forEach(centre => {
                     const id = centre.vote_centre_iid;
@@ -642,7 +693,7 @@
                 
             } catch (error) {
                 console.error('Error loading vote centres:', error);
-                showStatus('❌ কেন্দ্র লোড করতে সমস্যা হয়েছে', 'error');
+                showStatus('❌ Failed to load centres', 'error');
             } finally {
                 setLoading(false);
             }
@@ -691,7 +742,7 @@
             try {
                 // Get centre details for limits
                 const centre = voteCentreData[centreId];
-                if (!centre) return { allowed: false, message: 'কেন্দ্রের তথ্য পাওয়া যায়নি' };
+                if (!centre) return { allowed: false, message: 'Centre data not found' };
 
                 const voterBothTotal = parseFloat(centre.voter_both_total) || 0;
                 
@@ -721,20 +772,20 @@
 
                 if (currentCount >= limit) {
                     const labels = {
-                        'presiding': 'প্রিজাইডিং',
-                        'ass_presiding': 'সহ-প্রিজাইডিং',
-                        'polling': 'পোলিং'
+                        'presiding': 'Presiding',
+                        'ass_presiding': 'Ass. Presiding',
+                        'polling': 'Polling'
                     };
                     return {
                         allowed: false,
-                        message: `⚠️ এই কেন্দ্রে ${labels[officerType]} এর সীমা পূর্ণ হয়েছে (সর্বোচ্চ: ${limit}, বর্তমান: ${currentCount})`
-                    };
+                        message: `⚠️ Limit reached for ${labels[officerType]} at this centre (max: ${limit}, current: ${currentCount})`
+                    }; 
                 }
 
                 return { allowed: true };
             } catch (error) {
                 console.error('Error checking capacity:', error);
-                return { allowed: false, message: 'সীমা যাচাই করতে সমস্যা হয়েছে' };
+                return { allowed: false, message: 'Error checking capacity' }; 
             }
         }
 
@@ -751,12 +802,12 @@
             const requestComment = document.getElementById('requestComment').value.trim();
 
             if (!officerId || !centreId || !selectedOfficer || !selectedOfficer.type) {
-                showStatus('⚠️ অনুগ্রহ করে একটি কর্মকর্তা নির্বাচন করুন ও সমস্ত আবশ্যক ফিল্ড পূরণ করুন', 'error');
+                showStatus('⚠️ Please select an officer and fill all required fields', 'error');
                 return;
             }
 
             if (!requestComment) {
-                showStatus('⚠️ অনুগ্রহ করে অনুরোধ/মন্তব্য বক্সটি পূরণ করুন', 'error');
+                showStatus('⚠️ Please fill the request/comment box', 'error');
                 document.getElementById('requestComment').focus();
                 return;
             }
@@ -769,10 +820,10 @@
                     const existingOfficer = await checkOfficerExists(selectedOfficer.type, officerId);
                     if (existingOfficer) {
                         setLoading(false);
-                        const message = `⚠️ সতর্কতা!\n\nএই কর্মকর্তা ইতিমধ্যে নিয়োজিত আছেন:\n\n📍 কেন্দ্র কোড: ${existingOfficer.vote_centre_code}\n📍 কেন্দ্রের নাম: ${existingOfficer.vote_centre_name}\n\nএকই কর্মকর্তা দুইবার নিয়োগ করা যাবে না।`;
+                        const message = `⚠️ Warning!\n\nThis officer is already assigned:\n\n📍 Centre Code: ${existingOfficer.vote_centre_code}\n📍 Centre Name: ${existingOfficer.vote_centre_name}\n\nThe same officer cannot be assigned twice.`;
                         alert(message);
-                        showStatus(`⚠️ এই কর্মকর্তা ইতিমধ্যে "${existingOfficer.vote_centre_code} - ${existingOfficer.vote_centre_name}" কেন্দ্রে নিয়োজিত আছেন`, 'error');
-                        return;
+                        showStatus(`⚠️ This officer is already assigned to "${existingOfficer.vote_centre_code} - ${existingOfficer.vote_centre_name}"`, 'error');
+                        return; 
                     }
                 }
 
@@ -788,13 +839,12 @@
             } catch (validationError) {
                 setLoading(false);
                 console.error('Validation error:', validationError);
-                showStatus('⚠️ যাচাইকরণে সমস্যা হয়েছে', 'error');
+                showStatus('⚠️ Error during validation', 'error');
                 return;
             }
 
             // If all validations pass, proceed with save
 
-            // If all validations pass, proceed with save
             try {
                 const dataToSave = {
                     officer_name: officerName,
@@ -814,7 +864,7 @@
                         .eq('request_id', requestId);
 
                     if (error) throw error;
-                    showStatus('✅ সফলভাবে আপডেট হয়েছে', 'success');
+                    showStatus('✅ Updated successfully', 'success');
                 } else {
                     // Insert new record
                     const { error } = await window.supabaseClient
@@ -822,15 +872,11 @@
                         .insert([dataToSave]);
 
                     if (error) throw error;
-                    showStatus('✅ সফলভাবে সংরক্ষিত হয়েছে', 'success');
+                    showStatus('✅ Saved successfully', 'success');
                 }
-
-                resetForm();
-                loadTableData();
-
             } catch (error) {
                 console.error('Error saving data:', error);
-                showStatus('❌ সংরক্ষণে সমস্যা হয়েছে: ' + error.message, 'error');
+                showStatus('❌ Error saving: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
@@ -840,8 +886,8 @@
         function resetForm() {
             document.getElementById('assignmentForm').reset();
             document.getElementById('requestId').value = '';
-            document.getElementById('formTitle').textContent = 'নতুন এন্ট্রি যোগ করুন';
-            document.getElementById('submitBtnText').textContent = '💾 সংরক্ষণ করুন';
+            document.getElementById('formTitle').textContent = 'Add New Entry';
+            document.getElementById('submitBtnText').textContent = '💾 Save';
             document.getElementById('officerSearch').value = '';
             document.getElementById('searchResults').style.display = 'none';
             document.getElementById('requestComment').value = '';
@@ -851,10 +897,142 @@
             isEditMode = false;
         }
 
+        // Storage for assignment status
+        let assignedCentreMap = { presiding: new Map(), ass_presiding: new Map(), polling: new Map() };
+
+        // Fetch officer details for records
+        async function fetchOfficerDetailsForRecords(records) {
+            const presidingIds = [];
+            const assPresidingIds = [];
+            const pollingIds = [];
+
+            records.forEach(row => {
+                if (row.officer_table_name === 'presiding') presidingIds.push(row.officer_table_iid);
+                else if (row.officer_table_name === 'ass_presiding') assPresidingIds.push(row.officer_table_iid);
+                else if (row.officer_table_name === 'polling') pollingIds.push(row.officer_table_iid);
+            });
+
+            try {
+                // Fetch presiding details
+                if (presidingIds.length > 0) {
+                    const { data, error } = await window.supabaseClient
+                        .from('presiding_list')
+                        .select('presiding_iid, own_discrict, address, previous_election, date_of_birth')
+                        .in('presiding_iid', presidingIds);
+                    if (!error && data) {
+                        data.forEach(item => {
+                            const record = records.find(r => r.officer_table_name === 'presiding' && String(r.officer_table_iid) === String(item.presiding_iid));
+                            if (record) record.officer_details = item;
+                        });
+                    }
+                }
+
+                // Fetch ass_presiding details
+                if (assPresidingIds.length > 0) {
+                    const { data, error } = await window.supabaseClient
+                        .from('ass_presiding_list')
+                        .select('ass_presiding_iid, own_discrict, address, previous_election, date_of_birth')
+                        .in('ass_presiding_iid', assPresidingIds);
+                    if (!error && data) {
+                        data.forEach(item => {
+                            const record = records.find(r => r.officer_table_name === 'ass_presiding' && String(r.officer_table_iid) === String(item.ass_presiding_iid));
+                            if (record) record.officer_details = item;
+                        });
+                    }
+                }
+
+                // Fetch polling details
+                if (pollingIds.length > 0) {
+                    const { data, error } = await window.supabaseClient
+                        .from('polling_list')
+                        .select('polling_iid, own_discrict, address, previous_election, date_of_birth')
+                        .in('polling_iid', pollingIds);
+                    if (!error && data) {
+                        data.forEach(item => {
+                            const record = records.find(r => r.officer_table_name === 'polling' && String(r.officer_table_iid) === String(item.polling_iid));
+                            if (record) record.officer_details = item;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching officer details:', error);
+            }
+        }
+
+        // Fetch assignment status from centre_assignments (paginated)
+        async function fetchAssignmentStatus() {
+            try {
+                console.log('📊 Loading centre_assignments...');
+                const CHUNK = 1000;
+                const MAX_FETCH = 50000;
+                let from = 0;
+                const allAssignments = [];
+
+                while (true) {
+                    const { data, error } = await window.supabaseClient
+                        .from('centre_assignments')
+                        .select('assignment_id, officer_type, officer_iid, vote_centre_iid, vote_centre_code')
+                        .range(from, from + CHUNK - 1);
+
+                    if (error) {
+                        console.warn('⚠️ Error loading centre_assignments:', error.message || error);
+                        break;
+                    }
+
+                    const chunk = data || [];
+                    allAssignments.push(...chunk);
+
+                    if (chunk.length < CHUNK) break;
+                    from += CHUNK;
+                    if (allAssignments.length >= MAX_FETCH) break;
+                }
+
+                // Reset maps
+                assignedCentreMap = { presiding: new Map(), ass_presiding: new Map(), polling: new Map() };
+
+                allAssignments.forEach(a => {
+                    const info = { vote_centre_iid: a.vote_centre_iid, vote_centre_code: a.vote_centre_code };
+                    if (a.officer_type === 'presiding') assignedCentreMap.presiding.set(String(a.officer_iid), info);
+                    else if (a.officer_type === 'ass_presiding') assignedCentreMap.ass_presiding.set(String(a.officer_iid), info);
+                    else if (a.officer_type === 'polling') assignedCentreMap.polling.set(String(a.officer_iid), info);
+                });
+
+                console.log(`✅ Loaded ${allAssignments.length} centre_assignments`);
+            } catch (error) {
+                console.warn('⚠️ Could not fetch assignment status (non-critical):', error.message || error);
+            }
+        }
+
+        // Format date helper
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('bn-BD');
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // Bengali number conversion
+        function toBengaliNumber(num) {
+            if (num === null || num === undefined || num === '') return '';
+            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return String(num).replace(/\d/g, digit => bengaliDigits[digit]);
+        }
+
+        // Format date strings to Bengali locale (returns '-' if empty)
+        function formatToBengaliDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString('bn-BD');
+        }
+
         // Load table data
         async function loadTableData() {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading...</td></tr>'; 
 
             try {
                 // Fetch all data with pagination
@@ -889,12 +1067,18 @@
                 // Store all data for filtering
                 allTableData = allData;
 
+                // Fetch officer details for all records
+                await fetchOfficerDetailsForRecords(allTableData);
+
+                // Fetch assignment status from centre_assignments_table
+                await fetchAssignmentStatus();
+
                 // Render table with current filter
                 renderTableData();
 
             } catch (error) {
                 console.error('Error loading table data:', error);
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: red;">Failed to load</td></tr>'; 
             }
         }
 
@@ -909,30 +1093,60 @@
             }
 
             if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px;">No records found</td></tr>'; 
                 return;
             }
 
             let html = '';
             filteredData.forEach((row, index) => {
                 const date = new Date(row.created_at).toLocaleDateString('bn-BD');
+                const officerType = row.officer_table_name || '';
+                const badgeClass = officerType === 'presiding' ? 'presiding' : 
+                                   officerType === 'ass_presiding' ? 'ass-presiding' : 'polling';
+                
+                // Check if assigned centre matches request centre
+                let matched = false;
+                try {
+                    const assignedMap = assignedCentreMap[officerType] || new Map();
+                    const assigned = assignedMap.get(String(row.officer_table_iid));
+                    if (assigned) {
+                        if (assigned.vote_centre_iid && row.vote_centre_iid && String(assigned.vote_centre_iid) === String(row.vote_centre_iid)) matched = true;
+                        else if (assigned.vote_centre_code && row.vote_centre_code && String(assigned.vote_centre_code) === String(row.vote_centre_code)) matched = true;
+                    }
+                } catch (e) {
+                    console.error('Error comparing assignment centres:', e);
+                }
+
+                const details = row.officer_details || {};
+                const ownDistrict = toBengaliNumber(details.own_discrict || '-');
+                const address = toBengaliNumber(details.address || '-');
+                const previousElection = toBengaliNumber(details.previous_election || '-');
+                const requestComment = toBengaliNumber(row.request_comment || '');
+                const dateOfBirth = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
+                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
+                
                 html += `
                     <tr>
-                        <td>${index + 1}</td>
-                        <td>${row.officer_name || ''}</td>
-                        <td>${getOfficerTypeLabel(row.officer_table_name)}</td>
-                        <td>${row.officer_table_iid || ''}</td>
-                        <td>${row.vote_centre_code || ''}</td>
-                        <td>${row.vote_centre_name || ''}</td>
-                        <td>${(row.request_comment && row.request_comment.length>100) ? row.request_comment.substring(0,100) + '...' : (row.request_comment || '')}</td>
-                        <td>${date}</td>
+                        <td>${toBengaliNumber(index + 1)}</td>
+                        <td>${toBengaliNumber(row.officer_name || '')}</td>
+                        <td><span class="badge ${badgeClass}">${getOfficerTypeLabel(officerType)}</span></td>
+                        <td>${toBengaliNumber(row.officer_table_iid || '')}</td>
+                        <td>${toBengaliNumber(row.vote_centre_code || '')}</td>
+                        <td>${toBengaliNumber(row.vote_centre_name || '')}</td>
+                        <td>${ownDistrict}</td>
+                        <td>${address}</td>
+                        <td>${previousElection}</td>
+                        <td>${dateOfBirth}</td>
+                        <td>${requestComment}</td>
+                        <td>${createdDate}</td>
+                        <td style="text-align:center"><span class="matched-tick">${matched ? '✔' : ''}</span></td>
                         <td>
                             <div class="action-btns">
                                 <button class="btn btn-primary btn-sm" onclick="editRecord(${row.request_id})">
-                                    ✏️ সম্পাদনা
+                                    Edit
                                 </button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteRecord(${row.request_id})">
-                                    🗑️ মুছুন
+                                    Delete
                                 </button>
                             </div>
                         </td>
@@ -1004,8 +1218,8 @@
                 document.getElementById('commentGroup').style.display = 'block';
 
                 // Update form title and button
-                document.getElementById('formTitle').textContent = 'এন্ট্রি সম্পাদনা করুন';
-                document.getElementById('submitBtnText').textContent = '✅ আপডেট করুন';
+                document.getElementById('formTitle').textContent = 'Edit Entry';
+                document.getElementById('submitBtnText').textContent = '✅ Update';
                 isEditMode = true;
 
                 // Scroll to form
@@ -1013,7 +1227,7 @@
 
             } catch (error) {
                 console.error('Error loading record:', error);
-                showStatus('❌ রেকর্ড লোড করতে সমস্যা হয়েছে', 'error');
+                showStatus('❌ Failed to load record', 'error');
             } finally {
                 setLoading(false);
             }
@@ -1021,7 +1235,7 @@
 
         // Delete record
         async function deleteRecord(requestId) {
-            if (!confirm('আপনি কি নিশ্চিত এই রেকর্ডটি মুছে ফেলতে চান?')) {
+            if (!confirm('Are you sure you want to delete this record?')) {
                 return;
             }
 
@@ -1035,12 +1249,12 @@
 
                 if (error) throw error;
 
-                showStatus('✅ সফলভাবে মুছে ফেলা হয়েছে', 'success');
+                showStatus('✅ Deleted successfully', 'success');
                 loadTableData();
 
             } catch (error) {
                 console.error('Error deleting record:', error);
-                showStatus('❌ মুছতে সমস্যা হয়েছে: ' + error.message, 'error');
+                showStatus('❌ Error deleting: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
