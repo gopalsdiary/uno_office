@@ -662,6 +662,81 @@
             document.getElementById('voteCentreName').value = centre.vote_centre_name || '';
         }
 
+        // Validation: Check if officer already exists
+        async function checkOfficerExists(officerTableName, officerTableIid, excludeRequestId = null) {
+            try {
+                let query = window.supabaseClient
+                    .from('request_table')
+                    .select('request_id, officer_name, vote_centre_code, vote_centre_name')
+                    .eq('officer_table_name', officerTableName)
+                    .eq('officer_table_iid', officerTableIid);
+
+                if (excludeRequestId) {
+                    query = query.neq('request_id', excludeRequestId);
+                }
+
+                const { data, error } = await query;
+                if (error) throw error;
+                
+                return data && data.length > 0 ? data[0] : null;
+            } catch (error) {
+                console.error('Error checking officer:', error);
+                return null;
+            }
+        }
+
+        // Validation: Check centre capacity limits
+        async function checkCentreCapacity(centreId, officerType, excludeRequestId = null) {
+            try {
+                // Get centre details for limits
+                const centre = voteCentreData[centreId];
+                if (!centre) return { allowed: false, message: 'কেন্দ্রের তথ্য পাওয়া যায়নি' };
+
+                const voterBothTotal = parseFloat(centre.voter_both_total) || 0;
+                
+                // Define limits
+                const limits = {
+                    'presiding': 1,
+                    'ass_presiding': Math.ceil(voterBothTotal * 2),
+                    'polling': Math.ceil(voterBothTotal * 4)
+                };
+
+                // Count existing entries
+                let query = window.supabaseClient
+                    .from('request_table')
+                    .select('request_id', { count: 'exact', head: true })
+                    .eq('vote_centre_iid', centreId)
+                    .eq('officer_table_name', officerType);
+
+                if (excludeRequestId) {
+                    query = query.neq('request_id', excludeRequestId);
+                }
+
+                const { count, error } = await query;
+                if (error) throw error;
+
+                const currentCount = count || 0;
+                const limit = limits[officerType] || 0;
+
+                if (currentCount >= limit) {
+                    const labels = {
+                        'presiding': 'প্রিজাইডিং',
+                        'ass_presiding': 'সহ-প্রিজাইডিং',
+                        'polling': 'পোলিং'
+                    };
+                    return {
+                        allowed: false,
+                        message: `⚠️ এই কেন্দ্রে ${labels[officerType]} এর সীমা পূর্ণ হয়েছে (সর্বোচ্চ: ${limit}, বর্তমান: ${currentCount})`
+                    };
+                }
+
+                return { allowed: true };
+            } catch (error) {
+                console.error('Error checking capacity:', error);
+                return { allowed: false, message: 'সীমা যাচাই করতে সমস্যা হয়েছে' };
+            }
+        }
+
         // Handle form submission
         document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -687,6 +762,38 @@
 
             setLoading(true);
 
+            try {
+                // Validation 1: Check if officer already exists (for new entries only)
+                if (!isEditMode || !requestId) {
+                    const existingOfficer = await checkOfficerExists(selectedOfficer.type, officerId);
+                    if (existingOfficer) {
+                        setLoading(false);
+                        const message = `⚠️ সতর্কতা!\n\nএই কর্মকর্তা ইতিমধ্যে নিয়োজিত আছেন:\n\n📍 কেন্দ্র কোড: ${existingOfficer.vote_centre_code}\n📍 কেন্দ্রের নাম: ${existingOfficer.vote_centre_name}\n\nএকই কর্মকর্তা দুইবার নিয়োগ করা যাবে না।`;
+                        alert(message);
+                        showStatus(`⚠️ এই কর্মকর্তা ইতিমধ্যে "${existingOfficer.vote_centre_code} - ${existingOfficer.vote_centre_name}" কেন্দ্রে নিয়োজিত আছেন`, 'error');
+                        return;
+                    }
+                }
+
+                // Validation 2: Check centre capacity
+                const capacityCheck = await checkCentreCapacity(centreId, selectedOfficer.type, requestId);
+                if (!capacityCheck.allowed) {
+                    setLoading(false);
+                    alert(capacityCheck.message);
+                    showStatus(capacityCheck.message, 'error');
+                    return;
+                }
+
+            } catch (validationError) {
+                setLoading(false);
+                console.error('Validation error:', validationError);
+                showStatus('⚠️ যাচাইকরণে সমস্যা হয়েছে', 'error');
+                return;
+            }
+
+            // If all validations pass, proceed with save
+
+            // If all validations pass, proceed with save
             try {
                 const dataToSave = {
                     officer_name: officerName,
