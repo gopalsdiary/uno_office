@@ -315,7 +315,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📋 Fixed Duty list</h1>
+        <h1>📋 Duty list (after generate)</h1>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
@@ -392,6 +392,7 @@
                         <th>ঠিকানা</th>
                         <th>পূর্ববর্তী নির্বাচন</th>
                         <th>জন্ম তারিখ</th>
+                        <th>মোট ভোটার</th>
                         <th>মন্তব্য/ref</th>
                         <th>তারিখ</th>
                         <th style="text-align: center">স্ট্যাটাস</th>
@@ -433,8 +434,8 @@
                 let valueA, valueB;
 
                 if (column === 'officer_iid') {
-                    valueA = parseInt(a.officer_table_iid) || 0;
-                    valueB = parseInt(b.officer_table_iid) || 0;
+                    valueA = parseInt(a.officer_iid) || 0;
+                    valueB = parseInt(b.officer_iid) || 0;
                 } else if (column === 'centre_code') {
                     valueA = parseInt(a.vote_centre_code) || 0;
                     valueB = parseInt(b.vote_centre_code) || 0;
@@ -505,43 +506,49 @@
         async function loadData() {
             setLoading(true);
             const tbody = document.getElementById('dataTableBody');
-tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
 
             try {
-                // Fetch all data with pagination
+                // Fetch all centre assignments
                 const CHUNK = 1000;
                 const MAX_FETCH = 50000;
                 let from = 0;
-                allData = [];
+                const allAssignments = [];
 
-                console.log('📊 Loading assigned officers from request_table...');
+                console.log('📊 Loading centre_assignments...');
 
                 while (true) {
                     const { data, error } = await window.supabaseClient
-                        .from('request_table')
+                        .from('centre_assignments')
                         .select('*')
-                        .order('created_at', { ascending: false })
+                        .order('assignment_id', { ascending: true })
                         .range(from, from + CHUNK - 1);
 
                     if (error) throw error;
 
                     const chunk = data || [];
-                    allData.push(...chunk);
+                    allAssignments.push(...chunk);
                     
-                    console.log(`   Loaded chunk: ${chunk.length} rows, total: ${allData.length}`);
+                    console.log(`   Loaded chunk: ${chunk.length} rows, total: ${allAssignments.length}`);
                     
                     if (chunk.length < CHUNK) break;
                     from += CHUNK;
-                    if (allData.length >= MAX_FETCH) break;
+                    if (allAssignments.length >= MAX_FETCH) break;
                 }
 
-                console.log(`✅ Total ${allData.length} assigned officers loaded`);
+                console.log(`✅ Total ${allAssignments.length} centre assignments loaded`);
 
-                // Fetch additional officer details
-                await fetchOfficerDetails();
+                // Fetch vote_centre details for each assignment
+                await fetchVoteCentreDetails(allAssignments);
 
-                // Fetch centre assignments to compare centres
-                await fetchAssignments();
+                // Fetch officer details for each assignment
+                await fetchOfficerDetailsForAssignments(allAssignments);
+
+                // Fetch request_table to compare with assignments
+                await fetchRequestTableData();
+
+                // Set allData to assignments
+                allData = allAssignments;
 
                 // Update statistics
                 updateStatistics();
@@ -558,99 +565,207 @@ tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px
             }
         }
 
-        // Fetch officer details from respective tables
-        async function fetchOfficerDetails() {
-            console.log('📊 Fetching officer details...');
+        // Fetch vote centre details for assignments
+        async function fetchVoteCentreDetails(assignments) {
+            console.log('📊 Fetching vote centre details...');
             
-            for (let i = 0; i < allData.length; i++) {
-                const row = allData[i];
-                const officerType = row.officer_table_name;
-                const officerIid = row.officer_table_iid;
+            // Get unique vote_centre_iid values
+            const uniqueCentreIds = [...new Set(assignments.map(a => a.vote_centre_iid).filter(id => id))];
+            
+            console.log(`   Found ${uniqueCentreIds.length} unique centres`);
 
-                try {
-                    let tableName = '';
-                    let iidField = '';
+            // Fetch in batches
+            const BATCH_SIZE = 500;
+            const centreMap = new Map();
 
-                    if (officerType === 'presiding') {
-                        tableName = 'presiding_list';
-                        iidField = 'presiding_iid';
-                    } else if (officerType === 'ass_presiding') {
-                        tableName = 'ass_presiding_list';
-                        iidField = 'ass_presiding_iid';
-                    } else if (officerType === 'polling') {
-                        tableName = 'polling_list';
-                        iidField = 'polling_iid';
-                    }
+            for (let i = 0; i < uniqueCentreIds.length; i += BATCH_SIZE) {
+                const batch = uniqueCentreIds.slice(i, i + BATCH_SIZE);
+                
+                const { data, error } = await window.supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_iid, vote_centre_code, vote_centre_name, total_voter')
+                    .in('vote_centre_iid', batch);
 
-                    if (tableName) {
-                        const { data, error } = await window.supabaseClient
-                            .from(tableName)
-                            .select('own_discrict, address, previous_election, comment, date_of_birth')
-                            .eq(iidField, officerIid)
-                            .single();
-
-                        if (!error && data) {
-                            allData[i].officer_details = data;
-                        }
-                    }
-                } catch (error) {
-                    console.error(`Error fetching details for officer ${officerIid}:`, error);
+                if (!error && data) {
+                    data.forEach(centre => {
+                        centreMap.set(centre.vote_centre_iid, centre);
+                    });
                 }
             }
-            
-            console.log('✅ Officer details fetched');
+
+            // Attach centre details to assignments
+            assignments.forEach(assignment => {
+                const centre = centreMap.get(assignment.vote_centre_iid);
+                if (centre) {
+                    assignment.vote_centre_name = centre.vote_centre_name;
+                    assignment.vote_centre_code = centre.vote_centre_code;
+                    assignment.vote_centre_total_voter = centre.total_voter; // new
+                }
+            });
+
+            console.log('✅ Vote centre details fetched');
         }
 
-        // Assigned centres mapping by officer type and iid
-        const assignedCentreMap = {
+        // Fetch officer details for assignments
+        async function fetchOfficerDetailsForAssignments(assignments) {
+            console.log('📊 Fetching officer details for assignments...');
+            
+            // Group by officer type
+            const presidingIds = [];
+            const assPresidingIds = [];
+            const pollingIds = [];
+
+            assignments.forEach(a => {
+                if (a.officer_type === 'presiding') presidingIds.push(a.officer_iid);
+                else if (a.officer_type === 'ass_presiding') assPresidingIds.push(a.officer_iid);
+                else if (a.officer_type === 'polling') pollingIds.push(a.officer_iid);
+            });
+
+            // Create maps for each officer type
+            const presidingMap = new Map();
+            const assPresidingMap = new Map();
+            const pollingMap = new Map();
+
+            // Fetch presiding officers
+            if (presidingIds.length > 0) {
+                const BATCH_SIZE = 500;
+                for (let i = 0; i < presidingIds.length; i += BATCH_SIZE) {
+                    const batch = presidingIds.slice(i, i + BATCH_SIZE);
+                    const { data, error } = await window.supabaseClient
+                        .from('presiding_list')
+                        .select('presiding_iid, presiding_name, own_discrict, address, previous_election, date_of_birth, comment')
+                        .in('presiding_iid', batch);
+
+                    if (!error && data) {
+                        data.forEach(officer => {
+                            presidingMap.set(officer.presiding_iid, officer);
+                        });
+                    }
+                }
+            }
+
+            // Fetch ass_presiding officers
+            if (assPresidingIds.length > 0) {
+                const BATCH_SIZE = 500;
+                for (let i = 0; i < assPresidingIds.length; i += BATCH_SIZE) {
+                    const batch = assPresidingIds.slice(i, i + BATCH_SIZE);
+                    const { data, error } = await window.supabaseClient
+                        .from('ass_presiding_list')
+                        .select('ass_presiding_iid, ass_presiding_name, own_discrict, address, previous_election, date_of_birth, comment')
+                        .in('ass_presiding_iid', batch);
+
+                    if (!error && data) {
+                        data.forEach(officer => {
+                            assPresidingMap.set(officer.ass_presiding_iid, officer);
+                        });
+                    }
+                }
+            }
+
+            // Fetch polling officers
+            if (pollingIds.length > 0) {
+                const BATCH_SIZE = 500;
+                for (let i = 0; i < pollingIds.length; i += BATCH_SIZE) {
+                    const batch = pollingIds.slice(i, i + BATCH_SIZE);
+                    const { data, error } = await window.supabaseClient
+                        .from('polling_list')
+                        .select('polling_iid, polling_name, own_discrict, address, previous_election, date_of_birth, comment')
+                        .in('polling_iid', batch);
+
+                    if (!error && data) {
+                        data.forEach(officer => {
+                            pollingMap.set(officer.polling_iid, officer);
+                        });
+                    }
+                }
+            }
+
+            // Attach officer details to assignments
+            assignments.forEach(assignment => {
+                let officer = null;
+                if (assignment.officer_type === 'presiding') {
+                    officer = presidingMap.get(assignment.officer_iid);
+                    if (officer) assignment.officer_name = officer.presiding_name;
+                } else if (assignment.officer_type === 'ass_presiding') {
+                    officer = assPresidingMap.get(assignment.officer_iid);
+                    if (officer) assignment.officer_name = officer.ass_presiding_name;
+                } else if (assignment.officer_type === 'polling') {
+                    officer = pollingMap.get(assignment.officer_iid);
+                    if (officer) assignment.officer_name = officer.polling_name;
+                }
+
+                if (officer) {
+                    assignment.officer_details = {
+                        own_discrict: officer.own_discrict,
+                        address: officer.address,
+                        previous_election: officer.previous_election,
+                        date_of_birth: officer.date_of_birth,
+                        comment: officer.comment
+                    };
+                }
+            });
+
+            console.log('✅ Officer details fetched for assignments');
+        }
+
+        // Map to store requested centres from request_table
+        const requestedCentreMap = {
             presiding: new Map(),
             ass_presiding: new Map(),
             polling: new Map()
         };
 
-        // Fetch centre_assignments and populate maps
-        async function fetchAssignments() {
-            console.log('📊 Loading centre_assignments...');
+        // Fetch request_table data to compare with assignments
+        async function fetchRequestTableData() {
+            console.log('📊 Loading request_table...');
             const CHUNK = 1000;
             const MAX_FETCH = 50000;
             let from = 0;
-            const allAssignments = [];
+            const allRequests = [];
 
             while (true) {
                 const { data, error } = await window.supabaseClient
-                    .from('centre_assignments')
-                    .select('assignment_id, officer_type, officer_iid, vote_centre_iid, vote_centre_code')
+                    .from('request_table')
+                    .select('officer_table_name, officer_table_iid, vote_centre_iid, vote_centre_code')
                     .range(from, from + CHUNK - 1);
 
                 if (error) {
-                    console.error('Error loading centre_assignments:', error);
+                    console.error('Error loading request_table:', error);
                     break;
                 }
 
                 const chunk = data || [];
-                allAssignments.push(...chunk);
+                allRequests.push(...chunk);
 
                 if (chunk.length < CHUNK) break;
                 from += CHUNK;
-                if (allAssignments.length >= MAX_FETCH) break;
+                if (allRequests.length >= MAX_FETCH) break;
             }
 
-            allAssignments.forEach(a => {
-                const info = { vote_centre_iid: a.vote_centre_iid, vote_centre_code: a.vote_centre_code };
-                if (a.officer_type === 'presiding') assignedCentreMap.presiding.set(String(a.officer_iid), info);
-                else if (a.officer_type === 'ass_presiding') assignedCentreMap.ass_presiding.set(String(a.officer_iid), info);
-                else if (a.officer_type === 'polling') assignedCentreMap.polling.set(String(a.officer_iid), info);
+            // Populate maps
+            allRequests.forEach(req => {
+                const info = { 
+                    vote_centre_iid: req.vote_centre_iid, 
+                    vote_centre_code: req.vote_centre_code 
+                };
+                if (req.officer_table_name === 'presiding') {
+                    requestedCentreMap.presiding.set(String(req.officer_table_iid), info);
+                } else if (req.officer_table_name === 'ass_presiding') {
+                    requestedCentreMap.ass_presiding.set(String(req.officer_table_iid), info);
+                } else if (req.officer_table_name === 'polling') {
+                    requestedCentreMap.polling.set(String(req.officer_table_iid), info);
+                }
             });
 
-            console.log(`✅ Loaded ${allAssignments.length} centre_assignments`);
+            console.log(`✅ Loaded ${allRequests.length} request_table entries`);
         }
 
         // Update statistics
         function updateStatistics() {
             const total = allData.length;
-            const presidingCount = allData.filter(row => row.officer_table_name === 'presiding').length;
-            const assPresidingCount = allData.filter(row => row.officer_table_name === 'ass_presiding').length;
-            const pollingCount = allData.filter(row => row.officer_table_name === 'polling').length;
+            const presidingCount = allData.filter(row => row.officer_type === 'presiding').length;
+            const assPresidingCount = allData.filter(row => row.officer_type === 'ass_presiding').length;
+            const pollingCount = allData.filter(row => row.officer_type === 'polling').length;
 
             document.getElementById('totalCount').textContent = toBengaliNumber(total);
             document.getElementById('presidingCount').textContent = toBengaliNumber(presidingCount);
@@ -669,46 +784,60 @@ tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px
 
             let html = '';
             filteredData.forEach((row, index) => {
-                const officerType = row.officer_table_name || '';
+                const officerType = row.officer_type || '';
                 const badgeClass = officerType === 'presiding' ? 'presiding' : 
                                    officerType === 'ass_presiding' ? 'ass-presiding' : 'polling';
                 
-                // determine if assigned centre matches request centre
-                let matched = false;
-                try {
-                    const assignedMap = assignedCentreMap[officerType] || new Map();
-                    const assigned = assignedMap.get(String(row.officer_table_iid));
-                    if (assigned) {
-                        if (assigned.vote_centre_iid && row.vote_centre_iid && String(assigned.vote_centre_iid) === String(row.vote_centre_iid)) matched = true;
-                        else if (assigned.vote_centre_code && row.vote_centre_code && String(assigned.vote_centre_code) === String(row.vote_centre_code)) matched = true;
-                    }
-                } catch (e) {
-                    console.error('Error comparing assignment centres:', e);
-                }
-
                 const details = row.officer_details || {};
                 const ownDistrict = toBengaliNumber(details.own_discrict || '-');
                 const address = toBengaliNumber(details.address || '-');
                 const previousElection = toBengaliNumber(details.previous_election || '-');
-                const requestComment = toBengaliNumber(row.request_comment || '');
+                const comment = toBengaliNumber(details.comment || '-');
                 const dateOfBirth = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
-                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
+                const totalVoters = toBengaliNumber(row.vote_centre_total_voter || '-');
+                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at || ''));
+                
+                // Check if assigned centre matches requested centre
+                let statusSymbol = ''; // ফাঁকা by default (request না থাকলে)
+                try {
+                    const requestedMap = requestedCentreMap[officerType] || new Map();
+                    const requested = requestedMap.get(String(row.officer_iid));
+                    
+                    if (requested) {
+                        // request_table এ আছে, এখন check করি match হচ্ছে কিনা
+                        let matched = false;
+                        if (requested.vote_centre_iid && row.vote_centre_iid && 
+                            String(requested.vote_centre_iid) === String(row.vote_centre_iid)) {
+                            matched = true;
+                        } else if (requested.vote_centre_code && row.vote_centre_code && 
+                                   String(requested.vote_centre_code) === String(row.vote_centre_code)) {
+                            matched = true;
+                        }
+                        
+                        // Set symbol based on match
+                        statusSymbol = matched ? '✔' : '✗';
+                    }
+                    // else: requested না থাকলে statusSymbol ফাঁকা থাকবে
+                } catch (e) {
+                    console.error('Error comparing centres:', e);
+                }
                 
                 html += `
                     <tr>
                         <td>${toBengaliNumber(index + 1)}</td>
-                        <td>${toBengaliNumber(row.officer_name || '')}</td>
+                        <td>${toBengaliNumber(row.officer_name || '-')}</td>
                         <td><span class="badge ${badgeClass}">${getOfficerTypeLabel(officerType)}</span></td>
-                        <td>${toBengaliNumber(row.officer_table_iid || '')}</td>
-                        <td>${toBengaliNumber(row.vote_centre_code || '')}</td>
-                        <td>${toBengaliNumber(row.vote_centre_name || '')}</td>
+                        <td>${toBengaliNumber(row.officer_iid || '')}</td>
+                        <td>${toBengaliNumber(row.vote_centre_code || '-')}</td>
+                        <td>${toBengaliNumber(row.vote_centre_name || '-')}</td>
                         <td>${ownDistrict}</td>
                         <td>${address}</td>
                         <td>${previousElection}</td>
                         <td>${dateOfBirth}</td>
-                        <td>${requestComment}</td>
+                        <td>${totalVoters}</td>
+                        <td>${comment}</td>
                         <td>${createdDate}</td>
-                        <td style="text-align:center"><span class="matched-tick">${matched ? '✔' : ''}</span></td>
+                        <td style="text-align:center"><span class="matched-tick">${statusSymbol}</span></td>
                     </tr>
                 `;
             });
@@ -724,7 +853,7 @@ tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px
 
             filteredData = allData.filter(row => {
                 // Filter by officer type
-                if (officerType && row.officer_table_name !== officerType) {
+                if (officerType && row.officer_type !== officerType) {
                     return false;
                 }
 
@@ -769,27 +898,40 @@ tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px
 
             // Create CSV content
             let csv = '\uFEFF'; // UTF-8 BOM for proper Bengali display
-            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,জন্ম তারিখ,অনুরোধ মন্তব্য,তারিখ,স্ট্যাটাস\n';
+            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,জন্ম তারিখ,মোট ভোটার,মন্তব্য,তারিখ,স্ট্যাটাস\n';
 
             filteredData.forEach((row, index) => {
-                const officerType = getOfficerTypeLabel(row.officer_table_name || '');
+                const officerType = getOfficerTypeLabel(row.officer_type || '');
                 const details = row.officer_details || {};
                 const dob = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
-                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
+                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at || ''));
                 
-                // Determine status for CSV
-                let csvStatus = '';
+                // Check if assigned centre matches requested centre for CSV
+                let csvStatus = ''; // ফাঁকা by default (request না থাকলে)
                 try {
-                    const assigned = assignedCentreMap[row.officer_table_name || '']?.get(String(row.officer_table_iid));
-                    if (assigned) {
-                        if (assigned.vote_centre_iid && row.vote_centre_iid && String(assigned.vote_centre_iid) === String(row.vote_centre_iid)) csvStatus = 'মিলেছে';
-                        else if (assigned.vote_centre_code && row.vote_centre_code && String(assigned.vote_centre_code) === String(row.vote_centre_code)) csvStatus = 'মিলেছে';
+                    const requestedMap = requestedCentreMap[row.officer_type || ''] || new Map();
+                    const requested = requestedMap.get(String(row.officer_iid));
+                    
+                    if (requested) {
+                        // request_table এ আছে, এখন check করি match হচ্ছে কিনা
+                        let matched = false;
+                        if ((requested.vote_centre_iid && row.vote_centre_iid && 
+                            String(requested.vote_centre_iid) === String(row.vote_centre_iid)) ||
+                            (requested.vote_centre_code && row.vote_centre_code && 
+                            String(requested.vote_centre_code) === String(row.vote_centre_code))) {
+                            matched = true;
+                        }
+                        
+                        // Set status based on match
+                        csvStatus = matched ? 'মিলেছে' : 'মিলেনি';
                     }
+                    // else: requested না থাকলে csvStatus ফাঁকা থাকবে
                 } catch (e) {
                     console.error('CSV status check error:', e);
                 }
-
-                csv += `${toBengaliNumber(index + 1)},"${toBengaliNumber(row.officer_name || '')}","${officerType}","${toBengaliNumber(row.officer_table_iid || '')}","${toBengaliNumber(row.vote_centre_code || '')}","${toBengaliNumber(row.vote_centre_name || '')}","${toBengaliNumber(details.own_discrict || '')}","${toBengaliNumber(details.address || '')}","${toBengaliNumber(details.previous_election || '')}","${dob}","${toBengaliNumber(row.request_comment || '')}","${createdDate}","${csvStatus}"\n`;
+                
+                const totalVotersCsv = toBengaliNumber(row.vote_centre_total_voter || '');
+                csv += `${toBengaliNumber(index + 1)},"${toBengaliNumber(row.officer_name || '')}","${officerType}","${toBengaliNumber(row.officer_iid || '')}","${toBengaliNumber(row.vote_centre_code || '')}","${toBengaliNumber(row.vote_centre_name || '')}","${toBengaliNumber(details.own_discrict || '')}","${toBengaliNumber(details.address || '')}","${toBengaliNumber(details.previous_election || '')}","${dob}","${totalVotersCsv}","${toBengaliNumber(details.comment || '')}","${createdDate}","${csvStatus}"\n`;
             });
 
             // Download CSV file
