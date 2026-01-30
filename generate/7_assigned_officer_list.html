@@ -238,6 +238,13 @@
             background: #f8f9fa;
         }
 
+        /* Matched centre tick */
+        .matched-tick {
+            color: #1e90ff; /* blue */
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -387,11 +394,12 @@
                         <th>জন্ম তারিখ</th>
                         <th>মন্তব্য/ref</th>
                         <th>তারিখ</th>
+                        <th style="text-align: center">স্ট্যাটাস</th>
                     </tr>
                 </thead>
                 <tbody id="dataTableBody">
                     <tr>
-                        <td colspan="12" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
+                        <td colspan="13" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
                     </tr>
                 </tbody>
             </table>
@@ -497,7 +505,7 @@
         async function loadData() {
             setLoading(true);
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
+tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td></tr>';
 
             try {
                 // Fetch all data with pagination
@@ -532,6 +540,9 @@
                 // Fetch additional officer details
                 await fetchOfficerDetails();
 
+                // Fetch centre assignments to compare centres
+                await fetchAssignments();
+
                 // Update statistics
                 updateStatistics();
 
@@ -541,7 +552,7 @@
 
             } catch (error) {
                 console.error('Error loading data:', error);
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
             } finally {
                 setLoading(false);
             }
@@ -590,6 +601,50 @@
             console.log('✅ Officer details fetched');
         }
 
+        // Assigned centres mapping by officer type and iid
+        const assignedCentreMap = {
+            presiding: new Map(),
+            ass_presiding: new Map(),
+            polling: new Map()
+        };
+
+        // Fetch centre_assignments and populate maps
+        async function fetchAssignments() {
+            console.log('📊 Loading centre_assignments...');
+            const CHUNK = 1000;
+            const MAX_FETCH = 50000;
+            let from = 0;
+            const allAssignments = [];
+
+            while (true) {
+                const { data, error } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .select('assignment_id, officer_type, officer_iid, vote_centre_iid, vote_centre_code')
+                    .range(from, from + CHUNK - 1);
+
+                if (error) {
+                    console.error('Error loading centre_assignments:', error);
+                    break;
+                }
+
+                const chunk = data || [];
+                allAssignments.push(...chunk);
+
+                if (chunk.length < CHUNK) break;
+                from += CHUNK;
+                if (allAssignments.length >= MAX_FETCH) break;
+            }
+
+            allAssignments.forEach(a => {
+                const info = { vote_centre_iid: a.vote_centre_iid, vote_centre_code: a.vote_centre_code };
+                if (a.officer_type === 'presiding') assignedCentreMap.presiding.set(String(a.officer_iid), info);
+                else if (a.officer_type === 'ass_presiding') assignedCentreMap.ass_presiding.set(String(a.officer_iid), info);
+                else if (a.officer_type === 'polling') assignedCentreMap.polling.set(String(a.officer_iid), info);
+            });
+
+            console.log(`✅ Loaded ${allAssignments.length} centre_assignments`);
+        }
+
         // Update statistics
         function updateStatistics() {
             const total = allData.length;
@@ -608,7 +663,7 @@
             const tbody = document.getElementById('dataTableBody');
 
             if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
                 return;
             }
 
@@ -618,6 +673,19 @@
                 const badgeClass = officerType === 'presiding' ? 'presiding' : 
                                    officerType === 'ass_presiding' ? 'ass-presiding' : 'polling';
                 
+                // determine if assigned centre matches request centre
+                let matched = false;
+                try {
+                    const assignedMap = assignedCentreMap[officerType] || new Map();
+                    const assigned = assignedMap.get(String(row.officer_table_iid));
+                    if (assigned) {
+                        if (assigned.vote_centre_iid && row.vote_centre_iid && String(assigned.vote_centre_iid) === String(row.vote_centre_iid)) matched = true;
+                        else if (assigned.vote_centre_code && row.vote_centre_code && String(assigned.vote_centre_code) === String(row.vote_centre_code)) matched = true;
+                    }
+                } catch (e) {
+                    console.error('Error comparing assignment centres:', e);
+                }
+
                 const details = row.officer_details || {};
                 const ownDistrict = toBengaliNumber(details.own_discrict || '-');
                 const address = toBengaliNumber(details.address || '-');
@@ -640,6 +708,7 @@
                         <td>${dateOfBirth}</td>
                         <td>${requestComment}</td>
                         <td>${createdDate}</td>
+                        <td style="text-align:center"><span class="matched-tick">${matched ? '✔' : ''}</span></td>
                     </tr>
                 `;
             });
@@ -700,7 +769,7 @@
 
             // Create CSV content
             let csv = '\uFEFF'; // UTF-8 BOM for proper Bengali display
-            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,জন্ম তারিখ,অনুরোধ মন্তব্য,তারিখ\n';
+            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,জন্ম তারিখ,অনুরোধ মন্তব্য,তারিখ,স্ট্যাটাস\n';
 
             filteredData.forEach((row, index) => {
                 const officerType = getOfficerTypeLabel(row.officer_table_name || '');
@@ -708,7 +777,19 @@
                 const dob = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
                 const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
                 
-                csv += `${toBengaliNumber(index + 1)},"${toBengaliNumber(row.officer_name || '')}","${officerType}","${toBengaliNumber(row.officer_table_iid || '')}","${toBengaliNumber(row.vote_centre_code || '')}","${toBengaliNumber(row.vote_centre_name || '')}","${toBengaliNumber(details.own_discrict || '')}","${toBengaliNumber(details.address || '')}","${toBengaliNumber(details.previous_election || '')}","${dob}","${toBengaliNumber(row.request_comment || '')}","${createdDate}"\n`;
+                // Determine status for CSV
+                let csvStatus = '';
+                try {
+                    const assigned = assignedCentreMap[row.officer_table_name || '']?.get(String(row.officer_table_iid));
+                    if (assigned) {
+                        if (assigned.vote_centre_iid && row.vote_centre_iid && String(assigned.vote_centre_iid) === String(row.vote_centre_iid)) csvStatus = 'মিলেছে';
+                        else if (assigned.vote_centre_code && row.vote_centre_code && String(assigned.vote_centre_code) === String(row.vote_centre_code)) csvStatus = 'মিলেছে';
+                    }
+                } catch (e) {
+                    console.error('CSV status check error:', e);
+                }
+
+                csv += `${toBengaliNumber(index + 1)},"${toBengaliNumber(row.officer_name || '')}","${officerType}","${toBengaliNumber(row.officer_table_iid || '')}","${toBengaliNumber(row.vote_centre_code || '')}","${toBengaliNumber(row.vote_centre_name || '')}","${toBengaliNumber(details.own_discrict || '')}","${toBengaliNumber(details.address || '')}","${toBengaliNumber(details.previous_election || '')}","${dob}","${toBengaliNumber(row.request_comment || '')}","${createdDate}","${csvStatus}"\n`;
             });
 
             // Download CSV file
