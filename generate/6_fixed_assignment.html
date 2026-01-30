@@ -273,7 +273,23 @@
 
         .action-btns {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+        }
+
+        /* Make action column buttons compact and prevent text wrap */
+        .action-btns .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            font-size: 12px;
+            line-height: 1;
+            white-space: nowrap; /* prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 48px; /* ensure enough space to show short labels */
+            height: 30px;
+            border-radius: 6px;
         }
 
         .btn-sm {
