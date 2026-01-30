@@ -308,7 +308,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📋 নিয়োগকৃত কর্মকর্তাদের তালিকা</h1>
+        <h1>📋 Fixed Duty list</h1>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
@@ -384,7 +384,7 @@
                         <th>নিজ জেলা</th>
                         <th>ঠিকানা</th>
                         <th>পূর্ববর্তী নির্বাচন</th>
-                        <th>মন্তব্য</th>
+                        <th>জন্ম তারিখ</th>
                         <th>মন্তব্য/ref</th>
                         <th>তারিখ</th>
                     </tr>
@@ -467,6 +467,14 @@
             if (num === null || num === undefined || num === '') return '';
             const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
             return String(num).replace(/\d/g, digit => bengaliDigits[digit]);
+        }
+
+        // Format date strings to Bengali locale (returns '-' if empty)
+        function formatToBengaliDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString('bn-BD');
         }
 
         // Show/hide loading
@@ -566,7 +574,7 @@
                     if (tableName) {
                         const { data, error } = await window.supabaseClient
                             .from(tableName)
-                            .select('own_discrict, address, previous_election, comment')
+                            .select('own_discrict, address, previous_election, comment, date_of_birth')
                             .eq(iidField, officerIid)
                             .single();
 
@@ -606,7 +614,6 @@
 
             let html = '';
             filteredData.forEach((row, index) => {
-                const date = new Date(row.created_at).toLocaleDateString('bn-BD');
                 const officerType = row.officer_table_name || '';
                 const badgeClass = officerType === 'presiding' ? 'presiding' : 
                                    officerType === 'ass_presiding' ? 'ass-presiding' : 'polling';
@@ -615,8 +622,9 @@
                 const ownDistrict = toBengaliNumber(details.own_discrict || '-');
                 const address = toBengaliNumber(details.address || '-');
                 const previousElection = toBengaliNumber(details.previous_election || '-');
-                const officerComment = toBengaliNumber(details.comment || '-');
                 const requestComment = toBengaliNumber(row.request_comment || '');
+                const dateOfBirth = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
+                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
                 
                 html += `
                     <tr>
@@ -629,9 +637,9 @@
                         <td>${ownDistrict}</td>
                         <td>${address}</td>
                         <td>${previousElection}</td>
-                        <td>${officerComment}</td>
+                        <td>${dateOfBirth}</td>
                         <td>${requestComment}</td>
-                        <td>${toBengaliNumber(date)}</td>
+                        <td>${createdDate}</td>
                     </tr>
                 `;
             });
@@ -692,14 +700,15 @@
 
             // Create CSV content
             let csv = '\uFEFF'; // UTF-8 BOM for proper Bengali display
-            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,কর্মকর্তার মন্তব্য,অনুরোধ মন্তব্য,তারিখ\n';
+            csv += 'ক্রমিক,কর্মকর্তার নাম,কর্মকর্তার ধরন,Officer IID,কেন্দ্র কোড,কেন্দ্রের নাম,নিজ জেলা,ঠিকানা,পূর্ববর্তী নির্বাচন,জন্ম তারিখ,অনুরোধ মন্তব্য,তারিখ\n';
 
             filteredData.forEach((row, index) => {
-                const date = new Date(row.created_at).toLocaleDateString('bn-BD');
                 const officerType = getOfficerTypeLabel(row.officer_table_name || '');
                 const details = row.officer_details || {};
+                const dob = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
+                const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
                 
-                csv += `${index + 1},"${row.officer_name || ''}","${officerType}","${row.officer_table_iid || ''}","${row.vote_centre_code || ''}","${row.vote_centre_name || ''}","${details.own_discrict || ''}","${details.address || ''}","${details.previous_election || ''}","${details.comment || ''}","${row.request_comment || ''}","${date}"\n`;
+                csv += `${toBengaliNumber(index + 1)},"${toBengaliNumber(row.officer_name || '')}","${officerType}","${toBengaliNumber(row.officer_table_iid || '')}","${toBengaliNumber(row.vote_centre_code || '')}","${toBengaliNumber(row.vote_centre_name || '')}","${toBengaliNumber(details.own_discrict || '')}","${toBengaliNumber(details.address || '')}","${toBengaliNumber(details.previous_election || '')}","${dob}","${toBengaliNumber(row.request_comment || '')}","${createdDate}"\n`;
             });
 
             // Download CSV file
