@@ -388,11 +388,11 @@
             .data-table th:last-child,
             .data-table td:last-child { display: none !important; }
 
-            /* Hide Comment/Ref (11th) and Date (12th) columns */
-            .data-table th:nth-child(11),
-            .data-table td:nth-child(11),
+            /* Hide Comment/Ref (12th) and Date (13th) columns */
             .data-table th:nth-child(12),
-            .data-table td:nth-child(12) { display: none !important; }
+            .data-table td:nth-child(12),
+            .data-table th:nth-child(13),
+            .data-table td:nth-child(13) { display: none !important; }
         }
     </style>
 </head>
@@ -505,6 +505,7 @@
                         <th>Address</th>
                         <th>Previous Election</th>
                         <th>DOB</th>
+                        <th>Total Voter</th>
                         <th>Comment/Ref</th>
                         <th>Date</th>
                         <th style="text-align: center">Status</th>
@@ -513,7 +514,7 @@
                 </thead>
                 <tbody id="dataTableBody">
                     <tr>
-                        <td colspan="9" style="text-align: center; padding: 20px;">Loading...</td>
+                        <td colspan="15" style="text-align: center; padding: 20px;">Loading...</td>
                     </tr>
                 </tbody>
             </table>
@@ -1301,8 +1302,7 @@
         // Load table data
         async function loadTableData() {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading...</td></tr>'; 
-
+            tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 20px;">Loading...</td></tr>';
             try {
                 // Fetch all data with pagination
                 const CHUNK = 1000;
@@ -1347,7 +1347,7 @@
 
             } catch (error) {
                 console.error('Error loading table data:', error);
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: red;">Failed to load</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 20px; color: red;">Failed to load</td></tr>'; 
             }
         }
 
@@ -1389,7 +1389,7 @@
             }
 
             if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px;">No records found</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 20px;">No records found</td></tr>'; 
                 updateSortIcons();
                 return;
             }
@@ -1458,6 +1458,10 @@
                 const previousElection = toBengaliNumber(details.previous_election || '-');
                 const requestComment = toBengaliNumber(row.request_comment || '');
                 const dateOfBirth = toBengaliNumber(formatToBengaliDate(details.date_of_birth || ''));
+                // Lookup centre info for total voters (prefer `total_voter`)
+                const centreInfo = (voteCentreData && voteCentreData[row.vote_centre_iid]) ? voteCentreData[row.vote_centre_iid] : null;
+                const totalVoterRaw = centreInfo ? (centreInfo.total_voter ?? centreInfo.voter_both_total ?? centreInfo.voter_total ?? '-') : '-';
+                const totalVoter = toBengaliNumber(totalVoterRaw);
                 const createdDate = toBengaliNumber(formatToBengaliDate(row.created_at));
                 
                 html += `
@@ -1472,6 +1476,7 @@
                         <td>${address}</td>
                         <td>${previousElection}</td>
                         <td>${dateOfBirth}</td>
+                        <td>${totalVoter}</td>
                         <td>${requestComment}</td>
                         <td>${createdDate}</td>
                         <td style="text-align:center"><span class="matched-tick">${matched ? '✔' : ''}</span></td>
