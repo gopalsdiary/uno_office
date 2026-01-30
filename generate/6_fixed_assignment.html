@@ -1084,6 +1084,8 @@
 
                     if (error) throw error;
                     showStatus('✅ Updated successfully', 'success');
+                    // Refresh only the saved records table; keep the Add form intact
+                    loadTableData();
                 } else {
                     // Insert new record
                     const { error } = await window.supabaseClient
@@ -1092,6 +1094,8 @@
 
                     if (error) throw error;
                     showStatus('✅ Saved successfully', 'success');
+                    // Refresh only the saved records table; keep the Add form intact
+                    loadTableData();
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
