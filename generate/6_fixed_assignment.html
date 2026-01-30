@@ -359,6 +359,7 @@
                         <th>ক্রমিক</th>
                         <th>কর্মকর্তার নাম</th>
                         <th>কর্মকর্তার ধরন</th>
+                        <th>Officer IID</th>
                         <th>কেন্দ্র কোড</th>
                         <th>কেন্দ্রের নাম</th>
                         <th>Ref/মন্তব্য *</th>
@@ -368,7 +369,7 @@
                 </thead>
                 <tbody id="dataTableBody">
                     <tr>
-                        <td colspan="8" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
+                        <td colspan="9" style="text-align: center; padding: 20px;">লোড হচ্ছে...</td>
                     </tr>
                 </tbody>
             </table>
@@ -893,7 +894,7 @@
 
             } catch (error) {
                 console.error('Error loading table data:', error);
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: red;">লোড করতে সমস্যা হয়েছে</td></tr>';
             }
         }
 
@@ -908,7 +909,7 @@
             }
 
             if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">কোনো রেকর্ড নেই</td></tr>';
                 return;
             }
 
@@ -920,6 +921,7 @@
                         <td>${index + 1}</td>
                         <td>${row.officer_name || ''}</td>
                         <td>${getOfficerTypeLabel(row.officer_table_name)}</td>
+                        <td>${row.officer_table_iid || ''}</td>
                         <td>${row.vote_centre_code || ''}</td>
                         <td>${row.vote_centre_name || ''}</td>
                         <td>${(row.request_comment && row.request_comment.length>100) ? row.request_comment.substring(0,100) + '...' : (row.request_comment || '')}</td>
