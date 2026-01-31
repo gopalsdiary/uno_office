@@ -590,6 +590,45 @@
             searchResultsData = [];
 
             try {
+                // Fetch assigned officers from request_table
+                const CHUNK = 1000;
+                const MAX_FETCH = 50000;
+                let from = 0;
+                let assignedData = [];
+                
+                while (true) {
+                    const { data, error } = await window.supabaseClient
+                        .from('request_table')
+                        .select('officer_table_iid, officer_table_name')
+                        .range(from, from + CHUNK - 1);
+                    
+                    if (error) throw error;
+                    
+                    const chunk = data || [];
+                    assignedData.push(...chunk);
+                    
+                    if (chunk.length < CHUNK) break;
+                    from += CHUNK;
+                    if (assignedData.length >= MAX_FETCH) break;
+                }
+                
+                // Create a Map of assigned officer IDs grouped by type
+                const assignedOfficerIds = {
+                    presiding: new Set(),
+                    ass_presiding: new Set(),
+                    polling: new Set()
+                };
+                
+                assignedData.forEach(record => {
+                    if (record.officer_table_iid && record.officer_table_name) {
+                        if (assignedOfficerIds[record.officer_table_name]) {
+                            assignedOfficerIds[record.officer_table_name].add(String(record.officer_table_iid));
+                        }
+                    }
+                });
+                
+                console.log(`Assigned officers: Presiding=${assignedOfficerIds.presiding.size}, Ass.Presiding=${assignedOfficerIds.ass_presiding.size}, Polling=${assignedOfficerIds.polling.size}`);
+
                 // presiding
                 if (!officerType || officerType === 'presiding') {
                     const { data: presidingData, error: presidingError } = await window.supabaseClient
@@ -599,14 +638,17 @@
                     if (presidingError) throw presidingError;
                     if (presidingData && presidingData.length) {
                         presidingData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'presiding_list',
-                                iid: off.presiding_iid,
-                                name: off.presiding_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.presiding_designation || ''
-                            });
+                            // Filter out assigned officers
+                            if (!assignedOfficerIds.presiding.has(String(off.presiding_iid))) {
+                                searchResultsData.push({
+                                    ...off,
+                                    table: 'presiding_list',
+                                    iid: off.presiding_iid,
+                                    name: off.presiding_name,
+                                    mobile: off.mobile_number || '',
+                                    designation: off.presiding_designation || ''
+                                });
+                            }
                         });
                     }
                 }
@@ -620,14 +662,17 @@
                     if (assError) throw assError;
                     if (assData && assData.length) {
                         assData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'ass_presiding_list',
-                                iid: off.ass_presiding_iid,
-                                name: off.ass_presiding_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.ass_presiding_designation || ''
-                            });
+                            // Filter out assigned officers
+                            if (!assignedOfficerIds.ass_presiding.has(String(off.ass_presiding_iid))) {
+                                searchResultsData.push({
+                                    ...off,
+                                    table: 'ass_presiding_list',
+                                    iid: off.ass_presiding_iid,
+                                    name: off.ass_presiding_name,
+                                    mobile: off.mobile_number || '',
+                                    designation: off.ass_presiding_designation || ''
+                                });
+                            }
                         });
                     }
                 }
@@ -641,14 +686,17 @@
                     if (pollError) throw pollError;
                     if (pollData && pollData.length) {
                         pollData.forEach(off => {
-                            searchResultsData.push({
-                                ...off,
-                                table: 'polling_list',
-                                iid: off.polling_iid,
-                                name: off.polling_name,
-                                mobile: off.mobile_number || '',
-                                designation: off.polling_designation || ''
-                            });
+                            // Filter out assigned officers
+                            if (!assignedOfficerIds.polling.has(String(off.polling_iid))) {
+                                searchResultsData.push({
+                                    ...off,
+                                    table: 'polling_list',
+                                    iid: off.polling_iid,
+                                    name: off.polling_name,
+                                    mobile: off.mobile_number || '',
+                                    designation: off.polling_designation || ''
+                                });
+                            }
                         });
                     }
                 }
@@ -748,8 +796,13 @@
             
             if (!officerType) {
                 dropdown.innerHTML = '<option value="">-- Select officer type first --</option>';
+                // Reload vote centres without filter
+                loadVoteCentres();
                 return;
             }
+            
+            // Reload vote centres based on selected officer type
+            loadVoteCentres();
             
             setLoading(true);
             allOfficers = [];
@@ -796,15 +849,49 @@
                 
                 console.log(`Loaded ${allData.length} ${officerType} officers`);
                 
-                // Store officers with unified structure
-                allOfficers = allData.map(off => ({
-                    ...off,
-                    table: tableName,
-                    iid: off[idField],
-                    name: off[nameField],
-                    mobile: off.mobile_number || '',
-                    type: officerType
-                }));
+                // Fetch assigned officers from request_table for this type
+                let assignedOfficerIds = new Set();
+                from = 0;
+                let assignedData = [];
+                
+                while (true) {
+                    const { data, error } = await window.supabaseClient
+                        .from('request_table')
+                        .select('officer_table_iid, officer_table_name')
+                        .range(from, from + CHUNK - 1);
+                    
+                    if (error) throw error;
+                    
+                    const chunk = data || [];
+                    assignedData.push(...chunk);
+                    
+                    if (chunk.length < CHUNK) break;
+                    from += CHUNK;
+                    if (assignedData.length >= MAX_FETCH) break;
+                }
+                
+                // Create a Set of assigned officer IDs for this type only (convert to string)
+                assignedData.forEach(record => {
+                    if (record.officer_table_iid && record.officer_table_name === officerType) {
+                        assignedOfficerIds.add(String(record.officer_table_iid));
+                    }
+                });
+                
+                console.log(`Found ${assignedOfficerIds.size} assigned ${officerType} officers`);
+                
+                // Store officers with unified structure, filtering out assigned ones
+                allOfficers = allData
+                    .filter(off => !assignedOfficerIds.has(String(off[idField])))
+                    .map(off => ({
+                        ...off,
+                        table: tableName,
+                        iid: off[idField],
+                        name: off[nameField],
+                        mobile: off.mobile_number || '',
+                        type: officerType
+                    }));
+                
+                console.log(`Available unassigned officers: ${allOfficers.length}`);
                 
                 // Populate dropdown
                 let options = '<option value="">-- Select Officer --</option>';
@@ -887,6 +974,9 @@
             setLoading(true);
             
             try {
+                // Get selected officer type
+                const officerType = document.getElementById('officerType').value;
+                
                 // Fetch all data with pagination
                 const CHUNK = 1000;
                 const MAX_FETCH = 50000;
@@ -916,14 +1006,83 @@
 
                 console.log(`✅ Total ${allData.length} vote centres loaded`);
 
+                // Fetch request_table to count assigned officers
+                let allAssignments = [];
+                from = 0;
+                
+                console.log('📊 Loading request_table assignments...');
+                
+                while (true) {
+                    const { data, error } = await window.supabaseClient
+                        .from('request_table')
+                        .select('*')
+                        .range(from, from + CHUNK - 1);
+
+                    if (error) {
+                        console.warn('⚠️ Error loading request_table:', error.message || error);
+                        break;
+                    }
+
+                    const chunk = data || [];
+                    allAssignments.push(...chunk);
+                    
+                    if (chunk.length < CHUNK) break;
+                    from += CHUNK;
+                    if (allAssignments.length >= MAX_FETCH) break;
+                }
+
+                console.log(`✅ Loaded ${allAssignments.length} request_table assignments`);
+
+                // Count assigned officers per centre per type
+                const assignmentCounts = {};
+                allAssignments.forEach(assignment => {
+                    const centreId = assignment.vote_centre_iid;
+                    const type = assignment.officer_table_name; // presiding, ass_presiding, polling
+                    
+                    if (!assignmentCounts[centreId]) {
+                        assignmentCounts[centreId] = {
+                            presiding: 0,
+                            ass_presiding: 0,
+                            polling: 0
+                        };
+                    }
+                    
+                    if (assignmentCounts[centreId][type] !== undefined) {
+                        assignmentCounts[centreId][type]++;
+                    }
+                });
+
                 voteCentreData = {};
                 let options = '<option value="">-- Select --</option>'; 
+                let availableCount = 0;
                 
                 allData.forEach(centre => {
                     const id = centre.vote_centre_iid;
                     voteCentreData[id] = centre;
-                    options += `<option value="${id}">${centre.vote_centre_code} - ${centre.vote_centre_name || ''}</option>`;
+                    
+                    // Calculate required slots based on officer type
+                    let requiredSlots = 0;
+                    const voterTotal = parseFloat(centre.voter_both_total) || 0;
+                    
+                    if (officerType === 'presiding') {
+                        requiredSlots = 1; // 1 presiding per centre
+                    } else if (officerType === 'ass_presiding') {
+                        requiredSlots = Math.ceil(voterTotal / 2); // voter_both_total / 2
+                    } else if (officerType === 'polling') {
+                        requiredSlots = Math.ceil(voterTotal); // voter_both_total
+                    }
+                    
+                    // Get current assigned count
+                    const assignedCount = assignmentCounts[id]?.[officerType] || 0;
+                    
+                    // Only show centres with available slots
+                    if (!officerType || assignedCount < requiredSlots) {
+                        options += `<option value="${id}">${centre.vote_centre_code} - ${centre.vote_centre_name || ''} (${assignedCount}/${requiredSlots})</option>`;
+                        availableCount++;
+                    }
                 });
+
+                console.log(`✅ ${availableCount} centres available for ${officerType || 'all'}`);
 
                 document.getElementById('voteCentreSelect').innerHTML = options;
                 
