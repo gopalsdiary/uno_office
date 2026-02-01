@@ -461,6 +461,7 @@
                     <div class="form-group">
                         <label for="voteCentreName">Centre Name</label>
                         <input type="text" id="voteCentreName" readonly>
+                        <div id="centreLimits" class="side-small" style="margin-top:8px;">🔍 Limits will appear here after selecting a centre or choosing an officer type.</div>
                     </div>
 
                     <div class="form-group" id="commentGroup">
@@ -1067,9 +1068,9 @@
                     if (officerType === 'presiding') {
                         requiredSlots = 1; // 1 presiding per centre
                     } else if (officerType === 'ass_presiding') {
-                        requiredSlots = Math.ceil(voterTotal / 2); // voter_both_total / 2
+                        requiredSlots = Math.ceil(voterTotal); // voter_both_total (ass presiding = 1 × voter_both_total)
                     } else if (officerType === 'polling') {
-                        requiredSlots = Math.ceil(voterTotal); // voter_both_total
+                        requiredSlots = Math.ceil(voterTotal * 2); // 2 × voter_both_total (polling officers allowed up to twice the voter total)
                     }
                     
                     // Get current assigned count
@@ -1097,16 +1098,38 @@
         // Load centre details when selected
         function loadCentreDetails() {
             const centreId = document.getElementById('voteCentreSelect').value;
+            const officerType = document.getElementById('officerType').value;
+            const limitsDiv = document.getElementById('centreLimits');
             
             if (!centreId || !voteCentreData[centreId]) {
                 document.getElementById('voteCentreCode').value = '';
                 document.getElementById('voteCentreName').value = '';
+                if (limitsDiv) limitsDiv.textContent = '🔍 Limits will appear here after selecting a centre or choosing an officer type.';
                 return;
             }
 
             const centre = voteCentreData[centreId];
             document.getElementById('voteCentreCode').value = centre.vote_centre_code || '';
             document.getElementById('voteCentreName').value = centre.vote_centre_name || '';
+
+            // Calculate limits based on voter_both_total
+            const voterTotal = parseFloat(centre.voter_both_total) || 0;
+            const limits = {
+                presiding: 1,
+                ass_presiding: Math.ceil(voterTotal), // 1 × voter_both_total
+                polling: Math.ceil(voterTotal * 2) // 2 × voter_both_total
+            };
+
+            // Current assigned counts for this centre
+            const assigned = assignmentCounts[centreId] || { presiding: 0, ass_presiding: 0, polling: 0 };
+
+            if (limitsDiv) {
+                const label = officerType ? (officerType === 'presiding' ? 'Presiding' : officerType === 'ass_presiding' ? 'Ass. Presiding' : 'Polling') : 'Selected Type';
+                const currentAssigned = officerType ? (assigned[officerType] ?? 0) : '-';
+                const currentLimit = officerType ? (limits[officerType] ?? '-') : '-';
+
+                limitsDiv.innerHTML = `📊 Limits — Presiding: ${limits.presiding}, Ass. Presiding: ${limits.ass_presiding}, Polling: ${limits.polling}.<br>🔹 ${label}: ${currentAssigned}/${currentLimit}`;
+            }
         }
 
         // Validation: Check if officer already exists
@@ -1144,8 +1167,8 @@
                 // Define limits
                 const limits = {
                     'presiding': 1,
-                    'ass_presiding': Math.ceil(voterBothTotal * 2),
-                    'polling': Math.ceil(voterBothTotal * 4)
+                    'ass_presiding': Math.ceil(voterBothTotal), // ass presiding = ceil(1 × voter_both_total)
+                    'polling': Math.ceil(voterBothTotal * 2) // polling = 2 × voter_both_total
                 };
 
                 // Count existing entries
