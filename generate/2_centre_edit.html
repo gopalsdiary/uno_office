@@ -325,6 +325,20 @@
             }
             return officer.name || 'N/A';
         }
+
+        function normalizeId(value) {
+            return String(value ?? '').trim();
+        }
+
+        function isDisabled(person) {
+            const disability = String(person?.disability ?? '').trim().toLowerCase();
+            return disability === 'Yes';
+        }
+
+        function isAssigned(person) {
+            const assignCode = String(person?.assign_code ?? '').trim();
+            return assignCode !== '';
+        }
         
         // Show status message
         function showStatus(message, type = 'info') {
@@ -635,88 +649,126 @@
                 
                 console.log(`✅ Found ${voteCentres.length} vote centres`);
                 
-                // Fetch all presiding list with pagination
+                // Fetch all presiding list with pagination (no filter here)
                 console.log('📊 Fetching presiding list with pagination...');
-                const presidingList = await fetchAllData('presiding_list', 'presiding_iid', (p) => {
-                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
-                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
-                    return !hasDisability && !isAssigned;
-                });
+                const presidingListAll = await fetchAllData('presiding_list', 'presiding_iid');
                 
-                if (!presidingList || presidingList.length === 0) {
+                if (!presidingListAll || presidingListAll.length === 0) {
                     throw new Error('কোন প্রিসাইডিং অফিসার পাওয়া যায়নি!');
                 }
+
+                const presidingEligible = presidingListAll.filter(p => !isDisabled(p));
                 
-                // Fetch all assistant presiding list with pagination
+                // Fetch all assistant presiding list with pagination (no filter here)
                 console.log('📊 Fetching assistant presiding list with pagination...');
-                const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', (p) => {
-                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
-                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
-                    return !hasDisability && !isAssigned;
-                });
+                const assPresidingListAll = await fetchAllData('ass_presiding_list', 'ass_presiding_iid');
                 
-                if (!assPresidingList || assPresidingList.length === 0) {
+                if (!assPresidingListAll || assPresidingListAll.length === 0) {
                     throw new Error('কোন সহকারী প্রিসাইডিং অফিসার পাওয়া যায়নি!');
                 }
+
+                const assPresidingEligible = assPresidingListAll.filter(p => !isDisabled(p));
                 
-                // Fetch all polling list with pagination
+                // Fetch all polling list with pagination (no filter here)
                 console.log('📊 Fetching polling list with pagination...');
-                const pollingListAll = await fetchAllData('polling_list', 'polling_iid', (p) => {
-                    return p.polling_name && p.polling_name.trim() !== '';
-                });
+                const pollingListAll = await fetchAllData('polling_list', 'polling_iid');
                 
                 console.log(`📊 Total polling officers loaded: ${pollingListAll.length}`);
                 
-                // Check requested officers BEFORE filtering
-                if (requestedOfficerIds.polling.size > 0) {
-                    console.log('🔍 Checking requested polling officers in raw data...');
-                    requestedOfficerIds.polling.forEach(reqId => {
-                        const officer = pollingListAll.find(p => String(p.polling_iid) === reqId);
-                        if (officer) {
-                            const hasDisability = officer.disability === 'yes' || officer.disability === 'Yes' || officer.disability === 'YES';
-                            const isAssigned = officer.assign_code && officer.assign_code.trim() !== '';
-                            console.log(`   🔍 ID ${reqId}: ${officer.polling_name}`);
-                            console.log(`      - disability: ${officer.disability}, hasDisability: ${hasDisability}`);
-                            console.log(`      - assign_code: "${officer.assign_code}", isAssigned: ${isAssigned}`);
-                            if (hasDisability) console.log(`      ⚠️ FILTERED OUT: Has disability!`);
-                            if (isAssigned) console.log(`      ⚠️ FILTERED OUT: Already assigned!`);
-                        } else {
-                            console.log(`   ❌ ID ${reqId} not found in polling_list table!`);
-                        }
-                    });
-                }
-                
-                // Now apply filter
-                const pollingList = pollingListAll.filter(p => {
-                    const hasDisability = p.disability === 'yes' || p.disability === 'Yes' || p.disability === 'YES';
-                    const isAssigned = p.assign_code && p.assign_code.trim() !== '';
-                    return !hasDisability && !isAssigned;
+                const pollingEligible = pollingListAll.filter(p => {
+                    return p.polling_name && p.polling_name.trim() !== '' && !isDisabled(p);
                 });
-                
-                console.log(`📊 Polling officers after filter: ${pollingList.length}`);
-                
-                if (!pollingList || pollingList.length === 0) {
+
+                if (!pollingEligible || pollingEligible.length === 0) {
                     throw new Error('কোন পোলিং অফিসার পাওয়া যায়নি!');
                 }
-                
-                // Verify requested polling officers exist in filtered list
-                if (requestedOfficerIds.polling.size > 0) {
-                    const pollingIds = new Set(pollingList.map(p => String(p.polling_iid)));
-                    console.log('✅ Requested polling officers in filtered list:');
-                    requestedOfficerIds.polling.forEach(reqId => {
-                        if (pollingIds.has(reqId)) {
-                            const officer = pollingList.find(p => String(p.polling_iid) === reqId);
-                            console.log(`   ✅ Available: ID ${reqId} - ${officer.polling_name}`);
-                        } else {
-                            console.log(`   ❌ NOT Available: ID ${reqId} (filtered out or not found)`);
-                        }
-                    });
+
+                // Process request_table officers (disability filter only, assign_code ignored)
+                console.log('🔍 Processing request_table officers (disability filtered only)...');
+                const requestedPresidingByCentre = new Map();
+                const requestedAssPresidingByCentre = new Map();
+                const requestedPollingByCentre = new Map();
+
+                function addRequested(map, centreIid, officer) {
+                    if (!map.has(centreIid)) {
+                        map.set(centreIid, []);
+                    }
+                    map.get(centreIid).push(officer);
                 }
-                
-                // Use filtered data directly
-                const presidingFiltered = presidingList;
-                const assPresidingFiltered = assPresidingList;
-                const pollingFiltered = pollingList;
+
+                requestData.forEach(req => {
+                    const centreIid = normalizeId(req.vote_centre_iid);
+                    const officerId = normalizeId(req.officer_table_iid);
+                    const tableName = req.officer_table_name;
+
+                    if (!centreIid || !officerId || !tableName) return;
+
+                    let sourceAll = null;
+                    let idKey = '';
+                    let targetMap = null;
+
+                    if (tableName === 'presiding') {
+                        sourceAll = presidingListAll;
+                        idKey = 'presiding_iid';
+                        targetMap = requestedPresidingByCentre;
+                    } else if (tableName === 'ass_presiding') {
+                        sourceAll = assPresidingListAll;
+                        idKey = 'ass_presiding_iid';
+                        targetMap = requestedAssPresidingByCentre;
+                    } else if (tableName === 'polling') {
+                        sourceAll = pollingListAll;
+                        idKey = 'polling_iid';
+                        targetMap = requestedPollingByCentre;
+                    } else {
+                        return;
+                    }
+
+                    const rawOfficer = sourceAll.find(p => normalizeId(p[idKey]) === officerId);
+                    if (!rawOfficer) {
+                        console.log(`   ❌ Requested ${tableName} ID ${officerId} not found in ${tableName}_list`);
+                        return;
+                    }
+
+                    if (isDisabled(rawOfficer)) {
+                        console.log(`   ⚠️ Requested ${tableName} ID ${officerId} excluded (disability=Yes)`);
+                        return;
+                    }
+
+                    addRequested(targetMap, centreIid, rawOfficer);
+                });
+
+                console.log(`📊 Requested (eligible) presiding centres: ${requestedPresidingByCentre.size}`);
+                console.log(`📊 Requested (eligible) ass_presiding centres: ${requestedAssPresidingByCentre.size}`);
+                console.log(`📊 Requested (eligible) polling centres: ${requestedPollingByCentre.size}`);
+
+                // Build requested ID sets for pool exclusion
+                const requestedPresidingIds = new Set();
+                const requestedAssPresidingIds = new Set();
+                const requestedPollingIds = new Set();
+
+                requestedPresidingByCentre.forEach(list => {
+                    list.forEach(o => requestedPresidingIds.add(normalizeId(o.presiding_iid)));
+                });
+                requestedAssPresidingByCentre.forEach(list => {
+                    list.forEach(o => requestedAssPresidingIds.add(normalizeId(o.ass_presiding_iid)));
+                });
+                requestedPollingByCentre.forEach(list => {
+                    list.forEach(o => requestedPollingIds.add(normalizeId(o.polling_iid)));
+                });
+
+                // Build available pools (exclude disability, assigned, and requested IDs)
+                const presidingAvailable = shuffleArray(
+                    presidingEligible.filter(p => !isAssigned(p) && !requestedPresidingIds.has(normalizeId(p.presiding_iid)))
+                );
+                const assPresidingAvailableRaw = assPresidingEligible.filter(
+                    p => !isAssigned(p) && !requestedAssPresidingIds.has(normalizeId(p.ass_presiding_iid))
+                );
+                const pollingAvailableRaw = pollingEligible.filter(
+                    p => !isAssigned(p) && !requestedPollingIds.has(normalizeId(p.polling_iid))
+                );
+
+                const assPresidingAvailable = shuffleWithGenderBalance(assPresidingAvailableRaw);
+                const pollingAvailable = shuffleWithGenderBalance(pollingAvailableRaw);
                 
                 // Calculate required officers
                 let totalBooths = 0;
@@ -727,27 +779,33 @@
                     assPresiding: totalBooths,
                     polling: totalBooths * 2
                 };
+
+                const availableCounts = {
+                    presiding: presidingAvailable.length + requestedPresidingIds.size,
+                    assPresiding: assPresidingAvailable.length + requestedAssPresidingIds.size,
+                    polling: pollingAvailable.length + requestedPollingIds.size
+                };
                 
                 console.log('📊 Requirements:', required);
-                console.log(`   Presiding: ${presidingFiltered.length}/${required.presiding}`);
-                console.log(`   Ass Presiding: ${assPresidingFiltered.length}/${required.assPresiding}`);
-                console.log(`   Polling: ${pollingFiltered.length}/${required.polling}`);
+                console.log(`   Presiding: ${availableCounts.presiding}/${required.presiding}`);
+                console.log(`   Ass Presiding: ${availableCounts.assPresiding}/${required.assPresiding}`);
+                console.log(`   Polling: ${availableCounts.polling}/${required.polling}`);
                 
                 // Check availability and calculate how many centres we can assign
                 const canAssignCentres = Math.min(
-                    presidingFiltered.length,
+                    availableCounts.presiding,
                     voteCentres.length
                 );
                 
                 let warnings = [];
-                if (presidingFiltered.length < required.presiding) {
-                    warnings.push(`⚠️ প্রিসাইডিং: ${presidingFiltered.length}/${required.presiding} জন (${required.presiding - presidingFiltered.length} জন কম)`);
+                if (availableCounts.presiding < required.presiding) {
+                    warnings.push(`⚠️ প্রিসাইডিং: ${availableCounts.presiding}/${required.presiding} জন (${required.presiding - availableCounts.presiding} জন কম)`);
                 }
-                if (assPresidingFiltered.length < required.assPresiding) {
-                    warnings.push(`⚠️ সহকারী প্রিসাইডিং: ${assPresidingFiltered.length}/${required.assPresiding} জন (${required.assPresiding - assPresidingFiltered.length} জন কম)`);
+                if (availableCounts.assPresiding < required.assPresiding) {
+                    warnings.push(`⚠️ সহকারী প্রিসাইডিং: ${availableCounts.assPresiding}/${required.assPresiding} জন (${required.assPresiding - availableCounts.assPresiding} জন কম)`);
                 }
-                if (pollingFiltered.length < required.polling) {
-                    warnings.push(`⚠️ পোলিং: ${pollingFiltered.length}/${required.polling} জন (${required.polling - pollingFiltered.length} জন কম)`);
+                if (availableCounts.polling < required.polling) {
+                    warnings.push(`⚠️ পোলিং: ${availableCounts.polling}/${required.polling} জন (${required.polling - availableCounts.polling} জন কম)`);
                 }
                 
                 if (warnings.length > 0) {
@@ -757,44 +815,6 @@
                 }
                 
                 console.log(`✅ Starting assignment for ${canAssignCentres} centres...`);
-                
-                // Extract requested officers BEFORE shuffling to preserve them
-                // Build map: centreIid -> requested polling officers
-                const requestedPollingByCentre = new Map();
-                requestData.forEach(req => {
-                    if (req.officer_table_name === 'polling') {
-                        const centreIid = String(req.vote_centre_iid || '').trim();
-                        if (!requestedPollingByCentre.has(centreIid)) {
-                            requestedPollingByCentre.set(centreIid, []);
-                        }
-                        const officerId = String(req.officer_table_iid || '').trim();
-                        const officer = pollingFiltered.find(p => String(p.polling_iid) === officerId);
-                        if (officer) {
-                            requestedPollingByCentre.get(centreIid).push(officer);
-                        }
-                    }
-                });
-                
-                console.log(`📌 Built requested polling map for ${requestedPollingByCentre.size} centres`);
-                requestedPollingByCentre.forEach((officers, centreIid) => {
-                    officers.forEach(p => {
-                        console.log(`   🔖 Reserved for Centre ${centreIid}: ID ${p.polling_iid} - ${p.polling_name}`);
-                    });
-                });
-                
-                // Exclude requested polling officers from normal pool
-                const requestedPollingIds = new Set();
-                requestedPollingByCentre.forEach(officers => {
-                    officers.forEach(o => requestedPollingIds.add(String(o.polling_iid)));
-                });
-                const nonRequestedPolling = pollingFiltered.filter(p => !requestedPollingIds.has(String(p.polling_iid)));
-                
-                // Stratified + Gender balanced shuffle
-                // প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন করে (শুরু, মাঝখান, শেষ - সবার থেকে সমান)
-                console.log('🔀 Applying stratified gender-balanced shuffle (equal from every 100)...');
-                let presidingAvailable = stratifiedShuffle(presidingFiltered, 100);
-                let assPresidingAvailable = stratifiedGenderBalancedShuffle(assPresidingFiltered, 100);
-                let pollingAvailable = stratifiedGenderBalancedShuffle(nonRequestedPolling, 100);
                 
                 // Reorder centres: requested centres first, then others
                 const centresWithRequests = [];
@@ -814,6 +834,11 @@
                 
                 let skippedCentres = [];
                 let assignedCount = 0;
+                const usedRequestedIds = {
+                    presiding: new Set(),
+                    ass_presiding: new Set(),
+                    polling: new Set()
+                };
                 
                 // Process each vote centre (now in priority order)
                 for (const centre of orderedCentres) {
@@ -821,162 +846,87 @@
                     
                     if (boothCount === 0) continue;
                     
+                    const centreIidStr = normalizeId(centre.vote_centre_iid);
+                    const centreRequests = requestByCentreIid.get(centreIidStr) || [];
+
+                    const requestedPresidingForCentre = (requestedPresidingByCentre.get(centreIidStr) || [])
+                        .filter(p => !usedRequestedIds.presiding.has(normalizeId(p.presiding_iid)));
+                    const requestedAssPresidingForCentre = (requestedAssPresidingByCentre.get(centreIidStr) || [])
+                        .filter(p => !usedRequestedIds.ass_presiding.has(normalizeId(p.ass_presiding_iid)));
+                    const requestedPollingForCentre = (requestedPollingByCentre.get(centreIidStr) || [])
+                        .filter(p => !usedRequestedIds.polling.has(normalizeId(p.polling_iid)));
+
+                    if (centreRequests.length > 0) {
+                        console.log(`🎯 Centre ${centre.vote_centre_code} (IID: ${centreIidStr}) has ${centreRequests.length} request_table entries`);
+                    }
+
+                    const assPresidingNeeded = boothCount;
+                    const pollingNeeded = boothCount * 2;
+
+                    const remainingPresidingNeeded = requestedPresidingForCentre.length > 0 ? 0 : 1;
+                    const remainingAssPresidingNeeded = Math.max(0, assPresidingNeeded - requestedAssPresidingForCentre.length);
+                    const remainingPollingNeeded = Math.max(0, pollingNeeded - requestedPollingForCentre.length);
+
                     // Check if we have enough officers for this centre
-                    if (presidingAvailable.length === 0) {
+                    if (remainingPresidingNeeded > 0 && presidingAvailable.length === 0) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - no presiding officer`);
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (প্রিসাইডিং অফিসার নেই)`);
                         continue;
                     }
-                    
-                    const assPresidingNeeded = boothCount;
-                    if (assPresidingAvailable.length < assPresidingNeeded) {
+                    if (assPresidingAvailable.length < remainingAssPresidingNeeded) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough ass presiding`);
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (সহকারী প্রিসাইডিং কম)`);
                         continue;
                     }
-                    
-                    const pollingNeeded = boothCount * 2;
-                    if (pollingAvailable.length < pollingNeeded) {
+                    if (pollingAvailable.length < remainingPollingNeeded) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough polling`);
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (পোলিং অফিসার কম)`);
                         continue;
                     }
-                    
-                    // Check if this centre has priority assignments from request_table
-                    // Match by vote_centre_iid (normalize both sides to string)
-                    const centreIidStr = String(centre.vote_centre_iid || '').trim();
-                    const centreRequests = requestByCentreIid.get(centreIidStr) || [];
-                    
-                    if (centreRequests.length > 0) {
-                        console.log(`🎯 Centre ${centre.vote_centre_code} (IID: ${centreIidStr}) has ${centreRequests.length} priority requests`);
-                    } else {
-                        console.log(`ℹ️ Centre ${centre.vote_centre_code} (IID: ${centreIidStr}) has no priority requests`);
-                    }
-                    
-                    // Separate officers by type from request_table
-                    const requestPresiding = centreRequests.find(r => r.officer_table_name === 'presiding');
-                    const requestAssPresiding = centreRequests.filter(r => r.officer_table_name === 'ass_presiding');
-                    const requestPolling = centreRequests.filter(r => r.officer_table_name === 'polling');
-                    
+
                     // Assign presiding officer (priority to request_table)
-                    let presiding;
-                    if (requestPresiding) {
-                        // Find and use the requested presiding officer
-                        const requestedId = String(requestPresiding.officer_table_iid || '').trim();
-                        console.log(`🔍 Looking for requested presiding ID: ${requestedId}`);
-                        
-                        const foundIndex = presidingAvailable.findIndex(p => String(p.presiding_iid) === requestedId);
-                        if (foundIndex !== -1) {
-                            presiding = presidingAvailable[foundIndex];
-                            presidingAvailable.splice(foundIndex, 1); // Remove from available pool
-                            console.log(`✅ Using requested presiding officer ${requestedId} (${presiding.presiding_name}) for centre ${centre.vote_centre_code}`);
-                        } else {
-                            presiding = presidingAvailable.shift(); // Take first available
-                            console.log(`⚠️ Requested presiding ${requestedId} not available/already assigned, using ${presiding.presiding_iid} (${presiding.presiding_name})`);
+                    let presiding = null;
+                    if (requestedPresidingForCentre.length > 0) {
+                        if (requestedPresidingForCentre.length > 1) {
+                            console.log(`⚠️ Centre ${centre.vote_centre_code} has multiple requested presiding officers, using the first one`);
                         }
+                        presiding = requestedPresidingForCentre[0];
+                        usedRequestedIds.presiding.add(normalizeId(presiding.presiding_iid));
+                        console.log(`✅ Using requested presiding ${presiding.presiding_iid} (${presiding.presiding_name}) for centre ${centre.vote_centre_code}`);
                     } else {
-                        presiding = presidingAvailable.shift(); // Take first available
+                        presiding = presidingAvailable.shift();
                     }
-                    
-                    // Assign assistant presiding officers
+
+                    // Assign assistant presiding officers (requested first)
                     let assPresidingForCentre = [];
-                    let requestedAssPresiding = new Map();
-                    
-                    // Prepare requested assistant presiding (normalize IDs)
-                    requestAssPresiding.forEach(r => {
-                        const id = String(r.officer_table_iid || '').trim();
-                        if (id) {
-                            requestedAssPresiding.set(id, r);
-                        }
+                    const requestedAssToUse = requestedAssPresidingForCentre.slice(0, assPresidingNeeded);
+                    if (requestedAssPresidingForCentre.length > assPresidingNeeded) {
+                        console.log(`⚠️ Centre ${centre.vote_centre_code} has ${requestedAssPresidingForCentre.length - assPresidingNeeded} extra requested ass_presiding officers (not enough booths)`);
+                    }
+
+                    requestedAssToUse.forEach(o => {
+                        assPresidingForCentre.push(o);
+                        usedRequestedIds.ass_presiding.add(normalizeId(o.ass_presiding_iid));
                     });
-                    
-                    if (requestedAssPresiding.size > 0) {
-                        console.log(`🔍 Centre ${centre.vote_centre_code} has ${requestedAssPresiding.size} requested ass_presiding officers`);
+
+                    while (assPresidingForCentre.length < assPresidingNeeded) {
+                        assPresidingForCentre.push(assPresidingAvailable.shift());
                     }
-                    
-                    // Calculate middle booth position for requested officers
-                    const middleBooth = Math.floor(boothCount / 2);
-                    console.log(`📍 Middle booth for centre ${centre.vote_centre_code}: ${middleBooth + 1} of ${boothCount}`);
-                    
-                    for (let boothNum = 0; boothNum < assPresidingNeeded; boothNum++) {
-                        let officer = null;
-                        
-                        // Check if this is the middle booth and we have requested officers
-                        if (boothNum === middleBooth && requestedAssPresiding.size > 0) {
-                            // Try to assign first requested officer to middle booth
-                            const firstRequestedId = Array.from(requestedAssPresiding.keys())[0];
-                            console.log(`🔍 Looking for requested ass_presiding ID: ${firstRequestedId} for middle booth`);
-                            
-                            const foundIndex = assPresidingAvailable.findIndex(a => String(a.ass_presiding_iid) === firstRequestedId);
-                            
-                            if (foundIndex !== -1) {
-                                officer = assPresidingAvailable[foundIndex];
-                                assPresidingAvailable.splice(foundIndex, 1);
-                                requestedAssPresiding.delete(firstRequestedId);
-                                console.log(`✅ Assigned requested ass_presiding ${firstRequestedId} (${officer.ass_presiding_name}) to middle booth ${boothNum + 1} of centre ${centre.vote_centre_code}`);
-                            } else {
-                                console.log(`⚠️ Requested ass_presiding ${firstRequestedId} not available/already assigned`);
-                            }
-                        }
-                        
-                        // If no officer assigned yet, use next available
-                        if (!officer) {
-                            officer = assPresidingAvailable.shift(); // Take from beginning
-                        }
-                        
-                        assPresidingForCentre.push(officer);
-                    }
-                    
-                    // Assign remaining requested ass_presiding to other booths if any left
-                    if (requestedAssPresiding.size > 0) {
-                        console.log(`⚠️ ${requestedAssPresiding.size} requested ass_presiding officers were not assigned for centre ${centre.vote_centre_code}`);
-                    }
-                    
-                    // Assign polling officers (2 per booth)
+
+                    // Assign polling officers (requested first)
                     let pollingForCentre = [];
-                    
-                    // Get reserved polling officers for THIS centre only
-                    const reservedPollingForThisCentre = requestedPollingByCentre.get(centreIidStr) || [];
-                    
-                    if (reservedPollingForThisCentre.length > 0) {
-                        console.log(`🔒 Centre ${centre.vote_centre_code} has ${reservedPollingForThisCentre.length} RESERVED polling officers (only for this centre)`);
-                        reservedPollingForThisCentre.forEach(p => {
-                            console.log(`   🔖 Reserved: ID ${p.polling_iid} - ${p.polling_name}`);
-                        });
+                    const requestedPollingToUse = requestedPollingForCentre.slice(0, pollingNeeded);
+                    if (requestedPollingForCentre.length > pollingNeeded) {
+                        console.log(`⚠️ Centre ${centre.vote_centre_code} has ${requestedPollingForCentre.length - pollingNeeded} extra requested polling officers (not enough positions)`);
                     }
-                    
-                    // Track how many reserved officers assigned to middle booth
-                    let reservedPollingAssigned = 0;
-                    const maxReservedPerBooth = 2; // Max 2 polling per booth
-                    
-                    for (let i = 0; i < pollingNeeded; i++) {
-                        const boothNum = Math.floor(i / 2);
-                        const personNum = (i % 2) + 1;
-                        
-                        let officer = null;
-                        
-                        // Assign RESERVED polling to middle booth ONLY (up to 2 officers)
-                        if (boothNum === middleBooth && reservedPollingAssigned < reservedPollingForThisCentre.length && reservedPollingAssigned < maxReservedPerBooth) {
-                            officer = reservedPollingForThisCentre[reservedPollingAssigned];
-                            reservedPollingAssigned++;
-                            console.log(`✅ Assigned RESERVED polling ${officer.polling_iid} (${officer.polling_name}) to middle booth ${boothNum + 1} person ${personNum} of centre ${centre.vote_centre_code}`);
-                        }
-                        
-                        // For normal booths, use general pool (NO reserved officers in this pool)
-                        if (!officer) {
-                            officer = pollingAvailable.shift();
-                            if (officer) {
-                                console.log(`📊 Assigned polling ${officer.polling_iid} (${officer.polling_name}) from general pool to booth ${boothNum + 1} person ${personNum}`);
-                            }
-                        }
-                        
-                        pollingForCentre.push(officer);
-                    }
-                    
-                    // Log if any reserved polling officers were not assigned
-                    const unassignedReserved = reservedPollingForThisCentre.length - reservedPollingAssigned;
-                    if (unassignedReserved > 0) {
-                        console.log(`⚠️ ${unassignedReserved} reserved polling officers were not assigned to centre ${centre.vote_centre_code} (not enough booth positions?)`);
+
+                    requestedPollingToUse.forEach(o => {
+                        pollingForCentre.push(o);
+                        usedRequestedIds.polling.add(normalizeId(o.polling_iid));
+                    });
+
+                    while (pollingForCentre.length < pollingNeeded) {
+                        pollingForCentre.push(pollingAvailable.shift());
                     }
                     
                     // Create assignment object
