@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নিয়োগপত্র - Appointment Letter</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #38ef7d;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+
+        .letter {
+            margin-bottom: 40px;
+            background: white;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+
+            /* Allow multiple letters per printed page; allow splitting a single letter across pages when needed */
+            .letter {
+                margin-bottom: 0 !important;
+            }
+
+            /* Allow tables and rows to split across pages when needed (lets centres be cut across pages) */
+            table, tr, td {
+                /* no page-break-inside rules so tables may split when necessary */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div id="appointmentContent">
+            <div class="loading">
+                <h2>⏳ Loading data...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load all centres on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('1_apointment_copy.html v2026-01-05-all');
+            checkAuth();
+            try {
+                const centres = await loadAllCentresData();
+                renderAllLetters(centres);
+            } catch (error) {
+                console.error('Error loading centres:', error);
+                document.getElementById('appointmentContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error loading data</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+                    </div>
+                `;
+            }
+        });
+
+        async function loadAllCentresData() {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+
+            // Fetch all assignments with pagination to avoid row limits
+            const assignments = await fetchAllAssignments();
+            if (!assignments || assignments.length === 0) {
+                throw new Error('No assignments found. Please generate and save first.');
+            }
+
+            // Group by centre code
+            const centreMap = new Map();
+            for (const assignment of assignments) {
+                const code = assignment.vote_centre_code;
+                if (!centreMap.has(code)) {
+                    centreMap.set(code, {
+                        centre: {
+                            vote_centre_code: code,
+                            vote_centre_iid: assignment.vote_centre_iid,
+                            vote_centre_name: '',
+                            vote_centre_location: '',
+                            voter_both_male: 0,
+                            voter_both_female: 0,
+                            total_voter: ''
+                        },
+                        presiding: null,
+                        assPresiding: [],
+                        polling: []
+                    });
+                }
+
+                const bundle = centreMap.get(code);
+                if (assignment.officer_type === 'presiding') {
+                    bundle.presiding = {
+                        presiding_iid: assignment.officer_iid,
+                        presiding_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender
+                    };
+                } else if (assignment.officer_type === 'ass_presiding') {
+                    bundle.assPresiding.push({
+                        ass_presiding_iid: assignment.officer_iid,
+                        ass_presiding_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender,
+                        booth_number: assignment.booth_number
+                    });
+                } else if (assignment.officer_type === 'polling') {
+                    bundle.polling.push({
+                        polling_iid: assignment.officer_iid,
+                        polling_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender,
+                        booth_number: assignment.booth_number,
+                        person_number: assignment.person_number
+                    });
+                }
+            }
+
+            // Fetch centre meta for codes (normalize numeric strings to numbers for query)
+            const codes = Array.from(centreMap.keys()).filter(Boolean);
+            if (codes.length > 0) {
+                const codesForQuery = codes.map(c => {
+                    const n = Number(c);
+                    return isNaN(n) ? String(c) : n;
+                });
+
+                const { data: centres, error: centreError } = await window.supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_code, vote_centre_name, vote_centre_location, voter_both_male, voter_both_female, total_voter')
+                    .in('vote_centre_code', codesForQuery);
+                if (!centreError && centres) {
+                    const meta = new Map();
+                    centres.forEach(c => meta.set(String(c.vote_centre_code), c));
+                    centreMap.forEach((bundle, code) => {
+                        const c = meta.get(String(code));
+                        if (c) {
+                            bundle.centre.vote_centre_name = c.vote_centre_name || bundle.centre.vote_centre_name;
+                            bundle.centre.vote_centre_location = c.vote_centre_location || bundle.centre.vote_centre_location;
+                            bundle.centre.voter_both_male = c.voter_both_male || 0;
+                            bundle.centre.voter_both_female = c.voter_both_female || 0;
+                            bundle.centre.total_voter = (c.total_voter !== undefined && c.total_voter !== null) ? c.total_voter : bundle.centre.total_voter;
+                        }
+                    });
+                }
+            }
+
+            // Sort arrays inside
+            centreMap.forEach(bundle => {
+                bundle.assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+                bundle.polling.sort((a, b) => {
+                    if ((a.booth_number || 0) !== (b.booth_number || 0)) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+            });
+
+            // Return sorted by numeric centre code
+            return Array.from(centreMap.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+        }
+        
+        // Convert Arabic numerals to Bengali numerals (e.g., 1 -> ১)
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        // Fetch assignments with pagination (bypass Supabase 1000-row limit)
+        async function fetchAllAssignments() {
+            let all = [];
+            let lastId = 0;
+            const batchSize = 1000;
+            let batch = 0;
+            while (true) {
+                batch++;
+                const { data, error } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .select('*')
+                    .gt('assignment_id', lastId)
+                    .order('assignment_id', { ascending: true })
+                    .limit(batchSize);
+                if (error) throw new Error(`Failed to load assignments (batch ${batch}): ${error.message}`);
+                if (!data || data.length === 0) break;
+                all.push(...data);
+                lastId = data[data.length - 1].assignment_id;
+                if (data.length < batchSize) break;
+            }
+            return all;
+        }
+
+        function getOfficerName(officer, type) {
+            if (!officer) return '';
+            // Fields from centre_assignments table
+            if (type === 'presiding') return officer.presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'ass_presiding') return officer.ass_presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'polling') return officer.polling_name || officer.officer_name || officer.name || '';
+            return officer.officer_name || officer.name || '';
+        }
+        
+        function renderAllLetters(allData) {
+            if (!allData || allData.length === 0) {
+                document.getElementById('appointmentContent').innerHTML = '<div class="error"><h2>❌ No data to show</h2></div>';
+                return;
+            }
+
+            // sort numerically by centre code
+            allData.sort((a,b) => (Number(a.centre.vote_centre_code)||0) - (Number(b.centre.vote_centre_code)||0));
+
+            const sections = allData.map(renderSingleLetter).join('');
+            document.getElementById('appointmentContent').innerHTML = sections;
+        }
+
+        function renderSingleLetter(data) {
+            const centre = data.centre;
+            const presiding = data.presiding;
+            const assPresiding = data.assPresiding || [];
+            const polling = data.polling || [];
+            
+            // Build table rows - same format as 3_vote_centre.html
+            let tableRows = '';
+            const maxRows = Math.max(1, assPresiding.length);
+            const firstAssPres = assPresiding.length > 0 ? assPresiding[0] : null;
+            
+            if (assPresiding.length === 0) {
+                tableRows = `
+                    <tr>
+                        <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
+                            ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
+                        </td>
+                        <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
+                        <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">&nbsp;</td>
+                    </tr>`;
+            } else {
+                for (let i = 0; i < maxRows; i++) {
+                    const assPres = assPresiding[i];
+                    const poll1 = polling[i * 2];
+                    const poll2 = polling[i * 2 + 1];
+                    const poll2Style = (poll1 && poll2) ? 'border-top:0.75pt solid #000; padding-top:5pt; margin-top:5pt;' : '';
+                    
+                    tableRows += `
+                        <tr>
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}</span></p>
+                                ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
+                            </td>` : ''}
+                            
+                            <td style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;">
+                                    ${assPres ? `<strong>${toBengaliNumber(i+1)}।</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
+                                </p>
+                                ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt;">${assPres.designation}</p>` : ''}
+                            </td>
+                            
+                            <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">
+                                ${poll1 ? `<p style="margin:0 0 5pt 0; font-size:10pt;"><strong>১.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll1, 'polling'))}</span>${poll1.designation ? `, ${poll1.designation}` : ''}</p>` : ''} 
+                                ${poll2 ? `<p style="margin:0; font-size:10pt; ${poll2Style}"><strong>২.</strong> <span style="font-family:Nikosh;">${toBengaliNumber(getOfficerName(poll2, 'polling'))}</span>${poll2.designation ? `, ${poll2.designation}` : ''}</p>` : ''}
+                            </td>
+                        </tr>`;
+                }
+            }
+            
+            const maleCount = Number(centre.voter_both_male) || 0;
+            const femaleCount = Number(centre.voter_both_female) || 0;
+            const boothInfo = `<p style="font-size:12pt; margin-bottom:10px;"><span style="font-family:NikoshBAN; color:#ff0066;">যে ভোটার এলাকার ভোটারগণ ভোট প্রদান করবেন সে এলাকার নামঃ ${centre.vote_centre_location || 'N/A'}${(maleCount > 0 || femaleCount > 0) ? ` (পুরুষ বুথ-${toBengaliNumber(maleCount)} টি, মহিলা বুথ-${toBengaliNumber(femaleCount)} টি)` : ''}</span></p>`;
+
+            // Calculate a display value for total voters: prefer explicit total, otherwise sum the booth counts
+            const totalVoterDisplay = (centre.total_voter !== undefined && centre.total_voter !== null && centre.total_voter !== '')
+                ? toBengaliNumber(centre.total_voter)
+                : ((maleCount + femaleCount) > 0 ? toBengaliNumber(maleCount + femaleCount) : 'N/A');
+
+            const content = `
+                <div class="letter">
+                <p style="text-align:right; font-size:16pt; margin-bottom:2px;">
+                    <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
+                </p>
+                
+                <p style="text-align:center; font-size:14pt; margin-bottom:10px;">
+                    <u><span style="font-family:NikoshBAN;">প্রিজাইডিং অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের খসড়া নিয়োগপত্র</span></u>
+                </p>
+               
+                <p style="font-size:12pt; margin-bottom:5px;">
+                    <span style="font-family:NikoshBAN; color:#c00000;">ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'} , কেন্দ্র কোড- ${centre.vote_centre_code || 'N/A'} ; ভোটার ${totalVoterDisplay} জন।</span>
+                </p>
+                ${boothInfo}
+                
+                
+                <table style="width:100%; border:0.75pt solid #000; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:20%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:9pt;">প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:30%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:10pt;">সহকারী প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:50%; border:0.75pt solid #000; padding:8pt; text-align:center;">
+                            <span style="font-family:Nikosh; font-size:10pt;">পোলিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                    </tr>
+                    
+                    ${tableRows}
+                </table>
+                
+                
+                
+                <div style="margin-top:2px; border-top:2px solid #000; padding-top:20px;">
+                    <p style="text-align:center; font-size:12pt; margin-bottom:10px;">
+                   
+                </div>
+            </div>`;
+            
+            return content;
+        }
+    </script>
+</body>
+</html>
