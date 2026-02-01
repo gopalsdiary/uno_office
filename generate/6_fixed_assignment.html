@@ -477,6 +477,7 @@
                     <button type="button" class="btn btn-warning" onclick="resetForm()">
                         🔄 Reset
                     </button>
+                    <div id="submitStatus" class="status" style="display: none; margin-top: 8px;"></div>
                 </div>
             </form>
         </div>
@@ -557,10 +558,37 @@
             }
         }
 
+        // Show a status message specifically under the Save button
+        function showSubmitStatus(message, type = 'info') {
+            const submitDiv = document.getElementById('submitStatus');
+            if (!submitDiv) {
+                // Fallback to top status if submit-specific div not found
+                showStatus(message, type);
+                return;
+            }
+            submitDiv.textContent = message;
+            submitDiv.className = `status ${type}`;
+            submitDiv.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => {
+                    submitDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
         // Show/hide loading
         function setLoading(isLoading) {
             const loading = document.getElementById('loading');
             loading.style.display = isLoading ? 'block' : 'none';
+        }
+
+        // Disable/enable submit and show saving text
+        function setSubmitButtonSaving(isSaving) {
+            const btn = document.querySelector('#assignmentForm button[type="submit"]');
+            const text = document.getElementById('submitBtnText');
+            if (!btn || !text) return;
+            btn.disabled = isSaving;
+            text.textContent = isSaving ? 'Saveing' : (typeof isEditMode !== 'undefined' && isEditMode ? '✅ Update' : '💾 Save');
         }
 
         // Get officer type label in Bengali
@@ -1210,6 +1238,8 @@
         // Handle form submission
         document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            // Show saving state on the button
+            setSubmitButtonSaving(true);
             
             const requestId = document.getElementById('requestId').value;
             const officerId = document.getElementById('officerSelect').value;
@@ -1221,12 +1251,14 @@
 
             if (!officerId || !centreId || !selectedOfficer || !selectedOfficer.type) {
                 showStatus('⚠️ Please select an officer and fill all required fields', 'error');
+                setSubmitButtonSaving(false);
                 return;
             }
 
             if (!requestComment) {
                 showStatus('⚠️ Please fill the request/comment box', 'error');
                 document.getElementById('requestComment').focus();
+                setSubmitButtonSaving(false);
                 return;
             }
 
@@ -1241,6 +1273,7 @@
                         const message = `⚠️ Warning!\n\nThis officer is already assigned:\n\n📍 Centre Code: ${existingOfficer.vote_centre_code}\n📍 Centre Name: ${existingOfficer.vote_centre_name}\n\nThe same officer cannot be assigned twice.`;
                         alert(message);
                         showStatus(`⚠️ This officer is already assigned to "${existingOfficer.vote_centre_code} - ${existingOfficer.vote_centre_name}"`, 'error');
+                        setSubmitButtonSaving(false);
                         return; 
                     }
                 }
@@ -1251,6 +1284,7 @@
                     setLoading(false);
                     alert(capacityCheck.message);
                     showStatus(capacityCheck.message, 'error');
+                    setSubmitButtonSaving(false);
                     return;
                 }
 
@@ -1258,6 +1292,7 @@
                 setLoading(false);
                 console.error('Validation error:', validationError);
                 showStatus('⚠️ Error during validation', 'error');
+                setSubmitButtonSaving(false);
                 return;
             }
 
@@ -1282,7 +1317,7 @@
                         .eq('request_id', requestId);
 
                     if (error) throw error;
-                    showStatus('✅ Updated successfully', 'success');
+                    showSubmitStatus('✅ Updated successfully', 'success');
                     // Refresh only the saved records table; keep the Add form intact
                     loadTableData();
                 } else {
@@ -1292,7 +1327,7 @@
                         .insert([dataToSave]);
 
                     if (error) throw error;
-                    showStatus('✅ Saved successfully', 'success');
+                    showSubmitStatus('✅ Saved successfully', 'success');
                     // Refresh only the saved records table; keep the Add form intact
                     loadTableData();
                 }
@@ -1301,6 +1336,7 @@
                 showStatus('❌ Error saving: ' + error.message, 'error');
             } finally {
                 setLoading(false);
+                setSubmitButtonSaving(false);
             }
         });
 
@@ -1320,6 +1356,13 @@
             allOfficers = [];
             selectedOfficer = null;
             isEditMode = false;
+
+            // Clear submit-specific status under Save button
+            const submitStatusDiv = document.getElementById('submitStatus');
+            if (submitStatusDiv) {
+                submitStatusDiv.style.display = 'none';
+                submitStatusDiv.textContent = '';
+            }
 
             // Clear side panel
             const box = document.getElementById('selectedOfficerBox');
