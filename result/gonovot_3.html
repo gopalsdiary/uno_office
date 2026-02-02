@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title></title>
-	<meta name="generator" content="LibreOffice 24.8.1.2 (Linux)"/>
-	<meta name="author" content="Hp"/>
-	<meta name="created" content="2025-12-16T09:32:00"/>
-	<meta name="changedby" content="Gopal FSEDC"/>
-	<meta name="changed" content="2026-02-02T06:48:00"/>
-	<meta name="AppVersion" content="16.0000"/>
+	<meta name="generator" content="LibreOffice 24.8.1.2 (Linux)" />
+	<meta name="author" content="Hp" />
+	<meta name="created" content="2025-12-16T09:32:00" />
+	<meta name="changedby" content="Gopal FSEDC" />
+	<meta name="changed" content="2026-02-02T06:48:00" />
+	<meta name="AppVersion" content="16.0000" />
 	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 	<script src="../authentication.js"></script>
 	<style>
 		/* Legal page size (8.5in x 14in) and compact print-ready rules */
-		@page { size: 210mm 297mm; margin: 0.3in; } /* A4 portrait */
+		@page {
+			size: 210mm 297mm;
+			margin: 0.3in;
+		}
+
+		/* A4 portrait */
 
 		body {
-			width: 210mm; /* A4 width */
+			width: 210mm;
+			/* A4 width */
 			margin: 0.3in auto;
 			padding: 0;
 			background: white;
@@ -26,53 +33,158 @@
 			direction: ltr;
 		}
 
-		body, table, td, th, p, span, font {
+		body,
+		table,
+		td,
+		th,
+		p,
+		span,
+		font {
 			font-family: 'Nikosh', 'NikoshBAN', 'Vrinda', 'Arial Unicode MS', sans-serif !important;
 			font-size: 12pt;
 		}
 
-		p { margin: 0; padding: 0.02in 0; line-height: 1.2; }
+		p {
+			margin: 0;
+			padding: 0.02in 0;
+			line-height: 1.2;
+		}
 
 		/* Header: logo left, titles centered */
-		.doc-header { display: flex; align-items: flex-start; gap: 0.4in; margin-bottom: 0.15in; }
-		.doc-logo { flex: 0 0 auto; }
-		.doc-logo img { display: block; width: 65px; height: 60px; }
-		.doc-titles { flex: 1 1 auto; text-align: center; }
-		.doc-title { font-size: 15pt; font-weight: bold; margin: 0; line-height: 1.1 }
-		.doc-subtitle { font-size: 15pt; margin: 0; }
-		.doc-note { font-size: 15pt; margin: 0 0 0.06in; }
-		.sd-abs-pos { position: static !important; display: block; margin: 0; }
+		.doc-header {
+			display: flex;
+			align-items: flex-start;
+			gap: 0.4in;
+			margin-bottom: 0.15in;
+		}
 
-		.footer-section { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.4in; margin-top: 0.2in; }
-		.footer-left { flex: 1 1 auto; }
-		.footer-right { flex: 0 0 2.6in; text-align: center; }
-		.place-table, .date-table { width: 100%; }
-		.signature-box { width: 2.4in; height: 1.1in; border: 1px solid #000; margin-left: auto; margin-right: 0; }
-		.signature-text { margin-top: 0.08in; font-weight: bold; }
+		.doc-logo {
+			flex: 0 0 auto;
+		}
+
+		.doc-logo img {
+			display: block;
+			width: 65px;
+			height: 60px;
+		}
+
+		.doc-titles {
+			flex: 1 1 auto;
+			text-align: center;
+		}
+
+		.doc-title {
+			font-size: 15pt;
+			font-weight: bold;
+			margin: 0;
+			line-height: 1.1
+		}
+
+		.doc-subtitle {
+			font-size: 15pt;
+			margin: 0;
+		}
+
+		.doc-note {
+			font-size: 15pt;
+			margin: 0 0 0.06in;
+		}
+
+		.sd-abs-pos {
+			position: static !important;
+			display: block;
+			margin: 0;
+		}
+
+		.footer-section {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 0.4in;
+			margin-top: 0.2in;
+		}
+
+		.footer-left {
+			flex: 1 1 auto;
+		}
+
+		.footer-right {
+			flex: 0 0 2.6in;
+			text-align: center;
+		}
+
+		.place-table,
+		.date-table {
+			width: 100%;
+		}
+
+		.signature-box {
+			width: 2.4in;
+			height: 1.1in;
+			border: 1px solid #000;
+			margin-left: auto;
+			margin-right: 0;
+		}
+
+		.signature-text {
+			margin-top: 0.08in;
+			font-weight: bold;
+		}
 
 		/* Content */
-		.form-content { font-size: 11pt; }
-		table { width: 100%; border-collapse: collapse; margin-bottom: 0.1in; }
-		td, th { border: 1px solid #000; padding: 4px 6px; vertical-align: top; }
+		.form-content {
+			font-size: 11pt;
+		}
 
-		.center { text-align: center; }
-		.right { text-align: right; }
-		.bold { font-weight: bold; }
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 0.1in;
+		}
+
+		td,
+		th {
+			border: 1px solid #000;
+			padding: 4px 6px;
+			vertical-align: top;
+		}
+
+		.center {
+			text-align: center;
+		}
+
+		.right {
+			text-align: right;
+		}
+
+		.bold {
+			font-weight: bold;
+		}
 
 		/* Hide empty/br-only paragraphs */
 		p:empty,
-		p > br:first-child:last-child,
-		p > br:first-child + br:last-child { display: none !important; }
+		p>br:first-child:last-child,
+		p>br:first-child+br:last-child {
+			display: none !important;
+		}
 
 		@media print {
-			body { margin: 0; box-shadow: none; width: 100%; }
-			.no-print { display: none; }
+			body {
+				margin: 0;
+				box-shadow: none;
+				width: 100%;
+			}
+
+			.no-print {
+				display: none;
+			}
 		}
 
 		.centre-page {
 			page-break-after: always;
 			break-after: page;
 		}
+
 		.centre-page:last-child {
 			page-break-after: auto;
 			break-after: auto;
@@ -80,199 +192,277 @@
 
 		/* Make the data cells under ১-৬ larger and centered */
 		.results-table tr.data-row td {
-			min-height: 120px; /* taller boxes */
+			min-height: 120px;
+			/* taller boxes */
 			padding: 12px 8px;
 			vertical-align: middle;
 			text-align: center;
 		}
+
 		.results-table tr.data-row td span {
 			display: inline-block;
 			width: 100%;
 		}
 	</style>
 </head>
+
 <body lang="en-US" link="#000080" vlink="#800000" dir="ltr">
 	<div class="no-print" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px; border-radius: 8px;">
-		
-		
+
+
 	</div>
 	<div id="pages"></div>
 	<template id="centreTemplate">
-	<div class="centre-page">
-	<div class="doc-header">
-	<div class="doc-logo"><img src="../result\comotion_logo.png" alt="Logo"/></div>
-	<div class="doc-titles">
-		<p class="doc-title">গণভোট</p>
-		<p class="doc-subtitle">ফরম 3</p>
-		<p class="doc-note">[গণভোট অধ্যাদেশ-ধারা-14 (5) দ্রষ্টব্য]</p>
-		<p class="doc-title"><b>ভোটকেন্দ্রের ভোট গণনার বিবরণী</b></p>
-	</div>
-</div>
-<table width="100%" cellpadding="7" cellspacing="0">
-	<col width="76*"/>
-	<col width="180*"/>
-	<tr>
-		<td width="30%" valign="top" style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in"><p align="left" style="orphans: 2; widows: 2">
-			<font face="Vrinda"><font size="3" style="font-size: 12pt"><span lang="ar-SA"><font face="NikoshBAN"><font size="4" style="font-size: 14pt"><span lang="bn-IN">নির্বাচনি
-			এলাকার নম্বর ও নাম</span></font></font></span></font></font></p>
-		</td>
-		<td width="70%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="left" style="orphans: 2; widows: 2">
-			<font face="Calibri"><font size="3" style="font-size: 12pt"><font face="NikoshBAN"><font size="4" style="font-size: 14pt">266
-			</font></font></font></font><font face="Vrinda"><font size="3" style="font-size: 12pt"><span lang="ar-SA"><font face="NikoshBAN"><font size="4" style="font-size: 14pt"><span lang="bn-IN">ফেনী</span></font></font></span></font></font><font face="Calibri"><font size="3" style="font-size: 12pt"><font face="NikoshBAN"><font size="4" style="font-size: 14pt">-2</font></font></font></font></p>
-		</td>
-	</tr>
-</table>
-<table class="meta-table" width="100%" cellpadding="7" cellspacing="0">
-	<tr>
-		<td class="label" style="width:30%; border-right:1px solid #000; padding:0; vertical-align:top;">
-			<p style="margin:0 0 0.1in; font-size:14pt; font-weight:bold;">মোট ভোটার সংখ্যা</p>
-		</td>
-		<td class="value" style="width:70%; padding:0 0.08in;">
-			<p class="center" style="margin:0; font-size:14pt;"><span class="total-voter">total_voter</span></p>
-		</td>
-	</tr>
-</table>
+		<div class="centre-page">
+			<div class="doc-header">
+				<div class="doc-logo"><img src="../result\comotion_logo.png" alt="Logo" /></div>
+				<div class="doc-titles">
+					<p class="doc-title">গণভোট</p>
+					<p class="doc-subtitle">ফরম 3</p>
+					<p class="doc-note">[গণভোট অধ্যাদেশ-ধারা-14 (5) দ্রষ্টব্য]</p>
+					<p class="doc-title"><b>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬
+							<br>ভোটকেন্দ্রের ভোট গণনার বিবরণী</b></p>
+				</div>
+			</div>
+			<table width="100%" cellpadding="7" cellspacing="0">
+				<col width="76*" />
+				<col width="180*" />
+				<tr>
+					<td width="30%" valign="top"
+						style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+						<p align="left" style="orphans: 2; widows: 2">
+							<font face="Vrinda">
+								<font size="3" style="font-size: 12pt"><span lang="ar-SA">
+										<font face="NikoshBAN">
+											<font size="4" style="font-size: 14pt"><span lang="bn-IN">নির্বাচনি
+													এলাকার নম্বর ও নাম</span></font>
+										</font>
+									</span></font>
+							</font>
+						</p>
+					</td>
+					<td width="70%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="left" style="orphans: 2; widows: 2">
+							<font face="Calibri">
+								<font size="3" style="font-size: 12pt">
+									<font face="NikoshBAN">
+										<font size="4" style="font-size: 14pt">266,
+										</font>
+									</font>
+								</font>
+							</font>
+							<font face="Vrinda">
+								<font size="3" style="font-size: 12pt"><span lang="ar-SA">
+										<font face="NikoshBAN">
+											<font size="4" style="font-size: 14pt"><span lang="bn-IN">ফেনী</span></font>
+										</font>
+									</span></font>
+							</font>
+							<font face="Calibri">
+								<font size="3" style="font-size: 12pt">
+									<font face="NikoshBAN">
+										<font size="4" style="font-size: 14pt">-2</font>
+									</font>
+								</font>
+							</font>
+						</p>
+					</td>
+				</tr>
+			</table>
+			<table class="meta-table" width="100%" cellpadding="7" cellspacing="0">
+				<tr>
+					<td class="label"
+						style="width:30%; border-top: none; border-bottom: none; border-left: none; border-right:1px solid #000; padding:0; vertical-align:top;">
+						<p style="margin:0 0 0.1in; font-size:14pt; font-weight:bold;">মোট ভোটার সংখ্যা</p>
+					</td>
+					<td class="value" style="width:70%; padding:0 0.08in;">
+						<p class="center" style="margin:0; font-size:14pt;"><span class="total-voter">total_voter</span>
+						</p>
+					</td>
+				</tr>
+			</table>
 
-<table width="100%" cellpadding="7" cellspacing="0">
-	<col width="76*"/>
-	<col width="180*"/>
-	<tr>
-		<td width="30%" valign="top" style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000; padding:0; vertical-align:top;">
-			<p style="margin:0 0 0.1in; font-size:14pt; font-weight:bold;">ভোটকেন্দ্রের নম্বর ও নাম</p>
-		</td>
-		<td width="70%" style="border: 1px solid #000000; padding: 0in 0.08in">
-			<p align="left" style="margin:0; font-size:14pt;"><span class="vote-centre">vote_centre_code - vote_centre_name</span></p>
-		</td>
-	</tr>
-</table>
-<table width="100%" cellpadding="7" cellspacing="0">
-	<col width="50*"/>
-	<col width="36*"/>
-	<col width="43*"/>
-	<col width="43*"/>
-	<col width="43*"/>
-	<col width="43*"/>
-	<tr>
-		<td style="width:19%; border:1px solid #000; padding:6px; text-align:center;">
-			<p style="margin:0; font-weight:bold;">সিটি কর্পোরেশন / পৌরসভা / ইউনিয়ন</p>
-		</td>
-		<td width="14%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="vote-centre-area"></span></p></td>
-		<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">
-			উপজেলা / থানা</p>
-		</td>
-		<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">
-			<strong class="upozilla">ফেনী সদর</strong></p>
-		</td>
-		<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">
-			জেলা</p>
-		</td>
-		<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">
-			<strong class="zila">ফেনী</strong></p>
-		</td>
-	</tr>
-</table>
+			<table width="100%" cellpadding="7" cellspacing="0">
+				<col width="76*" />
+				<col width="180*" />
+				<tr>
+					<td width="30%" valign="top"
+						style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000; padding:0; vertical-align:top;">
+						<p style="margin:0 0 0.1in; font-size:14pt; font-weight:bold;">ভোটকেন্দ্রের নম্বর ও নাম</p>
+					</td>
+					<td width="70%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="left" style="margin:0; font-size:14pt;"><span class="vote-centre">vote_centre_code -
+								vote_centre_name</span></p>
+					</td>
+				</tr>
+			</table>
+			<table width="100%" cellpadding="7" cellspacing="0">
+				<col width="50*" />
+				<col width="36*" />
+				<col width="43*" />
+				<col width="43*" />
+				<col width="43*" />
+				<col width="43*" />
+				<tr>
+					<td style="width:19%; border:1px solid #000; padding:6px; text-align:center;">
+						<p style="margin:0; font-weight:bold;">সিটি কর্পোরেশন / পৌরসভা / ইউনিয়ন</p>
+					</td>
+					<td width="14%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="center" style="orphans: 2; widows: 2"><span class="vote-centre-area"></span></p>
+					</td>
+					<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="center" style="orphans: 2; widows: 2">
+							উপজেলা / থানা</p>
+					</td>
+					<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="center" style="orphans: 2; widows: 2">
+							<strong class="upozilla">ফেনী সদর</strong>
+						</p>
+					</td>
+					<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="center" style="orphans: 2; widows: 2">
+							জেলা</p>
+					</td>
+					<td width="17%" style="border: 1px solid #000000; padding: 0in 0.08in">
+						<p align="center" style="orphans: 2; widows: 2">
+							<strong class="zila">ফেনী</strong>
+						</p>
+					</td>
+				</tr>
+			</table>
 
-<p style="margin-bottom: 0in"><br/></p>
+			<p style="margin-bottom: 0in"><br /></p>
 
-<table class="results-table" width="100%" cellpadding="7" cellspacing="0">
-	<colgroup>
-		<col style="width:16%" />
-		<col style="width:16%" />
-		<col style="width:15%" />
-		<col style="width:20%" />
-		<col style="width:20%" />
-		<col style="width:13%" />
-	</colgroup>
-	<tr>
-		<td class="center"><strong>হ্যাঁ ভোটের সংখ্যা<br/>(অংকে ও কথায়)</strong></td>
-		<td class="center"><strong>না ভোটের সংখ্যা<br/>(অংকে ও কথায়)</strong></td>
-		<td class="center"><strong>প্রদত্ত বৈধ ভোটের সংখ্যা<br/>[(1)+(2)]</strong></td>
-		<td class="center"><strong>অবৈধ / গণনা বহির্ভূত ভোটের সংখ্যা</strong></td>
-		<td class="center"><strong>প্রদত্ত মোট ভোটের সংখ্যা<br/>[(3)+(4)]</strong></td>
-		<td class="center"><strong>শতকরা হার</strong></td>
-	</tr>
-	<tr>
-		<td class="center">1</td>
-		<td class="center">2</td>
-		<td class="center">3</td>
-		<td class="center">4</td>
-		<td class="center">5</td>
-		<td class="center">6</td>
-	</tr>
-	<tr class="data-row">
-		<td class="center"><span class="yes-vote">yes_vote</span></td>
-		<td class="center"><span class="no-vote">no_vote</span></td>
-		<td class="center"><span class="valid-votes">Total_yes+no</span></td>
-		<td class="center"><span class="rejected-gonovote">rejected_gonovote</span></td>
-		<td class="center"><span class="total-with-rejected">Total_yes+no & rejected_gonovot</span></td>
-		<td class="center"><span class="percentage">Percentige (with total_voter)</span></td>
-	</tr>
-	<tr>
-		<td class="center">&nbsp;</td>
-		<td class="center">&nbsp;</td>
-		<td class="center">&nbsp;</td>
-		<td class="center">&nbsp;</td>
-		<td class="center">&nbsp;</td>
-		<td class="center">&nbsp;</td>
-	</tr>
-</table>
-<div class="footer-section">
-	<div class="footer-left">
-		<table class="place-table" cellpadding="7" cellspacing="0">
-			<col width="33"/>
-			<col width="287"/>
-			<tr valign="top">
-				<td width="33" style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in"><p align="left" style="orphans: 2; widows: 2">
-					স্থান:
-				</p>
-				</td>
-				<td width="287" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="left" style="orphans: 2; widows: 2">&nbsp;</p>
-				</td>
-			</tr>
-		</table>
-		<table class="date-table" cellpadding="7" cellspacing="0">
-			<col width="41"/>
-			<col width="15"/>
-			<col width="16"/>
-			<col width="28"/>
-			<col width="16"/>
-			<col width="16"/>
-			<col width="23"/>
-			<col width="15"/>
-			<col width="16"/>
-			<col width="10"/>
-			<col width="11"/>
-			<col width="39"/>
-			<tr valign="top">
-				<td width="41" style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in"><p align="left" style="orphans: 2; widows: 2">তারিখ:</p></td>
-				<td width="15" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">1</span></p></td>
-			<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p></td>
-				<td width="28" style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">দিন</p></td>
-			<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">0</span></p></td>
-			<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p></td>
-				<td width="23" style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2">মাস</p></td>
-			<td width="15" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p></td>
-			<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">0</span></p></td>
-			<td width="10" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p></td>
-			<td width="11" style="border: 1px solid #000000; padding: 0in 0.08in"><p align="center" style="orphans: 2; widows: 2"><span class="date-digit">6</span></p></td>
-				<td width="39" style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0in; padding-left: 0.08in; padding-right: 0in"><p align="left" style="orphans: 2; widows: 2">বৎসর</p></td>
-			</tr>
-		</table>
-	</div>
-	<div class="footer-right">
-		<div class="signature-box"></div>
-		<div class="signature-text">প্রিজাইডিং অফিসারের<br/>নাম, পদবি ও স্বাক্ষর</div>
-	</div>
-</div>
+			<table class="results-table" width="100%" cellpadding="7" cellspacing="0">
+				<colgroup>
+					<col style="width:16%" />
+					<col style="width:16%" />
+					<col style="width:15%" />
+					<col style="width:20%" />
+					<col style="width:20%" />
+					<col style="width:13%" />
+				</colgroup>
+				<tr>
+					<td class="center"><strong>হ্যাঁ ভোটের সংখ্যা<br />(অংকে ও কথায়)</strong></td>
+					<td class="center"><strong>না ভোটের সংখ্যা<br />(অংকে ও কথায়)</strong></td>
+					<td class="center"><strong>প্রদত্ত বৈধ ভোটের সংখ্যা<br />[(1)+(2)]</strong></td>
+					<td class="center"><strong>অবৈধ / গণনা বহির্ভূত ভোটের সংখ্যা</strong></td>
+					<td class="center"><strong>প্রদত্ত মোট ভোটের সংখ্যা<br />[(3)+(4)]</strong></td>
+					<td class="center"><strong>শতকরা হার</strong></td>
+				</tr>
+				<tr>
+					<td class="center">1</td>
+					<td class="center">2</td>
+					<td class="center">3</td>
+					<td class="center">4</td>
+					<td class="center">5</td>
+					<td class="center">6</td>
+				</tr>
+				<tr class="data-row">
+					<td class="center"><span class="yes-vote">yes_vote</span></td>
+					<td class="center"><span class="no-vote">no_vote</span></td>
+					<td class="center"><span class="valid-votes">Total_yes+no</span></td>
+					<td class="center"><span class="rejected-gonovote">rejected_gonovote</span></td>
+					<td class="center"><span class="total-with-rejected">Total_yes+no & rejected_gonovot</span></td>
+					<td class="center"><span class="percentage">Percentige (with total_voter)</span></td>
+				</tr>
+				<tr>
+					<td class="center">&nbsp;</td>
+					<td class="center">&nbsp;</td>
+					<td class="center">&nbsp;</td>
+					<td class="center">&nbsp;</td>
+					<td class="center">&nbsp;</td>
+					<td class="center">&nbsp;</td>
+				</tr>
+			</table>
+			<div class="footer-section">
+				<div class="footer-left">
+					<table class="place-table" cellpadding="7" cellspacing="0">
+						<col width="33" />
+						<col width="287" />
+						<tr valign="top">
+							<td width="33"
+								style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+								<p align="left" style="orphans: 2; widows: 2">
+									স্থান:
+								</p>
+							</td>
+							<td width="287" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="left" style="orphans: 2; widows: 2">&nbsp;</p>
+							</td>
+						</tr>
+					</table>
+					<table class="date-table" cellpadding="7" cellspacing="0">
+						<col width="41" />
+						<col width="15" />
+						<col width="16" />
+						<col width="28" />
+						<col width="16" />
+						<col width="16" />
+						<col width="23" />
+						<col width="15" />
+						<col width="16" />
+						<col width="10" />
+						<col width="11" />
+						<col width="39" />
+						<tr valign="top">
+							<td width="41"
+								style="border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+								<p align="left" style="orphans: 2; widows: 2">তারিখ:</p>
+							</td>
+							<td width="15" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">1</span></p>
+							</td>
+							<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p>
+							</td>
+							<td width="28"
+								style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2">দিন</p>
+							</td>
+							<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">0</span></p>
+							</td>
+							<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p>
+							</td>
+							<td width="23"
+								style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2">মাস</p>
+							</td>
+							<td width="15" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p>
+							</td>
+							<td width="16" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">0</span></p>
+							</td>
+							<td width="10" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">2</span></p>
+							</td>
+							<td width="11" style="border: 1px solid #000000; padding: 0in 0.08in">
+								<p align="center" style="orphans: 2; widows: 2"><span class="date-digit">6</span></p>
+							</td>
+							<td width="39"
+								style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0in; padding-left: 0.08in; padding-right: 0in">
+								<p align="left" style="orphans: 2; widows: 2">বৎসর</p>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="footer-right">
+					<div class="signature-box"></div>
+					<div class="signature-text">প্রিজাইডিং অফিসারের<br />নাম, পদবি ও স্বাক্ষর</div>
+				</div>
+			</div>
 		</div>
-		</template>
+	</template>
 
-<script>
-	(async () => {
-		const toNumber = (val) => {
-			const num = Number(String(val ?? '').replace(/[^0-9.]/g, ''));
-			return Number.isFinite(num) ? num : 0;
-		};
+	<script>
+		(async () => {
+			const toNumber = (val) => {
+				const num = Number(String(val ?? '').replace(/[^0-9.]/g, ''));
+				return Number.isFinite(num) ? num : 0;
+			};
 
 			const setText = (root, selector, value) => {
 				const el = root.querySelector(selector);
@@ -288,15 +478,15 @@
 				if (!page) return;
 
 				setText(page, '.vote-centre', `${centre.vote_centre_code ?? ''} - ${centre.vote_centre_name ?? ''}`.trim());
-		setText(page, '.total-voter', centre.total_voter ? `${centre.total_voter} জন` : '');
-		setText(page, '.vote-centre-area', centre.vote_centre_area ?? '');
-// Do not populate from election_result; leave fields empty per request
-			setText(page, '.yes-vote', '');
-			setText(page, '.no-vote', '');
-			setText(page, '.valid-votes', '');
-			setText(page, '.rejected-gonovote', '');
-			setText(page, '.total-with-rejected', '');
-			setText(page, '.percentage', '');
+				setText(page, '.total-voter', centre.total_voter ? `${centre.total_voter} জন` : '');
+				setText(page, '.vote-centre-area', centre.vote_centre_area ?? '');
+				// Do not populate from election_result; leave fields empty per request
+				setText(page, '.yes-vote', '');
+				setText(page, '.no-vote', '');
+				setText(page, '.valid-votes', '');
+				setText(page, '.rejected-gonovote', '');
+				setText(page, '.total-with-rejected', '');
+				setText(page, '.percentage', '');
 
 				pages.appendChild(fragment);
 			};
@@ -312,54 +502,55 @@
 				if (voteCentreCode) {
 					const { data: centre, error: centreError } = await window.supabaseClient
 						.from('vote_centre')
-					.select('vote_centre_iid, vote_centre_code, vote_centre_name, total_voter, vote_centre_area')
+						.select('vote_centre_iid, vote_centre_code, vote_centre_name, total_voter, vote_centre_area')
 						.eq('vote_centre_code', voteCentreCode)
 						.single();
 					if (centreError) throw centreError;
 
-				renderCentre(centre, null);
-			} else {
-				const { data: centres, error: centresError } = await window.supabaseClient
-					.from('vote_centre')
-					.select('vote_centre_iid, vote_centre_code, vote_centre_name, total_voter, vote_centre_area')
-					.order('vote_centre_code');
-				if (centresError) throw centresError;
+					renderCentre(centre, null);
+				} else {
+					const { data: centres, error: centresError } = await window.supabaseClient
+						.from('vote_centre')
+						.select('vote_centre_iid, vote_centre_code, vote_centre_name, total_voter, vote_centre_area')
+						.order('vote_centre_code');
+					if (centresError) throw centresError;
 
-				(centres || []).forEach(c => renderCentre(c, null));
+					(centres || []).forEach(c => renderCentre(c, null));
+				}
+
+				if (typeof window.convertDigitsToBangla === 'function') {
+					window.convertDigitsToBangla();
+				}
+			} catch (err) {
+				console.error('Load failed:', err);
 			}
+		})();
+		// Convert ASCII digits to Bengali digits for display
+		(() => {
+			const bnDigits = '০১২৩৪৫৬৭৮৯';
 
-			if (typeof window.convertDigitsToBangla === 'function') {
-				window.convertDigitsToBangla();
-			}
-		} catch (err) {
-			console.error('Load failed:', err);
-		}
-	})();
-	// Convert ASCII digits to Bengali digits for display
-	(() => {
-		const bnDigits = '০১২৩৪৫৬৭৮৯';
+			const shouldSkip = (node) => {
+				const parent = node?.parentElement;
+				const tag = parent?.tagName?.toLowerCase();
+				return !node?.nodeValue || !parent || tag === 'script' || tag === 'style';
+			};
 
-		const shouldSkip = (node) => {
-			const parent = node?.parentElement;
-			const tag = parent?.tagName?.toLowerCase();
-			return !node?.nodeValue || !parent || tag === 'script' || tag === 'style';
-		};
+			const convertNode = (node) => {
+				if (shouldSkip(node)) return;
+				node.nodeValue = node.nodeValue.replace(/\d/g, (d) => bnDigits[Number(d)] || d);
+			};
 
-		const convertNode = (node) => {
-			if (shouldSkip(node)) return;
-			node.nodeValue = node.nodeValue.replace(/\d/g, (d) => bnDigits[Number(d)] || d);
-		};
+			const convertAll = (root) => {
+				const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+				let node;
+				while ((node = walker.nextNode())) convertNode(node);
+			};
 
-		const convertAll = (root) => {
-			const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-			let node;
-			while ((node = walker.nextNode())) convertNode(node);
-		};
-
-		window.convertDigitsToBangla = () => convertAll(document.body);
-		window.addEventListener('DOMContentLoaded', () => window.convertDigitsToBangla());
-	})();
-</script>
+			window.convertDigitsToBangla = () => convertAll(document.body);
+			window.addEventListener('DOMContentLoaded', () => window.convertDigitsToBangla());
+		})();
+	</script>
 
 </body>
+
 </html>
