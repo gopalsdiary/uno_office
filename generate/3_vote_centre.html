@@ -357,6 +357,8 @@
         // Check authentication on page load
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth();
+            const urlParams = new URLSearchParams(window.location.search);
+            pendingCentreCode = urlParams.get('vote_centre_code');
             loadFromDatabase(); // Auto-load saved data on page load
         });
         
@@ -366,6 +368,7 @@
         let assPresidingPool = [];
         let pollingPool = [];
         let poolsLoaded = false;
+        let pendingCentreCode = '';
         
         // Helper function to get officer name (handles different column names)
         function getOfficerName(officer, type) {
@@ -400,9 +403,26 @@
             return `${name}${role}`;
         }
 
-        function buildOptions(pool, selectedId, idKey, type, selectedOfficer = null) {
+        function buildOptions(pool, selectedId, idKey, type, selectedOfficer = null, extraList = []) {
             const opts = ['<option value="">-- Clear --</option>'];
-            const sorted = [...pool].sort((a, b) => {
+
+            const highlightIds = new Set(
+                (extraList || [])
+                    .filter(Boolean)
+                    .map(item => String(item?.[idKey] ?? item?.id ?? item?.iid ?? ''))
+                    .filter(Boolean)
+            );
+
+            const byId = new Map();
+            [...(extraList || []), ...(pool || [])].forEach(item => {
+                if (!item) return;
+                const idVal = String(item[idKey] ?? item.id ?? item.iid ?? '');
+                if (!idVal) return;
+                if (!byId.has(idVal)) byId.set(idVal, item);
+            });
+
+            const combined = Array.from(byId.values());
+            const sorted = combined.sort((a, b) => {
                 const aId = Number(a[idKey]) || 0;
                 const bId = Number(b[idKey]) || 0;
                 if (aId !== bId) return aId - bId;
@@ -413,15 +433,18 @@
             sorted.forEach((item, idx) => {
                 const idVal = String(item[idKey]);
                 const isSelected = selectedId && String(selectedId) === idVal;
+                const isHighlight = highlightIds.has(idVal);
                 if (isSelected) foundSelected = true;
                 const label = `${idx + 1}. ${getOfficerDisplay(item, type)}`;
-                opts.push(`<option value="${idVal}" ${isSelected ? 'selected' : ''}>${label}</option>`);
+                const styleAttr = isHighlight ? 'style="background-color:#fff3cd; color:#856404;"' : '';
+                opts.push(`<option value="${idVal}" ${isSelected ? 'selected' : ''} ${styleAttr}>${label}</option>`);
             });
 
             if (selectedId && selectedOfficer && !foundSelected) {
                 const idVal = String(selectedId);
                 const label = `* ${getOfficerDisplay(selectedOfficer, type)}`;
-                opts.splice(1, 0, `<option value="${idVal}" selected>${label}</option>`);
+                const styleAttr = highlightIds.has(idVal) ? 'style="background-color:#fff3cd; color:#856404;"' : '';
+                opts.splice(1, 0, `<option value="${idVal}" selected ${styleAttr}>${label}</option>`);
             }
 
             return opts.join('');
@@ -439,7 +462,7 @@
                 const idVal = item.ass_presiding_iid ? String(item.ass_presiding_iid) : '';
                 const selected = selectedId && String(selectedId) === idVal ? 'selected' : '';
                 const label = `${idx + 1}. ${getOfficerDisplay(item, 'ass_presiding')}`;
-                opts.push(`<option value="${idVal}" ${selected}>${label}</option>`);
+                opts.push(`<option value="${idVal}" ${selected} style="background-color:#fff3cd; color:#856404;">${label}</option>`);
             });
             return opts.join('');
         }
@@ -851,6 +874,28 @@
             renderAssignmentsAndStats();
         }
 
+        function openCentreEditTab(centreIndex) {
+            const assignment = generatedData[centreIndex];
+            if (!assignment || !assignment.centre) return;
+            const code = assignment.centre.vote_centre_code;
+            if (!code) return;
+            const url = `3_vote_centre.html?vote_centre_code=${encodeURIComponent(code)}`;
+            const win = window.open(url, '_blank');
+            if (win) win.focus();
+        }
+
+        function applyDeepLinkSelection() {
+            if (!pendingCentreCode) return;
+            selectedCentreCode = pendingCentreCode;
+            const centreSelect = document.getElementById('centreSelect');
+            if (centreSelect) centreSelect.value = pendingCentreCode;
+            renderAssignmentsAndStats();
+            const centreIndex = generatedData.findIndex(a => String(a.centre.vote_centre_code) === String(pendingCentreCode));
+            if (centreIndex !== -1) {
+                toggleEditMode(centreIndex);
+            }
+        }
+
         // Toggle edit mode for a centre
         async function toggleEditMode(centreIndex) {
             const centreCard = document.getElementById(`centre-${centreIndex}`);
@@ -878,6 +923,27 @@
             const assignment = generatedData[centreIndex];
             if (!assignment) return;
 
+            function normalizeAssPresidingPositions() {
+                assignment.assPresiding = assignment.assPresiding.map((item, idx) => {
+                    if (!item) return null;
+                    return {
+                        ...item,
+                        booth_number: idx + 1
+                    };
+                });
+            }
+
+            function normalizePollingPositions() {
+                assignment.polling = assignment.polling.map((item, idx) => {
+                    if (!item) return null;
+                    return {
+                        ...item,
+                        booth_number: Math.floor(idx / 2) + 1,
+                        person_number: (idx % 2) + 1
+                    };
+                });
+            }
+
             if (officerType === 'presiding') {
                 if (newId === '') {
                     assignment.presiding = null;
@@ -898,21 +964,29 @@
                         assignment.assPresiding[position] = null; // keep row but blank
                     }
                 } else {
-                    const officer = assPresidingPool.find(o => String(o.ass_presiding_iid) === String(newId));
-                    if (officer) {
-                        const newOfficer = {
-                            ass_presiding_iid: officer.ass_presiding_iid,
-                            ass_presiding_name: officer.ass_presiding_name || officer.name,
-                            designation: officer.designation,
-                            gender: officer.gender,
-                            booth_number: assignment.assPresiding[position]?.booth_number || position + 1
-                        };
-                        if (position >= 0 && position < assignment.assPresiding.length) {
-                            assignment.assPresiding[position] = newOfficer;
-                        } else {
-                            assignment.assPresiding.push(newOfficer);
+                    const existingIdx = assignment.assPresiding.findIndex(o => o && String(o.ass_presiding_iid) === String(newId));
+                    if (existingIdx !== -1 && existingIdx !== position) {
+                        const current = assignment.assPresiding[position] || null;
+                        assignment.assPresiding[position] = assignment.assPresiding[existingIdx];
+                        assignment.assPresiding[existingIdx] = current;
+                    } else {
+                        const officer = assPresidingPool.find(o => String(o.ass_presiding_iid) === String(newId));
+                        if (officer) {
+                            const newOfficer = {
+                                ass_presiding_iid: officer.ass_presiding_iid,
+                                ass_presiding_name: officer.ass_presiding_name || officer.name,
+                                designation: officer.designation,
+                                gender: officer.gender,
+                                booth_number: position + 1
+                            };
+                            if (position >= 0 && position < assignment.assPresiding.length) {
+                                assignment.assPresiding[position] = newOfficer;
+                            } else {
+                                assignment.assPresiding.push(newOfficer);
+                            }
                         }
                     }
+                    normalizeAssPresidingPositions();
                 }
             } else if (officerType === 'polling') {
                 if (newId === '') {
@@ -920,24 +994,32 @@
                         assignment.polling[position] = null; // keep slot but blank
                     }
                 } else {
-                    const officer = pollingPool.find(o => String(o.polling_iid) === String(newId));
-                    if (officer) {
-                        const boothNum = Math.floor(position / 2) + 1;
-                        const personNum = (position % 2) + 1;
-                        const newOfficer = {
-                            polling_iid: officer.polling_iid,
-                            polling_name: officer.polling_name || officer.name,
-                            designation: officer.designation,
-                            gender: officer.gender,
-                            booth_number: boothNum,
-                            person_number: personNum
-                        };
-                        if (position >= 0 && position < assignment.polling.length) {
-                            assignment.polling[position] = newOfficer;
-                        } else {
-                            assignment.polling.push(newOfficer);
+                    const existingIdx = assignment.polling.findIndex(o => o && String(o.polling_iid) === String(newId));
+                    if (existingIdx !== -1 && existingIdx !== position) {
+                        const current = assignment.polling[position] || null;
+                        assignment.polling[position] = assignment.polling[existingIdx];
+                        assignment.polling[existingIdx] = current;
+                    } else {
+                        const officer = pollingPool.find(o => String(o.polling_iid) === String(newId));
+                        if (officer) {
+                            const boothNum = Math.floor(position / 2) + 1;
+                            const personNum = (position % 2) + 1;
+                            const newOfficer = {
+                                polling_iid: officer.polling_iid,
+                                polling_name: officer.polling_name || officer.name,
+                                designation: officer.designation,
+                                gender: officer.gender,
+                                booth_number: boothNum,
+                                person_number: personNum
+                            };
+                            if (position >= 0 && position < assignment.polling.length) {
+                                assignment.polling[position] = newOfficer;
+                            } else {
+                                assignment.polling.push(newOfficer);
+                            }
                         }
                     }
+                    normalizePollingPositions();
                 }
             } else if (officerType === 'alternate') {
                 if (newId === '') {
@@ -1024,7 +1106,7 @@
                             <h2>${index + 1}. Centre ${centre.vote_centre_code}</h2>
                             <p>${centre.vote_centre_name || ''}</p>
                             <p>Total booths: ${centre.voter_both_total || 0}</p>
-                            <button class="edit-btn" onclick="toggleEditMode(${centreIndex})">✏️ Edit</button>
+                            <button class="edit-btn" onclick="openCentreEditTab(${centreIndex})">✏️ Edit</button>
                             <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
                         </div>
                         
@@ -1069,7 +1151,7 @@
                                     <div class="officer-designation">${assPres.gender || ''}</div>
                                 ` : ''}
                                 <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'ass_presiding', ${i}, this.value)">
-                                    ${assPres ? buildOptions(assPresidingPool, assPres.ass_presiding_iid, 'ass_presiding_iid', 'ass_presiding', assPres) : buildOptions(assPresidingPool, null, 'ass_presiding_iid', 'ass_presiding')}
+                                    ${assPres ? buildOptions(assPresidingPool, assPres.ass_presiding_iid, 'ass_presiding_iid', 'ass_presiding', assPres, assPresiding) : buildOptions(assPresidingPool, null, 'ass_presiding_iid', 'ass_presiding', null, assPresiding)}
                                 </select>
                             </td>
                             
@@ -1079,14 +1161,14 @@
                                     <div class="officer-designation">${poll1.designation || ''} (${poll1.gender || ''})</div>
                                 ` : ''}
                                 <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2}, this.value)">
-                                    ${poll1 ? buildOptions(pollingPool, poll1.polling_iid, 'polling_iid', 'polling', poll1) : buildOptions(pollingPool, null, 'polling_iid', 'polling')}
+                                    ${poll1 ? buildOptions(pollingPool, poll1.polling_iid, 'polling_iid', 'polling', poll1, polling) : buildOptions(pollingPool, null, 'polling_iid', 'polling', null, polling)}
                                 </select>
                                 ${poll2 ? `
                                     <div class="officer-name">2. ${getOfficerName(poll2, 'polling')}</div>
                                     <div class="officer-designation">${poll2.designation || ''} (${poll2.gender || ''})</div>
                                 ` : ''}
                                 <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2 + 1}, this.value)">
-                                    ${poll2 ? buildOptions(pollingPool, poll2.polling_iid, 'polling_iid', 'polling', poll2) : buildOptions(pollingPool, null, 'polling_iid', 'polling')}
+                                    ${poll2 ? buildOptions(pollingPool, poll2.polling_iid, 'polling_iid', 'polling', poll2, polling) : buildOptions(pollingPool, null, 'polling_iid', 'polling', null, polling)}
                                 </select>
                             </td>
                             
@@ -1263,6 +1345,7 @@
                 populateAreaDropdown();
                 populateCentreDropdown();
                 renderAssignmentsAndStats();
+                applyDeepLinkSelection();
 
                 // Expose helper to load all areas/codes from DB separately
                 async function enrichCentresWithArea() {
