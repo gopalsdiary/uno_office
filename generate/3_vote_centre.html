@@ -406,6 +406,12 @@
         function buildOptions(pool, selectedId, idKey, type, selectedOfficer = null, extraList = []) {
             const opts = ['<option value="">-- Clear --</option>'];
 
+            function isAssignedOfficer(item) {
+                if (!item) return false;
+                const assignCode = item.assign_code ?? item.assignCode ?? item.assign ?? '';
+                return String(assignCode || '').trim() !== '';
+            }
+
             const highlightIds = new Set(
                 (extraList || [])
                     .filter(Boolean)
@@ -413,8 +419,39 @@
                     .filter(Boolean)
             );
 
+            function getAssignedIds(currentType) {
+                const ids = new Set();
+                if (!Array.isArray(generatedData)) return ids;
+                generatedData.forEach(assignment => {
+                    if (!assignment) return;
+                    if (currentType === 'presiding') {
+                        const p = assignment.presiding;
+                        if (p) ids.add(String(p.presiding_iid ?? p.officer_iid ?? p.id ?? p.iid ?? ''));
+                    } else if (currentType === 'ass_presiding') {
+                        (assignment.assPresiding || []).forEach(ap => {
+                            if (ap) ids.add(String(ap.ass_presiding_iid ?? ap.officer_iid ?? ap.id ?? ap.iid ?? ''));
+                        });
+                    } else if (currentType === 'polling') {
+                        (assignment.polling || []).forEach(pl => {
+                            if (pl) ids.add(String(pl.polling_iid ?? pl.officer_iid ?? pl.id ?? pl.iid ?? ''));
+                        });
+                    }
+                });
+                ids.delete('');
+                return ids;
+            }
+
+            const assignedIds = getAssignedIds(type);
             const byId = new Map();
-            [...(extraList || []), ...(pool || [])].forEach(item => {
+            const unassignedPool = (pool || []).filter(item => {
+                if (!item) return false;
+                const idVal = String(item[idKey] ?? item.id ?? item.iid ?? '');
+                if (!idVal) return false;
+                if (selectedId && String(selectedId) === idVal) return true;
+                if (assignedIds.has(idVal)) return false;
+                return !isAssignedOfficer(item);
+            });
+            [...(extraList || []), ...unassignedPool].forEach(item => {
                 if (!item) return;
                 const idVal = String(item[idKey] ?? item.id ?? item.iid ?? '');
                 if (!idVal) return;
@@ -884,6 +921,29 @@
             if (win) win.focus();
         }
 
+        function handleEditButtonClick(centreIndex) {
+            const centreCard = document.getElementById(`centre-${centreIndex}`);
+            if (centreCard && centreCard.classList.contains('edit-mode')) {
+                toggleEditMode(centreIndex);
+                return;
+            }
+
+            const assignment = generatedData[centreIndex];
+            const centreCode = assignment?.centre?.vote_centre_code;
+            const urlParams = new URLSearchParams(window.location.search);
+            const deepLinkCode = urlParams.get('vote_centre_code');
+
+            const isSingleCentreView = (deepLinkCode && String(deepLinkCode) === String(centreCode))
+                || (selectedCentreCode && selectedCentreCode !== 'all' && String(selectedCentreCode) === String(centreCode));
+
+            if (isSingleCentreView) {
+                toggleEditMode(centreIndex);
+                return;
+            }
+
+            openCentreEditTab(centreIndex);
+        }
+
         function applyDeepLinkSelection() {
             if (!pendingCentreCode) return;
             selectedCentreCode = pendingCentreCode;
@@ -1106,7 +1166,7 @@
                             <h2>${index + 1}. Centre ${centre.vote_centre_code}</h2>
                             <p>${centre.vote_centre_name || ''}</p>
                             <p>Total booths: ${centre.voter_both_total || 0}</p>
-                            <button class="edit-btn" onclick="openCentreEditTab(${centreIndex})">✏️ Edit</button>
+                            <button class="edit-btn" onclick="handleEditButtonClick(${centreIndex})">✏️ Edit</button>
                             <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
                         </div>
                         
@@ -1679,6 +1739,7 @@
                 
                 showStatus('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success');
                 document.getElementById('saveBtn').style.display = 'none';
+                renderAssignmentsAndStats();
                 
             } catch (error) {
                 console.error('Save error:', error);
