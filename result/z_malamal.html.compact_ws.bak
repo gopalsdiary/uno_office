@@ -16,22 +16,7 @@
             a, button { color: inherit !important; }
             img { color: initial !important; }
             /* Specific row for vote centre details */
-            .vote-center { font-size: 11pt; } @media screen { body { width: 8.5in; min-height: 14in; margin: 16px auto; padding: 0.5in; box-shadow: 0 0 8px rgba(0,0,0,0.12); } } @media print {
-            @page { size: 8.5in 14in; margin: 0.4in; }
-            html, body { height: 14in; }
-            body { margin: 0; padding: 0; line-height: 1.05; background: #fff !important; color: #000 !important; }
-            table { table-layout: fixed; word-break: break-word; width: 100%; border-collapse: collapse; }
-            td, th { word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; padding: 2px 4px; }
-            img { max-width: 100%; height: auto; }
-            /* allow page breaks inside elements so printing flows continuously */
-            table, thead, tbody, tr, td, th, div, section { page-break-inside: auto !important; page-break-after: auto !important; page-break-before: auto !important; }
-            /* hide any manual page-break helpers */
-            .page-break { display: none !important; }
-            /* force white backgrounds for printing */
-            * { -webkit-print-color-adjust: exact; color-adjust: exact; background: #fff !important; background-color: #fff !important; color: #000 !important; }
-            /* Try to scale slightly to fit on one legal page when printing */
-            body { transform: scale(0.97); transform-origin: top left; }
-        } p { margin: 0 0 2px; } /* Equal width columns for items/forms table */ .table-items-forms { table-layout: fixed; } .table-items-forms .items { width: 50%; } .table-items-forms .forms { width: 50%; } /* Utility classes for clean coding */ .text-center { text-align: center; } .text-right { text-align: right; } .fw-bold { font-weight: bold; } .mb-0 { margin-bottom: 0; } /* Specific row for vote centre details */ .vote-center { font-size: 11pt; } /* Table styling */ .table-main, .table-items-forms { width: 100%; border-collapse: collapse; } .table-main td, .table-items-forms td { border: 1px solid #000; padding: 2px 4px !important; line-height: 1.05; vertical-align: middle; } /* Reduce vertical whitespace for narrow numeric columns (R and ক্রঃ নং) */ .table-items-forms td[width="3%"], .table-items-forms td[width="2%"] { padding: 2px 2px !important; line-height: 1 !important; height: auto !important; } .table-items-forms td[width="3%"] p, .table-items-forms td[width="2%"] p { margin: 0 !important; padding: 0 !important; font-size: 10pt !important; } .header-row { background: #c0c0c0; } .header-row td { font-weight: bold; } table { width: 100%; border-collapse: collapse; border-spacing: 0; table-layout: auto; } td { vertical-align: middle; padding: 2px 4px; } font { font-family: inherit !important; } </style>
+            .vote-center { font-size: 11pt; } @media screen { body { width: 8.5in; min-height: 14in; margin: 16px auto; padding: 0.5in; box-shadow: 0 0 8px rgba(0,0,0,0.12); } } @media print { @page { size: 8.5in 14in; margin: 0.5in; } body { margin: 0; padding: 0; line-height: 1.1; } table { table-layout: fixed; word-break: break-word; width: 100%; border-collapse: collapse; } td, th { word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; padding: 2px 4px; } img { max-width: 100%; height: auto; } .page-break { page-break-after: always; } * { -webkit-print-color-adjust: exact; color-adjust: exact; } table, thead, tbody, tr, td, th { page-break-inside: avoid !important; } } p { margin: 0 0 2px; } /* Equal width columns for items/forms table */ .table-items-forms { table-layout: fixed; } .table-items-forms .items { width: 50%; } .table-items-forms .forms { width: 50%; } /* Utility classes for clean coding */ .text-center { text-align: center; } .text-right { text-align: right; } .fw-bold { font-weight: bold; } .mb-0 { margin-bottom: 0; } /* Specific row for vote centre details */ .vote-center { font-size: 11pt; } /* Table styling */ .table-main, .table-items-forms { width: 100%; border-collapse: collapse; } .table-main td, .table-items-forms td { border: 1px solid #000; padding: 2px 4px !important; line-height: 1.05; vertical-align: middle; } .header-row { background: #c0c0c0; } .header-row td { font-weight: bold; } table { width: 100%; border-collapse: collapse; border-spacing: 0; table-layout: auto; } td { vertical-align: middle; padding: 2px 4px; } font { font-family: inherit !important; } </style>
             <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
             </script>
             <script src="../authentication.js">
@@ -52,7 +37,7 @@
             <p align="center" style="line-height: 100%; margin-bottom: 0in">
                 প্রিজাইডিং অফিসারের নিকট নির্বাচনী দ্রব্যাদি সরবরাহ এবং ভাতা প্রদানের হিসাব বিবরণী
             </p>
-            <table id="form-template" width="100%" cellpadding="4" cellspacing="0">
+            <table width="100%" cellpadding="4" cellspacing="0">
                 <colgroup>
                     <col width="21*"/>
                 </colgroup>
@@ -223,7 +208,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="12" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="28%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
@@ -260,7 +245,7 @@
                                 </p>
                             </td>
                             <td rowspan="5" colspan="10" width="50%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                         </tr>
                     </tbody>
@@ -358,7 +343,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="19" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td class="items" colspan="6" width="35%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
@@ -370,23 +355,23 @@
                                     <b>পরিমাণ</b>
                                 </p>
                             </td>
-                            <td colspan="1" width="3%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                            <td colspan="2" width="6%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
                                     R
                                 </p>
                             </td>
-                            <td colspan="1" width="2%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border: 1px solid #000000; padding: 0in 0.08in">
+                            <td colspan="2" width="4%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
                                     <b>ক্রঃ নং</b>
                                 </p>
                             </td>
-                            <td class="forms" colspan="7" width="40%" bgcolor="#bfbfbf" style="background: #bfbfbf; border: 1px solid #000000; padding: 0in 0.08in">
+                            <td class="forms" colspan="5" width="34%" bgcolor="#bfbfbf" style="background: #bfbfbf; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
                                     <b>ফরম সমূহ</b>
                                 </p>
                             </td>
                             <td width="6%" valign="top" bgcolor="#c0c0c0" style="background: #c0c0c0; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                         </tr>
                     </tbody>
@@ -420,13 +405,13 @@
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                         </tr>
                     </tbody>
@@ -548,7 +533,10 @@
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p>
-                                    পিতলের সিলমোহর (ব্রাস সিল)
+                                    পিতলের সিলমোহর
+                                    (
+                                    ব্রাস সিল
+                                    )
                                     কেন্দ্র প্রতি ১টি
                                 </p>
                             </td>
@@ -711,7 +699,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="8" width="44%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -743,7 +731,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -798,10 +786,10 @@
                                 </p>
                             </td>
                             <td colspan="2" width="12%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -831,7 +819,7 @@
                     <tbody>
                         <tr>
                             <td colspan="11" width="56%" height="13" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                <p align="center"> 
+                                <p align="center"> &nbsp;
                                     <b>মনিহারী দ্রব্যাদি</b>
                                 </p>
                             </td>
@@ -887,7 +875,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                <p align="center"> টি
+                                <p align="center"> &nbsp;টি
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -931,7 +919,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1084,7 +1072,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1135,7 +1123,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1184,7 +1172,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1333,7 +1321,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1384,7 +1372,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1435,7 +1423,7 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
@@ -1485,7 +1473,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1527,7 +1515,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1552,7 +1540,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="19" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="8" width="47%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
@@ -1560,7 +1548,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="7" width="38%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1598,7 +1586,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1643,7 +1631,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1688,7 +1676,7 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p align="center">
@@ -1736,10 +1724,10 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1763,19 +1751,19 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="7" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="12%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1799,7 +1787,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="15" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
@@ -1807,13 +1795,13 @@
                                 </p>
                             </td>
                             <td colspan="2" width="12%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p>
@@ -1837,7 +1825,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="19" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0in; padding-left: 0.08in; padding-right: 0in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1854,11 +1842,11 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1882,7 +1870,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="16" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p>
@@ -1900,11 +1888,11 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td colspan="2" width="4%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1934,7 +1922,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="12" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p>
@@ -1952,11 +1940,11 @@
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p align="center">
-                                    টি
+                                    টি&nbsp;
                                 </p>
                             </td>
                             <td rowspan="2" colspan="2" width="4%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" valign="bottom" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
                                 <p>
@@ -1980,7 +1968,7 @@
                     <tbody>
                         <tr>
                             <td width="3%" height="20" style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="6" width="35%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
                                 <p>
@@ -1996,13 +1984,13 @@
                                 </p>
                             </td>
                             <td colspan="2" width="6%" style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                             <td colspan="5" width="34%" valign="top" style="background: transparent; border-top: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; padding: 0in">
-                                <p> </p>
+                                <p> &nbsp;</p>
                             </td>
                             <td width="6%" style="background: transparent; border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
-                                
+                                <p align="center"> &nbsp;</p>
                             </td>
                         </tr>
                         <tr valign="top">
@@ -2105,8 +2093,8 @@
                     </tbody>
                     <tbody>
                         <tr>
-                            <td colspan="19" width="100%" height="21" bgcolor="#ffffff" style="background: #fff !important; border: 1px solid #000000; padding: 0in 0.08in">
-                                <p align="center" class="section-header" style="background: #fff !important; color: #000 !important; margin: 0; padding: 4px 0;">
+                            <td colspan="19" width="100%" height="21" bgcolor="#cc99ff" style="background: #cc99ff; border: 1px solid #000000; padding: 0in 0.08in">
+                                <p align="center">
                                     <b>ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</b>
                                 </p>
                             </td>
@@ -2343,7 +2331,7 @@
                 <p align="center" style="line-height: 100%; margin-bottom: 0in">
                     <br/>
                 </p>
-                <!-- removed old inline script start
+                <script>
                     // Get vote_centre_code from URL parameter
                     const urlParams = new URLSearchParams(window.location.search);
                     const voteCentreCode = urlParams.get('vote_centre_code');
@@ -2357,50 +2345,7 @@
                     }
 
                     // Function to evaluate and replace calculations
-                    function evaluateCalculations() {
-                        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-                        const nodes = [];
-                        while (walker.nextNode()) {
-                            const node = walker.currentNode;
-                            if (!node.nodeValue) continue;
-                            const t = node.nodeValue;
-                            // Look for digits and arithmetic operators (include Bengali digits and ×)
-                            if (/\d|[০-৯]/.test(t) && /[\+\-\*\/×\(\)]/.test(t)) nodes.push(node);
-                        }
-
-                        nodes.forEach(node => {
-                            try {
-                                const original = node.nodeValue;
-                                let converted = bengaliToEnglish(original).replace(/×/g, '*');
-
-                                // handle parenthesized expressions like (6 + 1) * 5
-                                converted = converted.replace(/\(([^)]+)\)\s*([\*\/])\s*(\d+)/g, (m, expr, op, num) => {
-                                    try {
-                                        const inner = eval(expr);
-                                        const out = eval(`${inner} ${op} ${num}`);
-                                        return isFinite(out) ? String(out) : m;
-                                    } catch (e) { return m; }
-                                });
-
-                                // handle simple binary operations
-                                converted = converted.replace(/(\d+)\s*([\+\-\*\/])\s*(\d+)/g, (m, a, op, b) => {
-                                    try {
-                                        const out = eval(`${a} ${op} ${b}`);
-                                        return isFinite(out) ? String(out) : m;
-                                    } catch (e) { return m; }
-                                });
-
-                                if (converted !== bengaliToEnglish(original).replace(/×/g, '*')) {
-                                    // format numbers back to Bengali digits
-                                    const bnMap = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-                                    const formatted = String(converted).replace(/\d/g, d => bnMap[+d]);
-                                    node.nodeValue = node.nodeValue.replace(original, formatted);
-                                    console.log('Calculated:', original.trim(), '→', formatted);
-                                }
-                            } catch (e) {
-                                console.error('evaluateCalculations error for', node.nodeValue, e);
-                            }
-                        });
+                    function evaluateCalculations() { const body = document.body; const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null, false); const nodesToEvaluate = []; while (walker.nextNode()) { const node = walker.currentNode; const text = node.nodeValue; // Check for arithmetic expressions (English or Bengali numerals) if (text && (/\d+\s*[\+\-\*\/×]\s*[\d০-৯]+/.test(text) || /[\d০-৯]+\s*[\+\-\*\/×]\s*\d+/.test(text))) { nodesToEvaluate.push(node); } } nodesToEvaluate.forEach(node => { try { let text = node.nodeValue; // Convert Bengali numerals to English let convertedText = bengaliToEnglish(text); // Replace × with * convertedText = convertedText.replace(/×/g, '*'); // Match and evaluate patterns like "5 * 2", "(10 + 1) * 5", "6 * 6000" const parenPattern = /\((\d+\s*[\+\-\*\/]\s*\d+)\)\s*([\*\/])\s*(\d+)/g; const simpleCalcPattern = /(\d+)\s*([\+\-\*\/])\s*(\d+)/g; let newText = convertedText; let hasChanges = false; // First handle parenthesized calculations with following operations: (6 + 1) * 5 newText = newText.replace(parenPattern, (match, expr, op, num) => { try { const innerResult = eval(expr); const finalResult = eval(`${innerResult} ${op} ${num}`); if (!isNaN(finalResult)) { hasChanges = true; return finalResult.toString(); } } catch (e) { console.error('Error in complex calc:', match, e); } return match; }); // Then handle simple calculations: 6 * 6000 newText = newText.replace(simpleCalcPattern, (match, num1, op, num2) => { try { const result = eval(`${num1} ${op} ${num2}`); if (!isNaN(result)) { hasChanges = true; return result.toString(); } } catch (e) { console.error('Error in simple calc:', match, e); } return match; }); if (hasChanges && newText !== text) { node.nodeValue = node.nodeValue.replace(text.trim(), newText); console.log(`Calculated: "${text.trim()}" → "${newText}"`); } } catch (e) { console.error('Error evaluating calculation:', node.nodeValue, e); } });
                     }
 
                     // Remove inline fonts and attributes from DOM (unwrap  tags and clear inline font-size and colors)
@@ -2408,403 +2353,13 @@
                     }
 
                     // Function to fetch and populate data
-                    async function loadVoteCentreData() { if (!voteCentreCode) { console.error('No vote_centre_code provided in URL'); alert('অনুগ্রহ করে URL এ vote_centre_code প্যারামিটার দিন। উদাহরণ: ?vote_centre_code=5'); return; } try { // Show loading document.body.style.opacity = '0.6'; // Fetch vote centre data by vote_centre_code const { data, error } = await window.supabaseClient .from('vote_centre') .select('*') .eq('vote_centre_code', voteCentreCode) .maybeSingle(); // Hide loading document.body.style.opacity = '1'; if (error && error.code !== 'PGRST116') { console.error('Supabase error:', error); throw new Error(error.message || 'ডেটা লোড করতে সমস্যা হয়েছে'); } if (!data) { alert(`কোন ডেটা পাওয়া যায়নি। vote_centre_code: ${voteCentreCode} চেক করুন।`); console.error('No data found for vote_centre_code:', voteCentreCode); return; } console.log('✅ Raw data from Supabase:', data);
-
-                            // Helpers
-                            function parseNumberField(val) {
-                                if (val === null || val === undefined) return 0;
-                                const s = String(val).replace(/,/g, '').trim();
-                                const en = bengaliToEnglish(s);
-                                const n = parseInt(en, 10);
-                                return isNaN(n) ? 0 : n;
-                            }
-
-                            function formatNumberBn(n) {
-                                const en = Number(n).toLocaleString('en-US');
-                                const map = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-                                return String(en).replace(/\d/g, d => map[d]);
-                            }
-
-                            // Calculate values
-                            const voteCentreCodeValue = data.vote_centre_code || '';
-                            const voteCentreName = data.vote_centre_name || '';
-                            const maleVoter = parseNumberField(data.male_voter);
-                            const femaleVoter = parseNumberField(data.female_voter);
-                            const hizraVoter = parseNumberField(data.hizra_voter);
-                            const totalVoter = parseNumberField(data.total_voter) || (maleVoter + femaleVoter + hizraVoter);
-                            const voterBothTotal = parseNumberField(data.voter_both_total) || Math.ceil(totalVoter / 1200);
-                            const voterBothMale = parseNumberField(data.voter_both_male);
-                            const voterBothFemale = parseNumberField(data.voter_both_female);
-                            const totalOfficer = voterBothTotal * 3; // (voter_both_total + (voter_both_total * 2))
-
-                            // Store values globally for calculations
-                            window.voter_both_total = voterBothTotal;
-                            window.total_voter = totalVoter;
-                            window.male_voter = maleVoter;
-                            window.female_voter = femaleVoter;
-                            window.hizra_voter = hizraVoter;
-
-                            // Update vote centre name area
-                            const vcEl = document.querySelector('td.vote-center p');
-                            if (vcEl) vcEl.textContent = `${voteCentreCodeValue}. ${voteCentreName}`;
-
-                            // Replace placeholders using clean text replacement (display in Bengali digits)
-                            replaceText('vote_centre_code', voteCentreCodeValue);
-                            replaceText('voter_both_total', formatNumberBn(voterBothTotal));
-                            replaceText('voter_both_male', formatNumberBn(voterBothMale));
-                            replaceText('voter_both_female', formatNumberBn(voterBothFemale));
-                            replaceText('male_voter', formatNumberBn(maleVoter));
-                            replaceText('female_voter', formatNumberBn(femaleVoter));
-                            replaceText('hizra_voter', formatNumberBn(hizraVoter));
-                            replaceText('total_voter', formatNumberBn(totalVoter));
-                            replaceText('Total officer', formatNumberBn(totalOfficer));
-                            replaceText('total officer', formatNumberBn(totalOfficer));
-
-                            // Monetary calculations
-                            const presidingCount = 1;
-                            const presidingRate = 8000;
-                            const presidingTotal = presidingRate * presidingCount;
-
-                            const assistantCount = voterBothTotal; // per polling unit
-                            const assistantRate = 6000;
-                            const assistantTotal = assistantCount * assistantRate;
-
-                            const pollingCount = voterBothTotal; // per polling unit
-                            const pollingRate = 4000;
-                            const pollingTotal = pollingCount * pollingRate;
-
-                            const travelRate = 1000;
-                            const travelTotal = totalOfficer * travelRate;
-
-                            const bestniRate = 800;
-                            const bestniTotal = voterBothTotal * bestniRate;
-
-                            const grandTotal = presidingTotal + assistantTotal + pollingTotal + travelTotal + bestniTotal;
-
-                            function insertAmount(label, amount) {
-                                document.querySelectorAll('td p').forEach(p => {
-                                    try {
-                                        if (p.textContent && p.textContent.indexOf(label) !== -1) {
-                                            // Skip identity card rows for presiding officer (they shouldn't show monetary total)
-                                            if (label === 'প্রিজাইডিং অফিসার' && p.textContent.indexOf('পরিচয়পত্র') !== -1) {
-                                                const existing = p.querySelector('.computed-amount');
-                                                if (existing) existing.remove();
-                                                return;
-                                            }
-                                            if (p.querySelector('.computed-amount')) return;
-                                            const div = document.createElement('div');
-                                            div.className = 'computed-amount';
-                                            div.style.fontWeight = 'bold';
-                                            div.style.marginTop = '4px';
-                                            div.textContent = 'মোট: ' + formatNumberBn(amount) + ' টাকা';
-                                            p.appendChild(div);
-                                        }
-                                    } catch (e) {
-                                        console.error('Error inserting amount for', label, e);
-                                    }
-                                });
-                            }
-
-                            insertAmount('প্রিজাইডিং অফিসার', presidingTotal);
-                            insertAmount('সহকারী প্র্রিজাইডিং', assistantTotal);
-                            insertAmount('পোলিং অফিসার', pollingTotal);
-                            insertAmount('যাতায়াত ভাতা', travelTotal);
-                            insertAmount('বেস্টনি নির্মান', bestniTotal);
-
-                            // Append a grand total row after the section header if not present
-                            (function insertGrandTotalRow() {
-                                const headerTd = document.querySelector('td[colspan="19"]');
-                                if (!headerTd) return;
-                                const headerTr = headerTd.closest('tr');
-                                if (!headerTr) return;
-                                if (document.getElementById('grand-total-row')) return;
-                                const tr = document.createElement('tr');
-                                tr.id = 'grand-total-row';
-                                tr.innerHTML = `<td colspan="19" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">সর্বমোট ভাতা: ${formatNumberBn(grandTotal)} টাকা</td>`;
-                                headerTr.parentNode.insertBefore(tr, headerTr.nextSibling);
-                            })();
-
-                            // Evaluate calculations after all replacements (e.g., "5 * 2" -> "10")
-                            setTimeout(() => {
-                                evaluateCalculations();
-                                // Remove inline attributes and clean DOM
-                                removeInlineFonts();
-                            }, 200);
-
-                            console.log('✅ ডেটা সফলভাবে লোড হয়েছে:', { voteCentreCode: voteCentreCodeValue, voteCentreName, voterBothTotal, totalVoter, totalOfficer, maleVoter, femaleVoter, hizraVoter }); } catch (error) { document.body.style.opacity = '1'; console.error('❌ ডেটা লোড করতে সমস্যা হয়েছে:', error); alert(`ডেটা লোড করতে সমস্যা হয়েছে:\n${error.message}\n\nএই vote_centre_code চেক করুন: ${voteCentreCode}`); }
+                    async function loadVoteCentreData() { if (!voteCentreCode) { console.error('No vote_centre_code provided in URL'); alert('অনুগ্রহ করে URL এ vote_centre_code প্যারামিটার দিন। উদাহরণ: ?vote_centre_code=5'); return; } try { // Show loading document.body.style.opacity = '0.6'; // Fetch vote centre data by vote_centre_code const { data, error } = await window.supabaseClient .from('vote_centre') .select('*') .eq('vote_centre_code', voteCentreCode) .maybeSingle(); // Hide loading document.body.style.opacity = '1'; if (error && error.code !== 'PGRST116') { console.error('Supabase error:', error); throw new Error(error.message || 'ডেটা লোড করতে সমস্যা হয়েছে'); } if (!data) { alert(`কোন ডেটা পাওয়া যায়নি। vote_centre_code: ${voteCentreCode} চেক করুন।`); console.error('No data found for vote_centre_code:', voteCentreCode); return; } console.log('✅ Raw data from Supabase:', data); // Calculate values const voteCentreCodeValue = data.vote_centre_code || ''; const voteCentreName = data.vote_centre_name || ''; const maleVoter = parseInt(data.male_voter) || 0; const femaleVoter = parseInt(data.female_voter) || 0; const hizraVoter = parseInt(data.hizra_voter) || 0; const totalVoter = maleVoter + femaleVoter + hizraVoter; const voterBothTotal = parseInt(data.voter_both_total) || Math.ceil(totalVoter / 1200); const totalOfficer = voterBothTotal + (voterBothTotal * 2); // Store values globally for calculations window.voter_both_total = voterBothTotal; window.total_voter = totalVoter; window.male_voter = maleVoter; window.female_voter = femaleVoter; window.hizra_voter = hizraVoter; // Replace placeholders using clean text replacement replaceText('vote_centre_code', voteCentreCodeValue); replaceText('প্রাইমারি টিচার্স ট্রেনিং ইনস্টিটিউট (পিটিআই),ফেনী', voteCentreName); replaceText('voter_both_total', voterBothTotal); replaceText('male_voter', maleVoter); replaceText('female_voter', femaleVoter); replaceText('hizra_voter', hizraVoter); replaceText('total_voter', totalVoter); replaceText('Total officer', totalOfficer); // Also handle lowercase variations replaceText('total officer', totalOfficer); // Evaluate calculations after all replacements (e.g., "5 * 2" -> "10") setTimeout(() => { evaluateCalculations(); // Remove inline font attributes and unwrap font tags to clean the DOM removeInlineFonts(); }, 150); console.log('✅ ডেটা সফলভাবে লোড হয়েছে:', { voteCentreCode: voteCentreCodeValue, voteCentreName, voterBothTotal, totalVoter, totalOfficer, maleVoter, femaleVoter, hizraVoter }); } catch (error) { document.body.style.opacity = '1'; console.error('❌ ডেটা লোড করতে সমস্যা হয়েছে:', error); alert(`ডেটা লোড করতে সমস্যা হয়েছে:\n${error.message}\n\nএই vote_centre_code চেক করুন: ${voteCentreCode}`); }
                     }
 
                     // Load data when DOM is ready
                     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', loadVoteCentreData);
                     } else { loadVoteCentreData();
                     }
-                -->
-                <script>
-                    // Fallback safe loader to replace broken inline script
-                    (function () {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const voteCentreCode = urlParams.get('vote_centre_code');
-
-                        function bengaliToEnglish(text) {
-                            if (!text) return '';
-                            const bn = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-                            const en = ['0','1','2','3','4','5','6','7','8','9'];
-                            return String(text).split('').map(ch => {
-                                const i = bn.indexOf(ch);
-                                return i === -1 ? ch : en[i];
-                            }).join('');
-                        }
-
-                        function formatNumberBn(n) {
-                            const en = Number(n).toLocaleString('en-US');
-                            const map = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-                            return String(en).replace(/\d/g, d => map[d]);
-                        }
-
-                        function replaceText(searchText, replaceWith) {
-                            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-                            const nodes = [];
-                            while (walker.nextNode()) {
-                                const node = walker.currentNode;
-                                if (node.nodeValue && node.nodeValue.includes(searchText)) nodes.push(node);
-                            }
-                            nodes.forEach(node => {
-                                node.nodeValue = node.nodeValue.replace(new RegExp(searchText.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'g'), replaceWith);
-                            });
-                        }
-
-                        function replaceTextInRoot(root, replacements) {
-                            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-                            const nodes = [];
-                            while (walker.nextNode()) nodes.push(walker.currentNode);
-                            nodes.forEach(node => {
-                                let v = node.nodeValue;
-                                if (!v) return;
-                                Object.keys(replacements).forEach(key => {
-                                    if (v.indexOf(key) !== -1) {
-                                        v = v.replace(new RegExp(key.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'g'), String(replacements[key]));
-                                    }
-                                });
-                                if (v !== node.nodeValue) node.nodeValue = v;
-                            });
-                        }
-
-                        function evaluateCalculations() {
-                            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-                            while (walker.nextNode()) {
-                                const node = walker.currentNode;
-                                if (!node.nodeValue) continue;
-                                const t = node.nodeValue;
-                                if (/\d|[০-৯]/.test(t) && /[\+\-\*\/×\(\)]/.test(t)) {
-                                    try {
-                                        const converted = bengaliToEnglish(t).replace(/×/g, '*');
-                                        const res = converted.replace(/\(([^)]+)\)\s*([\*\/])\s*(\d+)/g, (m, expr, op, num) => {
-                                            try { const inner = eval(expr); const out = eval(`${inner} ${op} ${num}`); return isFinite(out) ? out : m; } catch (e) { return m; }
-                                        }).replace(/(\d+)\s*([\+\-\*\/])\s*(\d+)/g, (m, a, op, b) => {
-                                            try { const out = eval(`${a} ${op} ${b}`); return isFinite(out) ? out : m; } catch (e) { return m; }
-                                        });
-                                        if (res !== converted) {
-                                            const bnMap = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-                                            const formatted = String(res).replace(/\d/g, d => bnMap[+d]);
-                                            node.nodeValue = node.nodeValue.replace(t, formatted);
-                                        }
-                                    } catch (e) { /* ignore */ }
-                                }
-                            }
-                        }
-
-                        function removeInlineFonts() {
-                            try {
-                                document.querySelectorAll('[style]').forEach(el => {
-                                    if (!el.style) return;
-                                    el.style.removeProperty('font-size');
-                                    el.style.removeProperty('color');
-                                });
-                                document.querySelectorAll('[face],[size],[color]').forEach(el => { el.removeAttribute('face'); el.removeAttribute('size'); el.removeAttribute('color'); });
-                                document.querySelectorAll('font').forEach(f => { while (f.firstChild) f.parentNode.insertBefore(f.firstChild, f); f.remove(); });
-                            } catch (e) { /* ignore */ }
-                        }
-
-                        function parseNumberField(val) {
-                            if (val === null || val === undefined) return 0;
-                            const s = String(val).replace(/,/g, '').trim();
-                            const en = bengaliToEnglish(s);
-                            const n = parseInt(en, 10);
-                            return isNaN(n) ? 0 : n;
-                        }
-
-                        async function loadVoteCentreData() {
-                            try {
-                                if (!window.supabaseClient) { console.error('Supabase client not available'); return; }
-
-                                const loadingEl = document.getElementById('loading-indicator') || (() => {
-                                    const el = document.createElement('div');
-                                    el.id = 'loading-indicator';
-                                    el.style.position = 'fixed';
-                                    el.style.top = '8px';
-                                    el.style.right = '8px';
-                                    el.style.padding = '6px 10px';
-                                    el.style.background = '#fff';
-                                    el.style.border = '1px solid #000';
-                                    el.style.fontSize = '11pt';
-                                    el.style.zIndex = '9999';
-                                    el.textContent = 'লোড হচ্ছে...';
-                                    document.body.appendChild(el);
-                                    return el;
-                                })();
-
-                                const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
-
-                                const template = document.getElementById('form-template');
-                                if (!template) { console.error('Template not found'); return; }
-
-                                // If a specific code is provided, load single centre and populate in place
-                                if (voteCentreCode) {
-                                    const { data, error } = await window.supabaseClient.from('vote_centre').select('*').eq('vote_centre_code', voteCentreCode).maybeSingle();
-                                    if (error) { console.error('Supabase error', error); return; }
-                                    if (!data) { alert('কোন ডেটা পাওয়া যায়নি।'); return; }
-
-                                    const cl = template.cloneNode(true);
-                                    cl.removeAttribute('id');
-
-                                    const maleVoter = parseNumberField(data.male_voter);
-                                    const femaleVoter = parseNumberField(data.female_voter);
-                                    const hizraVoter = parseNumberField(data.hizra_voter);
-                                    const totalVoter = parseNumberField(data.total_voter) || (maleVoter + femaleVoter + hizraVoter);
-                                    const voterBothTotal = parseNumberField(data.voter_both_total) || Math.ceil(totalVoter / 1200);
-                                    const totalOfficer = voterBothTotal * 3;
-
-                                    const replacements = {
-                                        'vote_centre_code': data.vote_centre_code || '',
-                                        'voter_both_total': formatNumberBn(voterBothTotal),
-                                        'male_voter': formatNumberBn(maleVoter),
-                                        'female_voter': formatNumberBn(femaleVoter),
-                                        'hizra_voter': formatNumberBn(hizraVoter),
-                                        'total_voter': formatNumberBn(totalVoter),
-                                        'total officer': formatNumberBn(totalOfficer),
-                                        'Total officer': formatNumberBn(totalOfficer)
-                                    };
-                                    replaceTextInRoot(cl, replacements);
-
-                                    const vcEl = cl.querySelector('td.vote-center p');
-                                    if (vcEl) vcEl.textContent = `${data.vote_centre_code}. ${data.vote_centre_name}`;
-
-                                    // insert amounts and grand total (same as before)
-                                    const presidingTotal = 1 * 8000;
-                                    const assistantTotal = voterBothTotal * 6000;
-                                    const pollingTotal = voterBothTotal * 4000;
-                                    const travelTotal = totalOfficer * 1000;
-                                    const bestniTotal = voterBothTotal * 800;
-                                    const grandTotal = presidingTotal + assistantTotal + pollingTotal + travelTotal + bestniTotal;
-
-                                    cl.querySelectorAll('td p').forEach(p => {
-                                        const text = p.textContent || '';
-                                        if (text.indexOf('প্রিজাইডিং অফিসার') !== -1) {
-                                            if (text.indexOf('পরিচয়পত্র') !== -1) {
-                                                const ex = p.querySelector('.computed-amount'); if (ex) ex.remove();
-                                            } else if (!p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(presidingTotal) + ' টাকা'; p.appendChild(d); }
-                                        }
-                                        if (text.indexOf('সহকারী প্র্রিজাইডিং') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(assistantTotal) + ' টাকা'; p.appendChild(d); }
-                                        if (text.indexOf('পোলিং অফিসার') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(pollingTotal) + ' টাকা'; p.appendChild(d); }
-                                        if (text.indexOf('যাতায়াত ভাতা') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(travelTotal) + ' টাকা'; p.appendChild(d); }
-                                        if (text.indexOf('বেস্টনি নির্মান') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(bestniTotal) + ' টাকা'; p.appendChild(d); }
-                                    });
-
-                                    const marker = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
-                                    if (marker && !marker.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(grandTotal) + ' টাকা'; marker.appendChild(d); }
-
-                                    removeInlineFonts(); evaluateCalculations();
-
-                                    // show clone and hide original template
-                                    template.parentNode.insertBefore(cl, template);
-                                    template.style.display = 'none';
-
-                                    if (loadingEl) loadingEl.remove();
-
-                                } else {
-                                    // load ALL centres and render clones in batches
-                                    const container = document.createElement('div');
-                                    let from = 0;
-                                    const pageSize = 200;
-                                    let totalRendered = 0;
-
-                                    while (true) {
-                                        loadingEl.textContent = `লোড হচ্ছে... ${totalRendered}`;
-                                        const { data, error } = await window.supabaseClient
-                                            .from('vote_centre')
-                                            .select('*')
-                                            .range(from, from + pageSize - 1);
-                                        if (error) { console.error('Supabase error', error); break; }
-                                        if (!data || !data.length) break;
-
-                                        data.forEach((row, idx) => {
-                                        const cl = template.cloneNode(true); cl.removeAttribute('id');
-                                        const maleVoter = parseNumberField(row.male_voter);
-                                        const femaleVoter = parseNumberField(row.female_voter);
-                                        const hizraVoter = parseNumberField(row.hizra_voter);
-                                        const totalVoter = parseNumberField(row.total_voter) || (maleVoter + femaleVoter + hizraVoter);
-                                        const voterBothTotal = parseNumberField(row.voter_both_total) || Math.ceil(totalVoter / 1200);
-                                        const totalOfficer = voterBothTotal * 3;
-
-                                        const replacementsAll = {
-                                            'vote_centre_code': row.vote_centre_code || '',
-                                            'voter_both_total': formatNumberBn(voterBothTotal),
-                                            'male_voter': formatNumberBn(maleVoter),
-                                            'female_voter': formatNumberBn(femaleVoter),
-                                            'hizra_voter': formatNumberBn(hizraVoter),
-                                            'total_voter': formatNumberBn(totalVoter),
-                                            'total officer': formatNumberBn(totalOfficer),
-                                            'Total officer': formatNumberBn(totalOfficer)
-                                        };
-                                        replaceTextInRoot(cl, replacementsAll);
-
-                                        const vcElAll = cl.querySelector('td.vote-center p');
-                                        if (vcElAll) vcElAll.textContent = `${row.vote_centre_code}. ${row.vote_centre_name}`;
-
-                                        const presidingTotal = 1 * 8000;
-                                        const assistantTotal = voterBothTotal * 6000;
-                                        const pollingTotal = voterBothTotal * 4000;
-                                        const travelTotal = totalOfficer * 1000;
-                                        const bestniTotal = voterBothTotal * 800;
-                                        const grandTotal = presidingTotal + assistantTotal + pollingTotal + travelTotal + bestniTotal;
-
-                                        cl.querySelectorAll('td p').forEach(p => {
-                                            const text = p.textContent || '';
-                                            if (text.indexOf('প্রিজাইডিং অফিসার') !== -1) {
-                                                if (text.indexOf('পরিচয়পত্র') !== -1) { const ex = p.querySelector('.computed-amount'); if (ex) ex.remove(); }
-                                                else if (!p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(presidingTotal) + ' টাকা'; p.appendChild(d); }
-                                            }
-                                            if (text.indexOf('সহকারী প্র্রিজাইডিং') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(assistantTotal) + ' টাকা'; p.appendChild(d); }
-                                            if (text.indexOf('পোলিং অফিসার') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(pollingTotal) + ' টাকা'; p.appendChild(d); }
-                                            if (text.indexOf('যাতায়াত ভাতা') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(travelTotal) + ' টাকা'; p.appendChild(d); }
-                                            if (text.indexOf('বেস্টনি নির্মান') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(bestniTotal) + ' টাকা'; p.appendChild(d); }
-                                        });
-
-                                        const marker2 = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
-                                        if (marker2 && !marker2.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(grandTotal) + ' টাকা'; marker2.appendChild(d); }
-
-                                        removeInlineFonts(); evaluateCalculations();
-
-                                        container.appendChild(cl);
-                                        if (idx !== data.length - 1) { const br = document.createElement('div'); br.className = 'page-break'; container.appendChild(br); }
-                                        totalRendered += 1;
-                                    });
-
-                                        from += pageSize;
-                                        await nextFrame();
-                                    }
-
-                                    template.parentNode.insertBefore(container, template.nextSibling);
-                                    template.style.display = 'none';
-                                    if (loadingEl) loadingEl.remove();
-                                }
-                            } catch (e) {
-                                console.error('Fallback loader error', e);
-                            }
-                        }
-
-                        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadVoteCentreData); else loadVoteCentreData();
-                    })();
                 </script>
             </body>
         </html>
