@@ -4,91 +4,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>নিয়োগপত্র - Appointment Letter</title>
+    <title>নিয়োগপত্র - Appointment Letter (Word Export)</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="../authentication.js"></script>
     <style>
+        /* Base styles for premium preview matching 1_apointment_letter.html */
+        @page {
+            size: 8.5in 14in;
+            margin: 0.25in 0.2in;
+        }
+
         * {
-            margin: 0;
-            padding: 0;
+            font-family: "Nikosh", "Vrinda", serif !important;
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
-            background: #f5f5f5;
+            background: #f0f2f5;
+            margin: 0;
             padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .no-print {
             text-align: center;
             margin-bottom: 20px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
         }
 
         .btn {
-            padding: 10px 30px;
-            margin: 0 5px;
+            padding: 12px 35px;
+            margin: 0 8px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #4f46e5;
             color: white;
         }
 
         .btn-success {
-            background: #38ef7d;
+            background: #10b981;
             color: white;
         }
 
         .btn:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        .page-container {
+            background: white;
+            width: 8.5in;
+            min-height: 14in;
+            padding: 0.25in 0.2in;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 40px;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        .letter {
+            page-break-after: always;
+            clear: both;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-bottom: 5px;
         }
 
-        .loading {
+        td {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+            line-height: 1.1;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .center {
             text-align: center;
-            padding: 50px;
         }
 
-        .error {
-            text-align: center;
-            padding: 50px;
-            color: red;
+        .justify {
+            text-align: justify;
         }
 
-        .letter {
-            page-break-after: always;
-            margin-bottom: 40px;
-            background: white;
+        .size-13 {
+            font-size: 13pt;
+        }
+
+        .size-14 {
+            font-size: 14pt;
+        }
+
+        .size-16 {
+            font-size: 16pt;
+        }
+
+        .size-11 {
+            font-size: 11pt;
+        }
+
+        .size-10 {
+            font-size: 10pt;
         }
 
         @media print {
             body {
-                background: white;
+                background: none;
                 padding: 0;
             }
 
-            .container {
+            .page-container {
                 box-shadow: none;
-                padding: 0;
+                border: none;
+                margin: 0;
+                width: 100%;
             }
 
             .no-print {
@@ -99,240 +150,219 @@
 </head>
 
 <body>
-    <!-- Hidden template parts to avoid quoting issues in JS -->
-    <script id="word-header"
-        type="text/plain"><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export</title><style>@page { size: 8.5in 14in; margin: 0.3in; } body { font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif; } table { border-collapse: collapse; width: 100%; border: 1px solid black; } td { border: 1px solid black; padding: 5px; } .letter { page-break-after: always; } </style></head><body></script>
+    <div class="no-print">
+        <button onclick="exportToWord()" class="btn btn-success">📝 Download All Letters (Word)</button>
+        <button onclick="window.print()" class="btn btn-primary">🖨️ Print Preview</button>
+    </div>
+
+    <!-- Hidden Word XML Templates -->
+    <script id="word-header" type="text/plain">
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+            <meta charset='utf-8'>
+            <style>
+                @page { size: 8.5in 14in; margin: 0.25in 0.2in; } 
+                body { font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif; font-size: 11pt; } 
+                table { border-collapse: collapse; width: 100%; border: 0.5pt solid black; margin-bottom: 5pt; } 
+                td { border: 0.5pt solid black; padding: 3pt; vertical-align: top; }
+                .letter { page-break-after: always; clear: both; }
+                p { margin: 0; padding: 0; line-height: 1.0; }
+                .bold { font-weight: bold; }
+                .center { text-align: center; }
+                .size-13 { font-size: 13pt; }
+                .size-14 { font-size: 14pt; }
+                .size-16 { font-size: 16pt; }
+            </style>
+        </head>
+        <body>
+    </script>
     <script id="word-footer" type="text/plain"></body></html></script>
 
-    <div class="container">
-
-        <div class="no-print">
-            <button onclick="exportToWord()" class="btn btn-success">📝 Download Word File</button>
-        </div>
-
-        <div id="appointmentContent">
-            <div class="loading">
-                <h2>⏳ Loading data...</h2>
-            </div>
+    <div id="appointmentContent">
+        <div class="page-container">
+            <h2 class="center" style="padding: 100px;">⏳ Loading All Appointment Letters...</h2>
         </div>
     </div>
 
     <script>
-        // Load all centres on page load
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('1_apointment_copy.html v2026-01-05-all');
-            if (typeof checkAuth === 'function') checkAuth();
-            try {
-                const centres = await loadAllCentresData();
-                renderAllLetters(centres);
-            } catch (error) {
-                console.error('Error loading centres:', error);
-                document.getElementById('appointmentContent').innerHTML = `
-                    <div class="error">
-                        <h2>❌ Error loading data</h2>
-                        <p>${error.message}</p>
-                        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
-                    </div>
-                `;
-            }
-        });
-
-        async function loadAllCentresData() {
-            if (!window.supabaseClient) {
-                throw new Error('Supabase client not initialized');
-            }
-
-            const assignments = await fetchAllAssignments();
-            if (!assignments || assignments.length === 0) {
-                throw new Error('No assignments found. Please generate and save first.');
-            }
-
-            const centreMap = new Map();
-            for (const assignment of assignments) {
-                const code = assignment.vote_centre_code;
-                if (!centreMap.has(code)) {
-                    centreMap.set(code, {
-                        centre: {
-                            vote_centre_code: code,
-                            vote_centre_iid: assignment.vote_centre_iid,
-                            vote_centre_name: '',
-                            vote_centre_location: '',
-                            voter_both_male: 0,
-                            voter_both_female: 0
-                        },
-                        presiding: null,
-                        assPresiding: [],
-                        polling: []
-                    });
-                }
-
-                const bundle = centreMap.get(code);
-                if (assignment.officer_type === 'presiding') {
-                    bundle.presiding = {
-                        presiding_iid: assignment.officer_iid,
-                        presiding_name: assignment.officer_name,
-                        designation: assignment.officer_designation,
-                        gender: assignment.officer_gender
-                    };
-                } else if (assignment.officer_type === 'ass_presiding') {
-                    bundle.assPresiding.push({
-                        ass_presiding_iid: assignment.officer_iid,
-                        ass_presiding_name: assignment.officer_name,
-                        designation: assignment.officer_designation,
-                        gender: assignment.officer_gender,
-                        booth_number: assignment.booth_number
-                    });
-                } else if (assignment.officer_type === 'polling') {
-                    bundle.polling.push({
-                        polling_iid: assignment.officer_iid,
-                        polling_name: assignment.officer_name,
-                        designation: assignment.officer_designation,
-                        gender: assignment.officer_gender,
-                        booth_number: assignment.booth_number,
-                        person_number: assignment.person_number
-                    });
-                }
-            }
-
-            const codes = Array.from(centreMap.keys()).filter(Boolean);
-            if (codes.length > 0) {
-                const codesForQuery = codes.map(c => {
-                    const n = Number(c);
-                    return isNaN(n) ? String(c) : n;
-                });
-
-                const { data: centres, error: centreError } = await window.supabaseClient
-                    .from('vote_centre')
-                    .select('vote_centre_code, vote_centre_name, vote_centre_location, voter_both_male, voter_both_female')
-                    .in('vote_centre_code', codesForQuery);
-                if (!centreError && centres) {
-                    const meta = new Map();
-                    centres.forEach(c => meta.set(String(c.vote_centre_code), c));
-                    centreMap.forEach((bundle, code) => {
-                        const c = meta.get(String(code));
-                        if (c) {
-                            bundle.centre.vote_centre_name = c.vote_centre_name || bundle.centre.vote_centre_name;
-                            bundle.centre.vote_centre_location = c.vote_centre_location || bundle.centre.vote_centre_location;
-                            bundle.centre.voter_both_male = c.voter_both_male || 0;
-                            bundle.centre.voter_both_female = c.voter_both_female || 0;
-                        }
-                    });
-                }
-            }
-
-            centreMap.forEach(bundle => {
-                bundle.assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
-                bundle.polling.sort((a, b) => {
-                    if ((a.booth_number || 0) !== (b.booth_number || 0)) {
-                        return (a.booth_number || 0) - (b.booth_number || 0);
-                    }
-                    return (a.person_number || 0) - (b.person_number || 0);
-                });
-            });
-
-            return Array.from(centreMap.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
-        }
-
+        const bengaliDigits = '০১২৩৪৫৬৭৮৯';
         function toBengaliNumber(n) {
-            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
             return String(n || 0).replace(/\d/g, d => bengaliDigits[Number(d)]);
         }
 
-        async function fetchAllAssignments() {
-            let all = [];
-            let lastId = 0;
-            const batchSize = 1000;
+        async function fetchAllData() {
+            if (!window.supabaseClient) throw new Error('Supabase client not initialized');
+
+            // 1. Fetch Centres
+            const { data: centres, error: cErr } = await window.supabaseClient.from('vote_centre').select('*').order('vote_centre_code');
+            if (cErr) throw cErr;
+
+            // 2. Fetch All Assignments
+            let allAssignments = [], lastId = 0;
             while (true) {
-                const { data, error } = await window.supabaseClient
-                    .from('centre_assignments')
-                    .select('*')
-                    .gt('assignment_id', lastId)
-                    .order('assignment_id', { ascending: true })
-                    .limit(batchSize);
-                if (error) throw new Error(`Failed to load assignments: ${error.message}`);
-                if (!data || data.length === 0) break;
-                all.push(...data);
+                const { data, error } = await window.supabaseClient.from('centre_assignments').select('*').gt('assignment_id', lastId).order('assignment_id').limit(1000);
+                if (error || !data || data.length === 0) break;
+                allAssignments.push(...data);
                 lastId = data[data.length - 1].assignment_id;
-                if (data.length < batchSize) break;
             }
-            return all;
+
+            // Group assignments by centre code
+            const assignMap = {};
+            allAssignments.forEach(a => {
+                if (!assignMap[a.vote_centre_code]) assignMap[a.vote_centre_code] = { presiding: null, assPresiding: [], polling: [] };
+                const bundle = assignMap[a.vote_centre_code];
+                if (a.officer_type === 'presiding') bundle.presiding = a;
+                else if (a.officer_type === 'ass_presiding') bundle.assPresiding.push(a);
+                else if (a.officer_type === 'polling') bundle.polling.push(a);
+            });
+
+            return centres.map(c => ({
+                centre: c,
+                assignments: assignMap[c.vote_centre_code] || { presiding: null, assPresiding: [], polling: [] }
+            }));
         }
 
-        function getOfficerName(officer, type) {
-            if (!officer) return '';
-            return officer.officer_name || officer.presiding_name || officer.ass_presiding_name || officer.polling_name || officer.name || '';
-        }
+        function renderLetter(data) {
+            const { centre, assignments } = data;
+            const { presiding, assPresiding, polling } = assignments;
 
-        function renderAllLetters(allData) {
-            if (!allData || allData.length === 0) {
-                document.getElementById('appointmentContent').innerHTML = '<div class="error"><h2>❌ No data to show</h2></div>';
-                return;
-            }
-            const sections = allData.map(renderSingleLetter).join('');
-            document.getElementById('appointmentContent').innerHTML = sections;
-        }
+            assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+            polling.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0) || (a.person_number || 0) - (b.person_number || 0));
 
-        function renderSingleLetter(data) {
-            const centre = data.centre;
-            const presiding = data.presiding;
-            const assPresiding = data.assPresiding || [];
-            const polling = data.polling || [];
+            const format = (o) => o ? `${o.officer_name}${o.officer_designation ? `, ${o.officer_designation}` : ''}` : '';
 
             let tableRows = '';
-            const maxRows = Math.max(1, assPresiding.length);
-            const firstAssPres = assPresiding.length > 0 ? assPresiding[0] : null;
+            const totalAss = Math.max(1, assPresiding.length);
+            const totalRows = totalAss * 2;
 
-            if (assPresiding.length === 0) {
-                tableRows = `<tr><td rowspan="1" style="border:1px solid black; padding:5px; text-align:center;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}<br>${presiding && presiding.designation ? presiding.designation : ''}</td><td style="border:1px solid black;">&nbsp;</td><td style="border:1px solid black;">&nbsp;</td><td style="border:1px solid black;">&nbsp;</td></tr>`;
-            } else {
-                for (let i = 0; i < maxRows; i++) {
-                    const assPres = assPresiding[i];
-                    const poll1 = polling[i * 2];
-                    const poll2 = polling[i * 2 + 1];
-                    tableRows += `<tr>${i === 0 ? `<td rowspan="${maxRows}" style="border:1px solid black; padding:5px; text-align:center;">${presiding ? toBengaliNumber(getOfficerName(presiding, 'presiding')) : 'N/A'}<br>${presiding && presiding.designation ? presiding.designation : ''}</td>` : ''}<td style="border:1px solid black; padding:5px;">${assPres ? toBengaliNumber(i + 1) + '। ' + getOfficerName(assPres) + '<br>' + (assPres.designation || '') : ''}</td><td style="border:1px solid black; padding:5px;">${poll1 ? '১. ' + getOfficerName(poll1) + (poll1.designation ? ', ' + poll1.designation : '') + '<br>' : ''}${poll2 ? '২. ' + getOfficerName(poll2) + (poll2.designation ? ', ' + poll2.designation : '') : ''}</td>${i === 0 ? `<td rowspan="${maxRows}" style="border:1px solid black; padding:5px; text-align:center;">${firstAssPres ? getOfficerName(firstAssPres) : ''}<br>${firstAssPres && firstAssPres.designation ? firstAssPres.designation : ''}</td>` : ''}</tr>`;
-                }
+            for (let i = 0; i < totalAss; i++) {
+                const p1 = polling[i * 2], p2 = polling[i * 2 + 1], ass = assPresiding[i];
+                tableRows += `
+                    <tr>
+                        ${i === 0 ? `<td rowspan="${totalRows}" class="center" style="vertical-align:middle; width:20%;">${format(presiding)}</td>` : ''}
+                        <td rowspan="2" class="center" style="vertical-align:middle; width:4%;">${toBengaliNumber(i + 1)}</td>
+                        <td rowspan="2" style="vertical-align:middle; width:24%;">${format(ass)}</td>
+                        <td class="center" style="width:4%;">${toBengaliNumber(1)}</td>
+                        <td style="width:30%;">${format(p1)}</td>
+                        ${i === 0 ? `<td rowspan="${totalRows}" class="center" style="vertical-align:middle; width:18%;">${format(assPresiding[0])}</td>` : ''}
+                    </tr>
+                    <tr>
+                        <td class="center">${toBengaliNumber(2)}</td>
+                        <td>${format(p2)}</td>
+                    </tr>
+                `;
             }
 
-            const maleCount = Number(centre.voter_both_male) || 0;
-            const femaleCount = Number(centre.voter_both_female) || 0;
-            const boothInfo = `যে ভোটার এলাকার ভোটারগণ ভোট প্রদান করবেন সে এলাকার নামঃ ${centre.vote_centre_location || 'N/A'}${(maleCount > 0 || femaleCount > 0) ? ` (পুরুষ বুথ-${toBengaliNumber(maleCount)} টি, মহিলা বুথ-${toBengaliNumber(femaleCount)} টি)` : ''}`;
-
             return `
-                <div class="letter" style="margin-bottom:50px;">
-                    <p style="text-align:right;"><strong>কেন্দ্র নং – ${toBengaliNumber(centre.vote_centre_code)}</strong></p>
-                    <p style="text-align:center; font-size:16pt;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন</p>
-                    <p style="text-align:center; text-decoration:underline;">প্রিজাইডিং অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র</p>
-                    <p>জেলার নামঃ ফেনী, নির্বাচনী এলাকার নম্বর ও নামঃ ২৬৬, ফেনী-২</p>
-                    <p>ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'}</p>
-                    <p>${boothInfo}</p>
-                    <p style="text-align:justify; font-size:10pt;">গণপ্রতিনিধিত্ব আদেশ, 1972 এর অনুচ্ছেদ 9 এর দফা (1খ) কর্তৃক অর্পিত ক্ষমতাবলে, আমি মনিরা হক, জেলা প্রশাসক, ফেনী ও 266, ফেনী-2 নির্বাচনি এলাকার রিটার্নিং অফিসার নিম্নলিখিত ব্যক্তিগণকে উপরোল্লিখিত ভোটকেন্দ্রের জন্য এতদ্বারা প্রিজাইডিং অফিসার, প্রিজাইডিং অফিসারকে সহায়তা দানের জন্য সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসার হিসাবে নিয়োগ করিলাম:</p>
-                    <table style="width:100%; border-collapse:collapse; border:1px solid black; margin-top:10px;">
-                        <thead><tr style="background:#eee;"><th style="border:1px solid black;">প্রিজাইডিং</th><th style="border:1px solid black;">সহকারী প্রিজাইডিং</th><th style="border:1px solid black;">পোলিং</th><th style="border:1px solid black;">অনুপস্থিতিতে দায়িত্ব</th></tr></thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-                    <div style="margin-top:20px; border-top:1px solid black; padding-top:10px;">
-                        <p style="text-align:center;">অংগীকারনামা</p>
-                        <p>আমি ................................. উপরে বর্ণিত নিয়োগ গ্রহন করিয়া অঙ্গীকার করিতেছি যে, আমি আমার উপর অর্পিত দায়িত্ব নিষ্ঠার সাথে পালন করিব।</p>
-                        <p style="text-align:right; margin-top:20px;">স্বাক্ষর: .................................</p>
-                    </div>
+            <div class="page-container letter">
+                <table style="border:none;">
+                    <tr>
+                        <td style="border:none; width:100px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Government_Seal_of_Bangladesh.svg/1024px-Government_Seal_of_Bangladesh.svg.png" width="60" />
+                        </td>
+                        <td class="center" style="border:none;">
+                            <p class="bold size-13">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</p>
+                            <p class="bold">জেলা প্রশাসকের কার্যালয় ও রিটার্নিং অফিসারের কার্যালয়, ফেনী</p>
+                            <p class="bold size-14">ত্রয়োদশ জাতীয় সংসদ নির্বাচন - ২০২৬</p>
+                        </td>
+                        <td class="center" style="border:none; width:120px;">
+                            <p class="size-16">কেন্দ্র নং- <b>${toBengaliNumber(centre.vote_centre_code)}</b></p>
+                        </td>
+                    </tr>
+                </table>
+
+                <p class="center bold size-13" style="margin: 10pt 0;">প্রিজাইডিং অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র</p>
+
+                <table>
+                    <tr>
+                        <td class="bold">জেলার নামঃ ফেনী</td>
+                        <td class="bold">নির্বাচনি এলাকাঃ ২৬৬ ফেনী-২</td>
+                    </tr>
+                </table>
+
+                <table>
+                    <tr>
+                        <td colspan="3"><b>ভোট কেন্দ্রের নাম ও অবস্থানঃ</b> ${centre.vote_centre_code}, ${centre.vote_centre_name}, ${centre.vote_centre_location}, ফেনী সদর</td>
+                        <td style="width:150px;"><b>ধরণঃ</b> ${centre.vote_centre_quality || ''}</td>
+                    </tr>
+                </table>
+
+                <table class="center">
+                    <tr class="bold">
+                        <td rowspan="2" style="width:40%;">ভোটার এলাকার নাম</td>
+                        <td colspan="3">ভোটার সংখ্যা</td>
+                        <td rowspan="2">মোট বুথ সংখ্যা</td>
+                    </tr>
+                    <tr class="bold">
+                        <td>পুরুষ</td><td>মহিলা</td><td>মোট</td>
+                    </tr>
+                    <tr>
+                        <td>${centre.vote_centre_location || ''}</td>
+                        <td>${toBengaliNumber(centre.male_voter)}</td>
+                        <td>${toBengaliNumber(centre.female_voter)}</td>
+                        <td><b>${toBengaliNumber(centre.total_voter)}</b></td>
+                        <td class="bold">${toBengaliNumber(centre.voter_both_total)} টি</td>
+                    </tr>
+                </table>
+
+                <p class="justify size-11" style="margin: 8pt 0;">
+                    গণপ্রতিনিধিত্ব আদেশ, ১৯৭২ এর অনুচ্ছেদ ৯ এর দফা (১খ) বলে আমি মনিরা হক, জেলা প্রশাসক ও রিটার্নিং অফিসার, ২৬৬ ফেনী-২ নিম্নবর্ণিত ব্যক্তিগণকে উপরোল্লিখিত ভোটকেন্দ্রে নিয়োগ করিলামঃ
+                </p>
+
+                <table>
+                    <tr class="center bold">
+                        <td>প্রিজাইডিং অফিসার</td>
+                        <td colspan="2">সহকারী প্রিজাইডিং</td>
+                        <td colspan="2">পোলিং অফিসার</td>
+                        <td>অনুপস্থিতিতে দায়িত্ব পালনকারী</td>
+                    </tr>
+                    <tr class="center bold" style="font-size:9pt;"><td>০১</td><td colspan="2">০২</td><td colspan="2">০৩</td><td>০৪</td></tr>
+                    ${tableRows}
+                </table>
+
+                <table style="margin-top:20pt; border:none;">
+                    <tr>
+                        <td style="border:none;">
+                            <p>স্থান: ফেনী</p>
+                            <p>তারিখ: ১১/০২/২০২৬</p>
+                        </td>
+                        <td class="center" style="border:none;">
+                            <p><b>(মনিরা হক)</b></p>
+                            <p>জেলা প্রশাসক, ফেনী ও রিটার্নিং অফিসার</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="border-top: 1px dotted #000; margin-top:20pt; padding-top:10pt;">
+                    <p class="center bold">প্রাপ্তি স্বীকার ও অঙ্গীকারনামা</p>
+                    <p class="justify" style="margin-top:5pt;">আমি ................................................., নিয়োগ গ্রহণ করে অঙ্গীকার করছি যে, অর্পিত দায়িত্ব সততার সাথে পালন করব।</p>
+                    <p style="margin-top:10pt;"><b>কেন্দ্র:</b> ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name}</p>
                 </div>
-            `;
+            </div>`;
+        }
+
+        async function init() {
+            try {
+                const allData = await fetchAllData();
+                const html = allData.map(renderLetter).join('');
+                document.getElementById('appointmentContent').innerHTML = html;
+            } catch (err) {
+                document.getElementById('appointmentContent').innerHTML = `<div class="error">Error: ${err.message}</div>`;
+            }
         }
 
         function exportToWord() {
             const header = document.getElementById('word-header').innerHTML;
             const footer = document.getElementById('word-footer').innerHTML;
             const content = document.getElementById("appointmentContent").innerHTML;
-            const html = header + content + footer;
-            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
             const link = document.createElement("a");
-            link.href = url;
-            link.download = 'appointment_letters.doc';
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = 'All_Appointment_Letters.doc';
             link.click();
-            document.body.removeChild(link);
         }
+
+        window.onload = init;
     </script>
 </body>
 
