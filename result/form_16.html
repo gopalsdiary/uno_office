@@ -348,6 +348,16 @@
 				return;
 			}
 
+			// Helper: Convert English numbers to Bengali
+			const toBengaliNumber = (n) => {
+				if (n === null || n === undefined) return '';
+				const numbers = {
+					'0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+					'5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+				};
+				return String(n).replace(/[0-9]/g, (s) => numbers[s]);
+			};
+
 			// Fetch Centres
 			const { data: centres, error: centresError } = await window.supabaseClient
 				.from('vote_centre')
@@ -379,9 +389,9 @@
 				page.style.display = 'block';
 
 				// Fill Centre Info
-				page.querySelector('.vote-centre-code').textContent = centre?.vote_centre_code ?? '';
+				page.querySelector('.vote-centre-code').textContent = toBengaliNumber(centre?.vote_centre_code);
 				page.querySelector('.vote-centre-name').textContent = centre?.vote_centre_name ?? '';
-				page.querySelector('.total-voter').textContent = centre?.total_voter ?? '';
+				page.querySelector('.total-voter').textContent = toBengaliNumber(centre?.total_voter);
 
 				// Handle Candidates Table
 				const tbody = page.querySelector('.data-table tbody');
@@ -398,7 +408,7 @@
 				if (Array.isArray(candidates) && candidates.length > 0) {
 					candidates.forEach((candidate, index) => {
 						const row = baseRow.cloneNode(true);
-						row.querySelector('.candidate-serial').textContent = index + 1;
+						row.querySelector('.candidate-serial').textContent = toBengaliNumber(index + 1);
 						row.querySelector('.candidate-name').textContent = candidate.candidate_name ?? '';
 						row.querySelector('.candidate-sign').textContent = candidate.candidate_sign_name ?? '';
 						tbody.insertBefore(row, totalsRow);
@@ -411,7 +421,7 @@
 					// Add a few empty rows if no candidates? or just 1
 					for (let i = 0; i < 5; i++) {
 						const row = baseRow.cloneNode(true);
-						row.querySelector('.candidate-serial').textContent = i + 1;
+						row.querySelector('.candidate-serial').textContent = toBengaliNumber(i + 1);
 						tbody.insertBefore(row, totalsRow);
 					}
 				}
