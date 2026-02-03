@@ -184,3 +184,87 @@ create table public.candidate_db (
   constraint candidate_db_pkey primary key (candidate_iid),
   constraint candidate_db_candidate_iid_key unique (candidate_iid)
 ) TABLESPACE pg_default;
+
+
+-- request_table এর অফিসারকে তার নির্ধারিত কেন্দ্রেই এসাইন করার জন্য
+-- (অটো-অ্যাসাইনমেন্টের আগে এই ইনসার্টগুলো চালান)
+
+-- Presiding
+insert into public.centre_assignments (
+  vote_centre_iid,
+  vote_centre_code,
+  officer_type,
+  officer_iid,
+  officer_name,
+  officer_designation,
+  booth_number,
+  assign_code
+)
+select
+  r.vote_centre_iid::int,
+  r.vote_centre_code,
+  'presiding'::text,
+  p.presiding_iid,
+  p.presiding_name,
+  p.sallery_scale,
+  null,
+  r.vote_centre_iid::text
+from public.request_table r
+join public.presiding_list p
+  on p.presiding_iid::text = r.officer_table_iid
+where r.officer_table_name = 'presiding'
+on conflict (vote_centre_iid, officer_type, officer_iid) do nothing;
+
+-- Assistant Presiding
+insert into public.centre_assignments (
+  vote_centre_iid,
+  vote_centre_code,
+  officer_type,
+  officer_iid,
+  officer_name,
+  officer_designation,
+  booth_number,
+  assign_code
+)
+select
+  r.vote_centre_iid::int,
+  r.vote_centre_code,
+  'ass_presiding'::text,
+  a.ass_presiding_iid,
+  a.ass_presiding_name,
+  a.sallery_scale,
+  null,
+  r.vote_centre_iid::text
+from public.request_table r
+join public.ass_presiding_list a
+  on a.ass_presiding_iid::text = r.officer_table_iid
+where r.officer_table_name = 'ass_presiding'
+on conflict (vote_centre_iid, officer_type, officer_iid) do nothing;
+
+-- Polling
+insert into public.centre_assignments (
+  vote_centre_iid,
+  vote_centre_code,
+  officer_type,
+  officer_iid,
+  officer_name,
+  officer_designation,
+  booth_number,
+  person_number,
+  assign_code
+)
+select
+  r.vote_centre_iid::int,
+  r.vote_centre_code,
+  'polling'::text,
+  pl.polling_iid,
+  pl.polling_name,
+  pl.sallery_scale,
+  null,
+  null,
+  r.vote_centre_iid::text
+from public.request_table r
+join public.polling_list pl
+  on pl.polling_iid::text = r.officer_table_iid
+where r.officer_table_name = 'polling'
+on conflict (vote_centre_iid, officer_type, officer_iid) do nothing;
