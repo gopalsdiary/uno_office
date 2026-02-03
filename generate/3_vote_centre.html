@@ -1465,6 +1465,10 @@
         
         // Save assignments to database
         async function saveAssignments() {
+            if (!window.supabaseClient) {
+                showStatus('❌ Supabase client not initialized. Please check authentication.js', 'error');
+                return;
+            }
             if (generatedData.length === 0) {
                 showStatus('⚠️ Nothing to save.', 'error');
                 return;
@@ -1577,17 +1581,29 @@
                 });
                 
                 console.log(`📊 Total assignments to save: ${assignmentsToSave.length}`);
+
+                if (assignmentsToSave.length === 0) {
+                    showStatus('⚠️ Nothing to save (no assignments built).', 'error');
+                    return;
+                }
                 
                 // Save to centre_assignments table
                 console.log('💾 Saving to centre_assignments table...');
-                const { error: saveError } = await window.supabaseClient
-                    .from('centre_assignments')
-                    .insert(assignmentsToSave);
-                
-                if (saveError) {
-                    console.error('❌ Save error:', saveError);
-                    throw saveError;
+                async function batchInsert(tableName, rows, chunkSize = 500) {
+                    for (let i = 0; i < rows.length; i += chunkSize) {
+                        const chunk = rows.slice(i, i + chunkSize);
+                        const { error } = await window.supabaseClient
+                            .from(tableName)
+                            .insert(chunk);
+                        if (error) {
+                            console.error(`❌ Insert error in ${tableName}:`, error);
+                            throw new Error(`${tableName} সেভ করতে সমস্যা: ${error.message}`);
+                        }
+                        console.log(`   ✅ ${tableName} insert ${i + chunk.length}/${rows.length}`);
+                    }
                 }
+
+                await batchInsert('centre_assignments', assignmentsToSave);
                 
                 console.log('✅ Saved to centre_assignments table');
                 

@@ -332,7 +332,13 @@
 
         function isDisabled(person) {
             const disability = String(person?.disability ?? '').trim().toLowerCase();
-            return disability === 'Yes';
+            return disability === 'yes'
+                || disability === 'y'
+                || disability === 'true'
+                || disability === '1'
+                || disability === 'disable'
+                || disability === 'disabled'
+                || disability === 'হ্যাঁ';
         }
 
         function isAssigned(person) {
