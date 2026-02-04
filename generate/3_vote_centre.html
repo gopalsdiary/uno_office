@@ -1356,26 +1356,47 @@
                             designation: assignment.officer_designation
                         };
                     } else if (assignment.officer_type === 'ass_presiding') {
-                        centreData.assPresiding.push({
+                        const boothNum = Number(assignment.booth_number) || 0;
+                        const targetIdx = boothNum > 0 ? boothNum - 1 : centreData.assPresiding.length;
+                        while (centreData.assPresiding.length <= targetIdx) {
+                            centreData.assPresiding.push(null);
+                        }
+                        centreData.assPresiding[targetIdx] = {
                             ass_presiding_iid: assignment.officer_iid,
                             ass_presiding_name: assignment.officer_name,
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
-                            booth_number: assignment.booth_number
-                        });
-                        centreData.centre.voter_both_total = Math.max(
-                            centreData.centre.voter_both_total,
-                            assignment.booth_number || 0
-                        );
+                            booth_number: boothNum || assignment.booth_number
+                        };
+                        if (boothNum) {
+                            centreData.centre.voter_both_total = Math.max(
+                                centreData.centre.voter_both_total,
+                                boothNum
+                            );
+                        }
                     } else if (assignment.officer_type === 'polling') {
-                        centreData.polling.push({
+                        const boothNum = Number(assignment.booth_number) || 0;
+                        const personNum = Number(assignment.person_number) || 1;
+                        const targetIdx = boothNum > 0
+                            ? ((boothNum - 1) * 2 + Math.max(0, personNum - 1))
+                            : centreData.polling.length;
+                        while (centreData.polling.length <= targetIdx) {
+                            centreData.polling.push(null);
+                        }
+                        centreData.polling[targetIdx] = {
                             polling_iid: assignment.officer_iid,
                             polling_name: assignment.officer_name,
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
-                            booth_number: assignment.booth_number,
-                            person_number: assignment.person_number
-                        });
+                            booth_number: boothNum || assignment.booth_number,
+                            person_number: personNum || assignment.person_number
+                        };
+                        if (boothNum) {
+                            centreData.centre.voter_both_total = Math.max(
+                                centreData.centre.voter_both_total,
+                                boothNum
+                            );
+                        }
                     }
                 }
                 
@@ -1384,15 +1405,8 @@
                 
                 console.log(`✅ Processed ${generatedData.length} centres`);
                 
-                // Sort assPresiding and polling by booth/person number
+                // Preserve booth/person positions (arrays may contain nulls for gaps)
                 generatedData.forEach(data => {
-                    data.assPresiding.sort((a, b) => a.booth_number - b.booth_number);
-                    data.polling.sort((a, b) => {
-                        if (a.booth_number !== b.booth_number) {
-                            return a.booth_number - b.booth_number;
-                        }
-                        return a.person_number - b.person_number;
-                    });
                     // ensure centre has area/name info if available later
                     data.centre.vote_centre_area = data.centre.vote_centre_area || null;
                     data.centre.vote_centre_name = data.centre.vote_centre_name || null;
