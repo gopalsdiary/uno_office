@@ -9,7 +9,7 @@ if (!window.supabaseClient) {
 }
 
 // Inactivity timeout (15 minutes in milliseconds)
-const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+const INACTIVITY_TIMEOUT = 50 * 60 * 1000; // 15 minutes
 let inactivityTimer;
 
 // Pages that don't require authentication
