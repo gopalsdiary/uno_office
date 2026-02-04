@@ -178,6 +178,19 @@
         .centre-header h2 {
             margin-bottom: 5px;
         }
+
+        /* Gender summary card shown next to Total booths */
+        .gender-card {
+            background: #fff0f0;
+            border: 1px solid #f5c6c6;
+            color: #c00000;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 15px;
+            font-weight: 700;
+        }
         
         .assignment-table {
             width: 100%;
@@ -1304,14 +1317,35 @@
                 const polling = assignment.polling;
                 const centreIndex = generatedData.findIndex(a => a.centre.vote_centre_code === centre.vote_centre_code);
                 
+                // Calculate gender statistics
+                const assPresidingMale = assPresiding.filter(a => a && (a.gender === 'Male' || a.gender === 'male')).length;
+                const assPresidingFemale = assPresiding.filter(a => a && (a.gender === 'Female' || a.gender === 'female')).length;
+                const pollingMale = polling.filter(p => p && (p.gender === 'Male' || p.gender === 'male')).length;
+                const pollingFemale = polling.filter(p => p && (p.gender === 'Female' || p.gender === 'female')).length;
+                const totalMale = assPresidingMale + pollingMale;
+                const totalFemale = assPresidingFemale + pollingFemale;
+                
+                const genderCard = `
+                    <div class="gender-card">
+                        <div>সহ-প্রিঃ: পুরুষ ${assPresidingMale}, নারী ${assPresidingFemale}</div>
+                        <div>পোলিং: পুরুষ ${pollingMale}, নারী ${pollingFemale}</div>
+                        <div style="margin-top:6px; font-size:1.05em;"><strong>মোট: পুরুষ ${totalMale}, নারী ${totalFemale}</strong></div>
+                    </div>
+                `;
+                
                 html += `
                     <div class="centre-card normal-mode" id="centre-${centreIndex}">
                         <div class="centre-header">
-                            <h2>${index + 1}. Centre ${centre.vote_centre_code}</h2>
-                            <p>${centre.vote_centre_name || ''}</p>
-                            <p>Total booths: ${centre.voter_both_total || 0}</p>
-                            <button class="edit-btn" onclick="handleEditButtonClick(${centreIndex})">✏️ Edit</button>
-                            <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
+                            <div>
+                                <h2>${index + 1}. Centre ${centre.vote_centre_code}</h2>
+                                <p>${centre.vote_centre_name || ''}</p>
+                                <p>Total booths: ${centre.voter_both_total || 0}</p>
+                            </div>
+                            ${genderCard}
+                            <div>
+                                <button class="edit-btn" onclick="handleEditButtonClick(${centreIndex})">✏️ Edit</button>
+                                <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
+                            </div>
                         </div>
                         
                         <table class="assignment-table">
