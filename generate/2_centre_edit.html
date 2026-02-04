@@ -268,6 +268,46 @@
             font-size: 14px;
             opacity: 0.9;
         }
+
+        .chart-wrapper {
+            margin: 15px 0 25px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 5fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chart-label {
+            font-size: 12px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chart-bars {
+            display: flex;
+            height: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #e9ecef;
+        }
+
+        .bar-male {
+            background: #cce5ff;
+        }
+
+        .bar-female {
+            background: #f8d7da;
+        }
     </style>
 </head>
 <body>
@@ -299,6 +339,7 @@
         </div>
         
         <div class="stats-grid" id="statsGrid" style="display:none;"></div>
+        <div class="chart-wrapper" id="genderChart" style="display:none;"></div>
         
         <div class="centres-container" id="centresContainer"></div>
     </div>
@@ -513,6 +554,51 @@
                     imbalance--;
                 }
             }
+        }
+
+        function computeCentreTargets(centreGender, remainingSlots, remainingMale, remainingFemale) {
+            const totalSlots = centreGender.male + centreGender.female + centreGender.unknown + remainingSlots;
+            if (totalSlots === 0) {
+                return { targetMale: centreGender.male, targetFemale: centreGender.female };
+            }
+
+            const totalRemainingKnown = remainingMale + remainingFemale;
+            let targetFemale = totalRemainingKnown > 0
+                ? Math.round(totalSlots * (remainingFemale / totalRemainingKnown))
+                : centreGender.female;
+
+            if (remainingMale > 0 && remainingFemale > 0 && totalSlots >= 2) {
+                targetFemale = Math.max(1, Math.min(totalSlots - 1, targetFemale));
+            }
+
+            if (centreGender.female > targetFemale) targetFemale = centreGender.female;
+            let targetMale = totalSlots - targetFemale;
+            if (centreGender.male > targetMale) {
+                targetMale = centreGender.male;
+                targetFemale = totalSlots - targetMale;
+            }
+
+            return { targetMale, targetFemale };
+        }
+
+        function pickFromQueuesForCentre(queues, centreGender, centreTargets, biasMale = false) {
+            const needFemale = centreTargets.targetFemale - centreGender.female;
+            const needMale = centreTargets.targetMale - centreGender.male;
+
+            if (biasMale && centreGender.female > centreGender.male && queues.male.length > 0) {
+                return popFromQueues(queues, ['male', 'female', 'unknown']);
+            }
+
+            if (needFemale > 0 && queues.female.length > 0) {
+                return popFromQueues(queues, ['female', 'male', 'unknown']);
+            }
+            if (needMale > 0 && queues.male.length > 0) {
+                return popFromQueues(queues, ['male', 'female', 'unknown']);
+            }
+
+            const desired = chooseGenderByQueue(queues, 'female');
+            const order = desired === 'female' ? ['female', 'male', 'unknown'] : ['male', 'female', 'unknown'];
+            return popFromQueues(queues, order) || popFromQueues(queues, ['unknown', 'male', 'female']);
         }
         
         // Stratified sampling: প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন করে
@@ -1056,6 +1142,8 @@
                         console.log(`   ✅ Assigning ${requestedAssToUse.length} requested ass_presiding officers`);
                     }
 
+                    const centreGender = { male: 0, female: 0, unknown: 0 };
+
                     let assEndIdx = assPresidingNeeded - 1;
                     requestedAssToUse.forEach(o => {
                         if (assEndIdx >= 0) {
@@ -1063,12 +1151,18 @@
                             assEndIdx--;
                             usedRequestedIds.ass_presiding.add(normalizeId(o.ass_presiding_iid));
                             incrementGenderCount(assignedAssGender, o);
+                            incrementGenderCount(centreGender, o);
                         }
                     });
 
                     // Fill remaining positions with gender balance
                     // RULE: First ass_presiding MUST be Male (position 0)
                     const remainingCentres = orderedCentres.length - centreIndex;
+                    const remainingSlots = remainingAssPresidingNeeded + remainingPollingNeeded;
+                    const remainingMale = assQueues.male.length + pollQueues.male.length;
+                    const remainingFemale = assQueues.female.length + pollQueues.female.length;
+                    const centreTargets = computeCentreTargets(centreGender, remainingSlots, remainingMale, remainingFemale);
+
                     for (let i = 0; i < assPresidingForCentre.length; i++) {
                         if (!assPresidingForCentre[i]) {
                             if (i === 0) {
@@ -1086,19 +1180,22 @@
                                     console.log(`   ⚠️ No male available for first ass_presiding, using: ${maleOfficer?.gender}`);
                                 }
                                 assPresidingForCentre[i] = maleOfficer;
-                                if (maleOfficer) incrementGenderCount(assignedAssGender, maleOfficer);
+                                if (maleOfficer) {
+                                    incrementGenderCount(assignedAssGender, maleOfficer);
+                                    incrementGenderCount(centreGender, maleOfficer);
+                                }
                             } else {
-                                const preferred = (i % 2 === 0) ? 'male' : 'female';
-                                const desired = chooseGenderByQueue(assQueues, preferred);
-                                const order = desired === 'male' ? ['male', 'female', 'unknown'] : ['female', 'male', 'unknown'];
-                                const picked = popFromQueues(assQueues, order) || popFromQueues(assQueues, ['unknown', 'male', 'female']);
+                                const picked = pickFromQueuesForCentre(assQueues, centreGender, centreTargets, true);
                                 assPresidingForCentre[i] = picked;
-                                if (picked) incrementGenderCount(assignedAssGender, picked);
+                                if (picked) {
+                                    incrementGenderCount(assignedAssGender, picked);
+                                    incrementGenderCount(centreGender, picked);
+                                }
                             }
                         }
                     }
                     
-                    // Log gender distribution for this centre
+                    // Log gender distribution for this centre [পোলিং-সহ প্রিজাইডিং মিলে স্মার্ট চিন্তা করে করবে। ৭৯৭ বুথ, ৭৯৭ সহ-প্রিজাইডিং (Male: 642, Female: 196, Unknown: 0), ১৫৯৪ পোলিং (৮৩৪ পোলিং (নারী  ৭৬০ পোলিং পুরুষ)]
                     const assGenderCount = { male: 0, female: 0, unknown: 0 };
                     assPresidingForCentre.forEach(o => {
                         if (o) {
@@ -1128,17 +1225,18 @@
                             pollEndIdx--;
                             usedRequestedIds.polling.add(normalizeId(o.polling_iid));
                             incrementGenderCount(assignedPollGender, o);
+                            incrementGenderCount(centreGender, o);
                         }
                     });
 
                     for (let i = 0; i < pollingForCentre.length; i++) {
                         if (!pollingForCentre[i]) {
-                            const preferred = (i % 2 === 0) ? 'male' : 'female';
-                            const desired = chooseGenderByQueue(pollQueues, preferred);
-                            const order = desired === 'male' ? ['male', 'female', 'unknown'] : ['female', 'male', 'unknown'];
-                            const picked = popFromQueues(pollQueues, order) || popFromQueues(pollQueues, ['unknown', 'male', 'female']);
+                            const picked = pickFromQueuesForCentre(pollQueues, centreGender, centreTargets, false);
                             pollingForCentre[i] = picked;
-                            if (picked) incrementGenderCount(assignedPollGender, picked);
+                            if (picked) {
+                                incrementGenderCount(assignedPollGender, picked);
+                                incrementGenderCount(centreGender, picked);
+                            }
                         }
                     }
                     
@@ -1152,9 +1250,6 @@
                             else pollGenderCount.unknown++;
                         }
                     });
-
-                    // If polling is female-heavy, balance via ass_presiding (excluding position 0)
-                    balanceAssAgainstPollingImbalance(assPresidingForCentre, assQueues, assignedAssGender, pollGenderCount);
 
                     console.log(`   👥 Polling gender: M=${pollGenderCount.male}, F=${pollGenderCount.female}, U=${pollGenderCount.unknown}`);
                     
@@ -1245,6 +1340,52 @@
             const statsGrid = document.getElementById('statsGrid');
             statsGrid.innerHTML = statsHTML;
             statsGrid.style.display = 'grid';
+
+            renderGenderChart();
+        }
+
+        function renderGenderChart() {
+            const chart = document.getElementById('genderChart');
+            if (!chart || generatedData.length === 0) return;
+
+            let html = '<div style="font-weight:600;margin-bottom:8px;">কেন্দ্রভিত্তিক নারী-পুরুষ গ্রাফ</div>';
+
+            generatedData.forEach((assignment) => {
+                const centre = assignment.centre;
+                const ass = assignment.assPresiding || [];
+                const poll = assignment.polling || [];
+
+                let male = 0;
+                let female = 0;
+
+                ass.concat(poll).forEach(o => {
+                    const g = (o?.gender || '').toString().trim().toLowerCase();
+                    if (g === 'male') male++;
+                    else if (g === 'female') female++;
+                });
+
+                const total = male + female;
+                const malePct = total > 0 ? Math.round((male / total) * 100) : 0;
+                const femalePct = total > 0 ? 100 - malePct : 0;
+
+                const label = [centre.vote_centre_code, centre.vote_centre_name].filter(Boolean).join(' - ');
+
+                html += `
+                    <div class="chart-row">
+                        <div class="chart-label" title="${label}">${label}</div>
+                        <div>
+                            <div class="chart-bars">
+                                <div class="bar-male" style="width:${malePct}%;"></div>
+                                <div class="bar-female" style="width:${femalePct}%;"></div>
+                            </div>
+                            <div style="font-size:11px;color:#666;margin-top:2px;">পুরুষ ${male} | নারী ${female}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            chart.innerHTML = html;
+            chart.style.display = 'block';
         }
         
         // Display assignments
