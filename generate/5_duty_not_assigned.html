@@ -311,6 +311,12 @@
                 <option value="ass_presiding">সহ-প্রিজাইডিং অফিসার</option>
                 <option value="polling">পোলিং অফিসার</option>
             </select>
+
+            <select class="dropdown-select" id="disabilityFilter" onchange="filterByType()">
+                <option value="all">সকল (Disability)</option>
+                <option value="yes">হ্যাঁ (Disabled)</option>
+                <option value="no">না (Not Disabled)</option>
+            </select>
             
             <input type="text" class="search-box" id="searchBox" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="searchOfficers()">
             
@@ -500,26 +506,39 @@
             `;
         }
         
-        // Filter by officer type
+        // Filter by officer type (now supports Disability filter)
         function filterByType() {
             const type = document.getElementById('officerType').value;
+            const disability = (document.getElementById('disabilityFilter') && document.getElementById('disabilityFilter').value) || 'all';
             document.getElementById('searchBox').value = '';
             
+            let list = [];
             if (type === 'all') {
                 // Combine all
-                filteredOfficers = [
+                list = [
                     ...allUnassignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' })),
                     ...allUnassignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' })),
                     ...allUnassignedOfficers.polling.map(o => ({ ...o, type: 'polling' }))
                 ];
             } else if (type === 'presiding') {
-                filteredOfficers = allUnassignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' }));
+                list = allUnassignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' }));
             } else if (type === 'ass_presiding') {
-                filteredOfficers = allUnassignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' }));
+                list = allUnassignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' }));
             } else if (type === 'polling') {
-                filteredOfficers = allUnassignedOfficers.polling.map(o => ({ ...o, type: 'polling' }));
+                list = allUnassignedOfficers.polling.map(o => ({ ...o, type: 'polling' }));
             }
             
+            // Apply disability filter if selected (normalize values)
+            if (disability && disability !== 'all') {
+                list = list.filter(o => {
+                    const d = (o.disability || '').toString().trim().toLowerCase();
+                    if (disability === 'yes') return d === 'yes' || d === 'y' || d === '1' || d === 'true';
+                    if (disability === 'no') return d === 'no' || d === 'n' || d === '0' || d === 'false' || d === '';
+                    return true;
+                });
+            }
+            
+            filteredOfficers = list;
             renderTable(filteredOfficers);
         }
         
