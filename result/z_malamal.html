@@ -25,8 +25,13 @@
             img { max-width: 100%; height: auto; }
             /* allow page breaks inside elements so printing flows continuously */
             table, thead, tbody, tr, td, th, div, section { page-break-inside: auto !important; page-break-after: auto !important; page-break-before: auto !important; }
-            /* hide any manual page-break helpers */
-            .page-break { display: none !important; }
+            /* force page break between centres */
+            .page-break {
+                display: block !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                height: 0 !important;
+            }
             /* force white backgrounds for printing */
             * { -webkit-print-color-adjust: exact; color-adjust: exact; background: #fff !important; background-color: #fff !important; color: #000 !important; }
             /* Try to scale slightly to fit on one legal page when printing */
@@ -38,6 +43,7 @@
             </script>
         </head>
         <body>
+            <div id="form-template">
             <p align="right" style="line-height: 100%; margin-bottom: 0in">
                 কেন্দ্র
                 নং- vote_centre_code
@@ -52,7 +58,7 @@
             <p align="center" style="line-height: 100%; margin-bottom: 0in">
                 প্রিজাইডিং অফিসারের নিকট নির্বাচনী দ্রব্যাদি সরবরাহ এবং ভাতা প্রদানের হিসাব বিবরণী
             </p>
-            <table id="form-template" width="100%" cellpadding="4" cellspacing="0">
+            <table width="100%" cellpadding="4" cellspacing="0">
                 <colgroup>
                     <col width="21*"/>
                 </colgroup>
@@ -2343,6 +2349,7 @@
                 <p align="center" style="line-height: 100%; margin-bottom: 0in">
                     <br/>
                 </p>
+            </div>
                 <!-- removed old inline script start
                     // Get vote_centre_code from URL parameter
                     const urlParams = new URLSearchParams(window.location.search);
@@ -2589,8 +2596,8 @@
                             });
                         }
 
-                        function evaluateCalculations() {
-                            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+                        function evaluateCalculations(root = document.body) {
+                            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
                             while (walker.nextNode()) {
                                 const node = walker.currentNode;
                                 if (!node.nodeValue) continue;
@@ -2613,15 +2620,15 @@
                             }
                         }
 
-                        function removeInlineFonts() {
+                        function removeInlineFonts(root = document) {
                             try {
-                                document.querySelectorAll('[style]').forEach(el => {
+                                root.querySelectorAll('[style]').forEach(el => {
                                     if (!el.style) return;
                                     el.style.removeProperty('font-size');
                                     el.style.removeProperty('color');
                                 });
-                                document.querySelectorAll('[face],[size],[color]').forEach(el => { el.removeAttribute('face'); el.removeAttribute('size'); el.removeAttribute('color'); });
-                                document.querySelectorAll('font').forEach(f => { while (f.firstChild) f.parentNode.insertBefore(f.firstChild, f); f.remove(); });
+                                root.querySelectorAll('[face],[size],[color]').forEach(el => { el.removeAttribute('face'); el.removeAttribute('size'); el.removeAttribute('color'); });
+                                root.querySelectorAll('font').forEach(f => { while (f.firstChild) f.parentNode.insertBefore(f.firstChild, f); f.remove(); });
                             } catch (e) { /* ignore */ }
                         }
 
@@ -2713,7 +2720,7 @@
                                     const marker = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
                                     if (marker && !marker.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(grandTotal) + ' টাকা'; marker.appendChild(d); }
 
-                                    removeInlineFonts(); evaluateCalculations();
+                                    removeInlineFonts(cl); evaluateCalculations(cl);
 
                                     // show clone and hide original template
                                     template.parentNode.insertBefore(cl, template);
@@ -2783,7 +2790,7 @@
                                         const marker2 = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
                                         if (marker2 && !marker2.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(grandTotal) + ' টাকা'; marker2.appendChild(d); }
 
-                                        removeInlineFonts(); evaluateCalculations();
+                                        removeInlineFonts(cl); evaluateCalculations(cl);
 
                                         container.appendChild(cl);
                                         if (idx !== data.length - 1) { const br = document.createElement('div'); br.className = 'page-break'; container.appendChild(br); }
