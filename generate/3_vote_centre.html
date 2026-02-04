@@ -521,14 +521,16 @@
                 const isSelected = selectedId && String(selectedId) === idVal;
                 const isHighlight = highlightIds.has(idVal);
                 if (isSelected) foundSelected = true;
-                const label = `${idx + 1}. ${getOfficerDisplay(item, type)}`;
+                const starMark = item.isRequested ? '* ' : '';
+                const label = `${starMark}${idx + 1}. ${getOfficerDisplay(item, type)}`;
                 const styleAttr = isHighlight ? 'style="background-color:#fff3cd; color:#856404;"' : '';
                 opts.push(`<option value="${idVal}" ${isSelected ? 'selected' : ''} ${styleAttr}>${label}</option>`);
             });
 
             if (selectedId && selectedOfficer && !foundSelected) {
                 const idVal = String(selectedId);
-                const label = `* ${getOfficerDisplay(selectedOfficer, type)}`;
+                const starMark = selectedOfficer.isRequested ? '* ' : '';
+                const label = `${starMark}* ${getOfficerDisplay(selectedOfficer, type)}`;
                 const styleAttr = highlightIds.has(idVal) ? 'style="background-color:#fff3cd; color:#856404;"' : '';
                 opts.splice(1, 0, `<option value="${idVal}" selected ${styleAttr}>${label}</option>`);
             }
@@ -547,7 +549,8 @@
             sorted.forEach((item, idx) => {
                 const idVal = item.ass_presiding_iid ? String(item.ass_presiding_iid) : '';
                 const selected = selectedId && String(selectedId) === idVal ? 'selected' : '';
-                const label = `${idx + 1}. ${getOfficerDisplay(item, 'ass_presiding')}`;
+                const starMark = item.isRequested ? '* ' : '';
+                const label = `${starMark}${idx + 1}. ${getOfficerDisplay(item, 'ass_presiding')}`;
                 opts.push(`<option value="${idVal}" ${selected} style="background-color:#fff3cd; color:#856404;">${label}</option>`);
             });
             return opts.join('');
@@ -1334,7 +1337,7 @@
                         <tr>
                             ${i === 0 ? `<td rowspan="${maxRows}" style="text-align:center; vertical-align:middle; max-width:150px; width:150px;">
                                 ${presiding ? `
-                                    <div class="officer-name">${getOfficerName(presiding, 'presiding')}</div>
+                                    <div class="officer-name">${presiding.isRequested ? '* ' : ''}${getOfficerName(presiding, 'presiding')}</div>
                                     <div class="officer-designation">${presiding.designation || ''}</div>
                                 ` : '<div class="officer-name">N/A</div>'}
                                 <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'presiding', -1, this.value)">
@@ -1347,7 +1350,7 @@
                                     <span class="drag-handle" draggable="true" ondragstart="onOfficerDragStart(event, ${centreIndex}, 'ass_presiding', ${i})" ondragover="onOfficerDragOver(event)" ondrop="onOfficerDrop(event, ${centreIndex}, 'ass_presiding', ${i})" ondragleave="onOfficerDragLeave(event)">⋮⋮</span>
                                     <div style="flex:1; min-width:0;">
                                         ${assPres ? `
-                                            <div class="officer-name">${getOfficerName(assPres, 'ass_presiding')}</div>
+                                            <div class="officer-name">${assPres.isRequested ? '* ' : ''}${getOfficerName(assPres, 'ass_presiding')}</div>
                                             <div class="officer-designation">${assPres.designation || ''}</div>
                                             <div class="officer-designation">${assPres.gender || ''}</div>
                                         ` : ''}
@@ -1363,7 +1366,7 @@
                                     <span class="drag-handle" draggable="true" ondragstart="onOfficerDragStart(event, ${centreIndex}, 'polling', ${i * 2})" ondragover="onOfficerDragOver(event)" ondrop="onOfficerDrop(event, ${centreIndex}, 'polling', ${i * 2})" ondragleave="onOfficerDragLeave(event)">⋮⋮</span>
                                     <div style="flex:1; min-width:0;">
                                         ${poll1 ? `
-                                            <div class="officer-name">1. ${getOfficerName(poll1, 'polling')}</div>
+                                            <div class="officer-name">${poll1.isRequested ? '* ' : ''}1. ${getOfficerName(poll1, 'polling')}</div>
                                             <div class="officer-designation">${poll1.designation || ''} (${poll1.gender || ''})</div>
                                         ` : ''}
                                         <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2}, this.value)">
@@ -1375,7 +1378,7 @@
                                     <span class="drag-handle" draggable="true" ondragstart="onOfficerDragStart(event, ${centreIndex}, 'polling', ${i * 2 + 1})" ondragover="onOfficerDragOver(event)" ondrop="onOfficerDrop(event, ${centreIndex}, 'polling', ${i * 2 + 1})" ondragleave="onOfficerDragLeave(event)">⋮⋮</span>
                                     <div style="flex:1; min-width:0;">
                                         ${poll2 ? `
-                                            <div class="officer-name">2. ${getOfficerName(poll2, 'polling')}</div>
+                                            <div class="officer-name">${poll2.isRequested ? '* ' : ''}2. ${getOfficerName(poll2, 'polling')}</div>
                                             <div class="officer-designation">${poll2.designation || ''} (${poll2.gender || ''})</div>
                                         ` : ''}
                                         <select class="officer-select" onchange="updateOfficer(${centreIndex}, 'polling', ${i * 2 + 1}, this.value)">
@@ -1410,6 +1413,33 @@
             const centreCode = assignment.centre.vote_centre_code;
             const win = window.open('1_apointment_letter.html?code=' + encodeURIComponent(centreCode), '_blank');
             if (win) win.focus();
+        }
+
+        // Fetch requests from request_table
+        async function fetchAllRequests() {
+            let all = [];
+            let lastId = 0;
+            const batchSize = 1000;
+            let batch = 0;
+            while (true) {
+                batch++;
+                const { data, error } = await window.supabaseClient
+                    .from('request_table')
+                    .select('*')
+                    .gt('request_id', lastId)
+                    .order('request_id', { ascending: true })
+                    .limit(batchSize);
+
+                if (error) {
+                    console.error('Error fetching requests:', error);
+                    break;
+                }
+                if (!data || data.length === 0) break;
+                all.push(...data);
+                lastId = data[data.length - 1].request_id;
+                if (data.length < batchSize) break;
+            }
+            return all;
         }
 
         // Load assignments from database
@@ -1461,6 +1491,18 @@
                 const assignments = await fetchAllAssignments();
                 console.log(`✅ Fetched ${assignments.length} assignment records (all pages)`);
                 
+                // Fetch requests to mark matching assignments
+                const requests = await fetchAllRequests();
+                const requestSet = new Set();
+                if (requests) {
+                    requests.forEach(r => {
+                        // Key: type_officerId_centreId
+                        const key = `${r.officer_table_name}_${r.officer_table_iid}_${r.vote_centre_iid}`;
+                        requestSet.add(key);
+                    });
+                }
+                console.log(`✅ Fetched ${requests.length} request records`);
+                
                 if (!assignments || assignments.length === 0) {
                     console.log('⚠️ No saved assignments found in database');
                     showStatus('⚠️ No saved assignments in database. Generate and save first.', 'error');
@@ -1490,13 +1532,18 @@
                         });
                     }
                     
+                    // Check if this specific assignment was requested
+                    const reqKey = `${assignment.officer_type}_${assignment.officer_iid}_${assignment.vote_centre_iid}`;
+                    const isRequested = requestSet.has(reqKey);
+                    
                     const centreData = centreMap.get(centreCode);
                     
                     if (assignment.officer_type === 'presiding') {
                         centreData.presiding = {
                             presiding_iid: assignment.officer_iid,
                             presiding_name: assignment.officer_name,
-                            designation: assignment.officer_designation
+                            designation: assignment.officer_designation,
+                            isRequested: isRequested
                         };
                     } else if (assignment.officer_type === 'ass_presiding') {
                         const boothNum = Number(assignment.booth_number) || 0;
@@ -1509,7 +1556,8 @@
                             ass_presiding_name: assignment.officer_name,
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
-                            booth_number: boothNum || assignment.booth_number
+                            booth_number: boothNum || assignment.booth_number,
+                            isRequested: isRequested
                         };
                         if (boothNum) {
                             centreData.centre.voter_both_total = Math.max(
@@ -1532,7 +1580,8 @@
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
                             booth_number: boothNum || assignment.booth_number,
-                            person_number: personNum || assignment.person_number
+                            person_number: personNum || assignment.person_number,
+                            isRequested: isRequested
                         };
                         if (boothNum) {
                             centreData.centre.voter_both_total = Math.max(

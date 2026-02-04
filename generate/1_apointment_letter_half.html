@@ -77,6 +77,13 @@
         .letter {
             margin-bottom: 40px;
             background: white;
+            /* Force letter content to black text */
+            color: #000;
+        }
+
+        /* Ensure all text inside generated letters is black (overrides inline/colorful styles) */
+        .letter, .letter * {
+            color: #000 !important;
         }
 
         @media print {
@@ -97,6 +104,12 @@
             /* Allow multiple letters per printed page; allow splitting a single letter across pages when needed */
             .letter {
                 margin-bottom: 0 !important;
+            }
+
+            /* Ensure printed letters are black */
+            .letter, .letter * {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
             }
 
             /* Allow tables and rows to split across pages when needed (lets centres be cut across pages) */
@@ -229,7 +242,7 @@
 
                 const { data: centres, error: centreError } = await window.supabaseClient
                     .from('vote_centre')
-                    .select('vote_centre_code, vote_centre_name, vote_centre_location, voter_both_male, voter_both_female, total_voter')
+                    .select('vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, voter_both_male, voter_both_female, total_voter')
                     .in('vote_centre_code', codesForQuery);
                 if (!centreError && centres) {
                     const meta = new Map();
@@ -239,6 +252,7 @@
                         if (c) {
                             bundle.centre.vote_centre_name = c.vote_centre_name || bundle.centre.vote_centre_name;
                             bundle.centre.vote_centre_location = c.vote_centre_location || bundle.centre.vote_centre_location;
+                            bundle.centre.vote_centre_area = c.vote_centre_area || bundle.centre.vote_centre_area;
                             bundle.centre.voter_both_male = c.voter_both_male || 0;
                             bundle.centre.voter_both_female = c.voter_both_female || 0;
                             bundle.centre.total_voter = (c.total_voter !== undefined && c.total_voter !== null) ? c.total_voter : bundle.centre.total_voter;
@@ -410,7 +424,7 @@
                 </p>
                
                 <p style="font-size:12pt; margin-bottom:5px;">
-                    <span style="font-family:NikoshBAN; color:#c00000;">ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'} , কেন্দ্র কোড- ${centre.vote_centre_code || 'N/A'} ; ভোটার ${totalVoterDisplay} জন।</span>
+                    <span style="font-family:NikoshBAN;"><strong>ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'} , <span style="color:#c00000 !important;">${centre.vote_centre_area || centre.vote_centre_location || 'N/A'}</span> ;  কেন্দ্র কোড- ${centre.vote_centre_code || 'N/A'} ;  ভোটার ${totalVoterDisplay} জন।</strong></span>
                 </p>
                 ${boothInfo}
                 
