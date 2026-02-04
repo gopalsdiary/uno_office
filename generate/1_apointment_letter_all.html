@@ -666,6 +666,60 @@
                 handleArea(3);
             }
 
+            // Group assignments by vote_centre_code for bulk processing
+            function groupAssignmentsByCentre(assignments) {
+                const map = Object.create(null);
+                (assignments || []).forEach(a => {
+                    const code = a.vote_centre_code;
+                    if (!map[code]) map[code] = [];
+                    map[code].push(a);
+                });
+                return map;
+            }
+
+            // Convert raw assignment rows into presiding/assPresiding/polling structures
+            function processAssignmentsRows(assignments) {
+                let presiding = null;
+                const assPresiding = [];
+                const polling = [];
+
+                (assignments || []).forEach(assignment => {
+                    if (assignment.officer_type === 'presiding') {
+                        presiding = {
+                            presiding_iid: assignment.officer_iid,
+                            presiding_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender
+                        };
+                    } else if (assignment.officer_type === 'ass_presiding') {
+                        assPresiding.push({
+                            ass_presiding_iid: assignment.officer_iid,
+                            ass_presiding_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender,
+                            booth_number: assignment.booth_number
+                        });
+                    } else if (assignment.officer_type === 'polling') {
+                        polling.push({
+                            polling_iid: assignment.officer_iid,
+                            polling_name: assignment.officer_name,
+                            designation: assignment.officer_designation,
+                            gender: assignment.officer_gender,
+                            booth_number: assignment.booth_number,
+                            person_number: assignment.person_number
+                        });
+                    }
+                });
+
+                assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+                polling.sort((a, b) => {
+                    if ((a.booth_number || 0) !== (b.booth_number || 0)) return (a.booth_number || 0) - (b.booth_number || 0);
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+
+                return { presiding, assPresiding, polling };
+            }
+
             function renderOfficerTable(data, root = document) {
                 const table = root.querySelector('#officerTable');
                 if (!table) return;
@@ -696,7 +750,8 @@
                         tdPres.className = "center";
                         tdPres.style.border = "1px solid #000";
                         tdPres.style.padding = "5px";
-                        tdPres.style.verticalAlign = "middle";
+                        tdPres.style.verticalAlign = "top";
+                        tdPres.style.textAlign = "center";
                         tdPres.innerText = presidingText || '';
                         tr1.appendChild(tdPres);
                     }
@@ -716,10 +771,10 @@
                     tdAss.setAttribute('rowspan', 2);
                     tdAss.style.border = "1px solid #000";
                     tdAss.style.padding = "5px";
-                    // Align assistant presiding name to left and vertically center
-                    tdAss.style.verticalAlign = "middle";
-                    tdAss.style.textAlign = "left";
-                    tdAss.className = "left";
+                    // Align assistant presiding name to top and center
+                    tdAss.style.verticalAlign = "top";
+                    tdAss.style.textAlign = "center";
+                    tdAss.className = "center";
                     tdAss.innerText = formatOfficer(ass, 'ass_presiding');
                     tr1.appendChild(tdAss);
 
@@ -746,7 +801,8 @@
                         tdDuty.className = "center";
                         tdDuty.style.border = "1px solid #000";
                         tdDuty.style.padding = "5px";
-                        tdDuty.style.verticalAlign = "middle";
+                        tdDuty.style.verticalAlign = "top";
+                        tdDuty.style.textAlign = "center";
                         tdDuty.innerText = dutyAssistText;
                         tr1.appendChild(tdDuty);
                     }
@@ -836,32 +892,93 @@
                     const parent = template.parentNode;
                     const originalTemplate = template.cloneNode(true);
 
-                    // Render first centre into existing template to minimize DOM churn
-                    const firstFresh = await loadCentreDataFromSupabase(centres[0].vote_centre_code);
-                    renderCentreInfo(firstFresh.centre, template);
-                    populateAreaRows(firstFresh.centre, template);
-                    renderOfficerTable(firstFresh, template);
-                    convertAllNumbersToBengali(template);
+                    // Attempt to fetch all assignments in a single query to reduce round-trips
+                    const centreCodes = centres.map(c => c.vote_centre_code);
+                    let assignmentsMap = Object.create(null);
+                    let bulkAssignmentsSucceeded = false;
 
-                    for (let i = 1; i < centres.length; i++) {
-                        try {
-                            const fresh = await loadCentreDataFromSupabase(centres[i].vote_centre_code);
-                            const clone = originalTemplate.cloneNode(true);
-                            clone.querySelectorAll('script').forEach(s => s.remove());
+                    try {
+                        const { data: allAssignments, error: assignErr } = await window.supabaseClient
+                            .from('centre_assignments')
+                            .select('*')
+                            .in('vote_centre_code', centreCodes);
 
-                            renderCentreInfo(fresh.centre, clone);
-                            populateAreaRows(fresh.centre, clone);
-                            renderOfficerTable(fresh, clone);
-                            convertAllNumbersToBengali(clone);
-
-                            parent.appendChild(clone);
-                            setStatus(`Rendered ${i + 1} / ${centres.length} centres...`);
-                        } catch (innerErr) {
-                            console.error('Error loading centre', centres[i], innerErr);
-                        }
+                        if (assignErr) throw assignErr;
+                        assignmentsMap = groupAssignmentsByCentre(allAssignments || []);
+                        bulkAssignmentsSucceeded = true;
+                    } catch (err) {
+                        console.warn('Bulk assignments fetch failed; will fallback to per-centre fetch as needed.', err);
                     }
 
-                    setStatus(`Rendering complete: ${centres.length} centres.`);
+                    // Render first centre (use bulk data if available, otherwise fetch single)
+                    if (bulkAssignmentsSucceeded) {
+                        const first = centres[0];
+                        const firstAssignments = assignmentsMap[first.vote_centre_code] || [];
+                        const firstFresh = {
+                            centre: first,
+                            ...processAssignmentsRows(firstAssignments)
+                        };
+
+                        renderCentreInfo(firstFresh.centre, template);
+                        populateAreaRows(firstFresh.centre, template);
+                        renderOfficerTable(firstFresh, template);
+                        convertAllNumbersToBengali(template);
+
+                        // Render remaining centres using the assignment map
+                        for (let i = 1; i < centres.length; i++) {
+                            try {
+                                const centre = centres[i];
+                                const assignments = assignmentsMap[centre.vote_centre_code] || [];
+                                const fresh = {
+                                    centre: centre,
+                                    ...processAssignmentsRows(assignments)
+                                };
+
+                                const clone = originalTemplate.cloneNode(true);
+                                clone.querySelectorAll('script').forEach(s => s.remove());
+
+                                renderCentreInfo(fresh.centre, clone);
+                                populateAreaRows(fresh.centre, clone);
+                                renderOfficerTable(fresh, clone);
+                                convertAllNumbersToBengali(clone);
+
+                                parent.appendChild(clone);
+                                setStatus(`Rendered ${i + 1} / ${centres.length} centres...`);
+                            } catch (innerErr) {
+                                console.error('Error rendering centre', centres[i], innerErr);
+                            }
+                        }
+
+                        setStatus(`Rendering complete: ${centres.length} centres.`);
+                    } else {
+                        // Fallback: bulk failed - use existing per-centre loader (sequential)
+                        // Render first centre into existing template to minimize DOM churn
+                        const firstFresh = await loadCentreDataFromSupabase(centres[0].vote_centre_code);
+                        renderCentreInfo(firstFresh.centre, template);
+                        populateAreaRows(firstFresh.centre, template);
+                        renderOfficerTable(firstFresh, template);
+                        convertAllNumbersToBengali(template);
+
+                        for (let i = 1; i < centres.length; i++) {
+                            try {
+                                const fresh = await loadCentreDataFromSupabase(centres[i].vote_centre_code);
+                                const clone = originalTemplate.cloneNode(true);
+                                clone.querySelectorAll('script').forEach(s => s.remove());
+
+                                renderCentreInfo(fresh.centre, clone);
+                                populateAreaRows(fresh.centre, clone);
+                                renderOfficerTable(fresh, clone);
+                                convertAllNumbersToBengali(clone);
+
+                                parent.appendChild(clone);
+                                setStatus(`Rendered ${i + 1} / ${centres.length} centres...`);
+                            } catch (innerErr) {
+                                console.error('Error loading centre', centres[i], innerErr);
+                            }
+                        }
+
+                        setStatus(`Rendering complete: ${centres.length} centres.`);
+                    }
                 } catch (error) {
                     console.error('Error loading all centres:', error);
                     setStatus('Error loading centres: ' + (error.message || error), true);
