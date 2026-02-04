@@ -493,6 +493,9 @@
                 if (!item) return false;
                 const idVal = String(item[idKey] ?? item.id ?? item.iid ?? '');
                 if (!idVal) return false;
+                // Check disability
+                const hasDisability = item.disability === 'yes' || item.disability === 'Yes' || item.disability === 'YES';
+                if (hasDisability && !(selectedId && String(selectedId) === idVal)) return false;
                 if (selectedId && String(selectedId) === idVal) return true;
                 if (assignedIds.has(idVal)) return false;
                 return !isAssignedOfficer(item);
@@ -665,10 +668,14 @@
 
         async function loadOfficerPools() {
             if (poolsLoaded) return;
-            const unassigned = (row) => !row.assign_code || String(row.assign_code).trim() === '';
-            presidingPool = await fetchAllData('presiding_list', 'presiding_iid', unassigned);
-            assPresidingPool = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', unassigned);
-            pollingPool = await fetchAllData('polling_list', 'polling_iid', unassigned);
+            const unassignedAndAble = (row) => {
+                const isAssigned = row.assign_code && String(row.assign_code).trim() !== '';
+                const hasDisability = row.disability === 'yes' || row.disability === 'Yes' || row.disability === 'YES';
+                return !isAssigned && !hasDisability;
+            };
+            presidingPool = await fetchAllData('presiding_list', 'presiding_iid', unassignedAndAble);
+            assPresidingPool = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', unassignedAndAble);
+            pollingPool = await fetchAllData('polling_list', 'polling_iid', unassignedAndAble);
             poolsLoaded = true;
         }
         

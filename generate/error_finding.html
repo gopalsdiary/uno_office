@@ -719,12 +719,12 @@
         // Render disability officers table
         function renderDisabilityOfficers() {
             if (errorData.disabilityAssigned.length === 0) {
-                return '<div class="no-errors">✅ কোনো প্রতিবন্ধী অফিসার অ্যাসাইন করা হয়নি!</div>';
+                return '<div class="no-errors">✅ কোনো  ডিসএবেল অফিসার অ্যাসাইন করা হয়নি!</div>';
             }
             
             let html = `
                 <div class="error-section">
-                    <div class="section-header warning">♿ প্রতিবন্ধী অফিসার অ্যাসাইন করা হয়েছে (${toBengaliNumber(errorData.disabilityAssigned.length)} টি)</div>
+                    <div class="section-header warning">♿ডিসএবেল অফিসার অ্যাসাইন করা হয়েছে (${toBengaliNumber(errorData.disabilityAssigned.length)} টি)</div>
                     <table class="error-table">
                         <thead>
                             <tr>
