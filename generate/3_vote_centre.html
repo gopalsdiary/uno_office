@@ -191,6 +191,32 @@
             font-size: 15px;
             font-weight: 700;
         }
+
+        /* Inline message shown above the assignment table (save messages) */
+        .inline-status {
+            display: block;
+            margin: 10px auto;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            width: fit-content;
+        }
+        .inline-status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .inline-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .inline-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
         
         .assignment-table {
             width: 100%;
@@ -428,6 +454,20 @@
         let pollingPool = [];
         let poolsLoaded = false;
         let pendingCentreCode = '';
+
+        // Inline message state shown above each centre's table
+        let inlineMessage = null; // { message: string, type: 'info'|'success'|'error' }
+        let inlineMessageTimer = null;
+        function setInlineMessage(message, type = 'info', duration = 5000) {
+            inlineMessage = { message, type };
+            renderAssignmentsAndStats();
+            if (inlineMessageTimer) clearTimeout(inlineMessageTimer);
+            inlineMessageTimer = setTimeout(() => {
+                inlineMessage = null;
+                inlineMessageTimer = null;
+                renderAssignmentsAndStats();
+            }, duration);
+        }
         
         // Helper function to get officer name (handles different column names)
         function getOfficerName(officer, type) {
@@ -1332,6 +1372,8 @@
                         <div style="margin-top:6px; font-size:1.05em;"><strong>মোট: পুরুষ ${totalMale}, নারী ${totalFemale}</strong></div>
                     </div>
                 `;
+
+                const inlineHTML = inlineMessage ? `<div class="inline-status ${inlineMessage.type}">${inlineMessage.message}</div>` : '';
                 
                 html += `
                     <div class="centre-card normal-mode" id="centre-${centreIndex}">
@@ -1345,6 +1387,7 @@
                             <div>
                                 <button class="edit-btn" onclick="handleEditButtonClick(${centreIndex})">✏️ Edit</button>
                                 <button class="edit-btn" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="openAppointmentLetter(${centreIndex})">📄 Appointment Letter</button>
+                                ${inlineHTML}
                             </div>
                         </div>
                         
@@ -1779,6 +1822,8 @@
             }
             
             setLoading(true);
+            // Show inline saving message
+            setInlineMessage('Saving assignments...', 'info', 10000);
             
             try {
                 // Delete all old assignments first
@@ -1976,6 +2021,9 @@
                 await batchUpsert('polling_list', 'polling_iid', pollingUnique);
                 
                 console.log('✅ All assign_code updated in officer tables');
+
+                // Show inline success message above tables
+                setInlineMessage('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success', 700);
                 
                 showStatus('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success');
                 document.getElementById('saveBtn').style.display = 'none';
@@ -1984,6 +2032,7 @@
             } catch (error) {
                 console.error('Save error:', error);
                 showStatus(`❌ Save error: ${error.message}`, 'error');
+                try { setInlineMessage(`❌ Save error: ${error.message}`, 'error', 10000); } catch(e) {}
             } finally {
                 setLoading(false);
             }
