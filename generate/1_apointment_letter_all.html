@@ -166,7 +166,7 @@
 
 <body lang="en-US" text="#000000" link="#000080" vlink="#800000" dir="ltr">
     <div class="page-container">
-        <div id="ap_status" style="padding:6px 8px; background:#fff7cc; border:1px solid #ffe58f; margin-bottom:8px; font-weight:600;">Loading...</div>
+        <div id="ap_status" style="display:none; padding:6px 8px; margin-bottom:8px; font-weight:600;" aria-live="polite" role="status"></div>
         <table width="773" cellpadding="2" cellspacing="0">
             <col width="244" />
             <col width="244" />
@@ -471,13 +471,26 @@
             }
 
             // Show progress/errors on the page (and console)
+            // By default non-error messages are hidden. Append ?status=1 to the URL to enable.
+            const AP_SHOW_STATUS = (function(){
+                try { return getUrlParam('status') === '1'; } catch (e) { return false; }
+            })();
             function setStatus(html, isError = false) {
                 const el = document.getElementById('ap_status');
                 if (el) {
-                    el.innerHTML = html;
-                    el.style.background = isError ? '#ffecec' : '#fff7cc';
-                    el.style.borderColor = isError ? '#ffbdbd' : '#ffe58f';
+                    const shouldShow = isError || AP_SHOW_STATUS;
+                    el.innerHTML = html || '';
+                    el.style.display = shouldShow ? 'block' : 'none';
+                    if (shouldShow) {
+                        el.style.background = isError ? '#ffecec' : '#fff7cc';
+                        el.style.borderColor = isError ? '#ffbdbd' : '#ffe58f';
+                    } else {
+                        // Clear visual styling when hidden so it doesn't flash
+                        el.style.background = 'transparent';
+                        el.style.borderColor = 'transparent';
+                    }
                 }
+                // Always log to console for debugging
                 console.log('[AP_STATUS]', html);
             }
 
