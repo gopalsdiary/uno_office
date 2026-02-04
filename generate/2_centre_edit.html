@@ -417,35 +417,102 @@
             return result;
         }
         
-        // Shuffle array with gender balance interleaving (for pre-shuffling entire list)
+        // Shuffle array with 50-50 gender balance (M-F-M-F interleaving for better balance)
         function shuffleWithGenderBalance(people) {
             const male = shuffleArray(people.filter(p => p.gender === 'Male' || p.gender === 'male'));
             const female = shuffleArray(people.filter(p => p.gender === 'Female' || p.gender === 'female'));
             const unknown = shuffleArray(people.filter(p => !p.gender || p.gender === 'Unknown' || p.gender === 'unknown'));
             
+            console.log(`   👥 Gender split: Male=${male.length}, Female=${female.length}, Unknown=${unknown.length}`);
+            
             const result = [];
             let maleIndex = 0, femaleIndex = 0, unknownIndex = 0;
-            const total = male.length + female.length + unknown.length;
             
-            for (let i = 0; i < total; i++) {
-                const cycle = i % 3;
-                
-                if (cycle === 0 && maleIndex < male.length) {
-                    result.push(male[maleIndex++]);
-                } else if (cycle === 1 && femaleIndex < female.length) {
-                    result.push(female[femaleIndex++]);
-                } else if (cycle === 2 && unknownIndex < unknown.length) {
-                    result.push(unknown[unknownIndex++]);
-                } else if (maleIndex < male.length) {
-                    result.push(male[maleIndex++]);
-                } else if (femaleIndex < female.length) {
-                    result.push(female[femaleIndex++]);
-                } else if (unknownIndex < unknown.length) {
-                    result.push(unknown[unknownIndex++]);
-                }
+            // Strictly alternate M-F-M-F for better 50-50 balance
+            // Pattern: M, F, M, F, M, F...
+            const maxPairs = Math.min(male.length, female.length);
+            
+            // Add alternating pairs
+            for (let i = 0; i < maxPairs; i++) {
+                result.push(male[maleIndex++]);
+                result.push(female[femaleIndex++]);
             }
             
+            // Add remaining males
+            while (maleIndex < male.length) {
+                result.push(male[maleIndex++]);
+            }
+            
+            // Add remaining females
+            while (femaleIndex < female.length) {
+                result.push(female[femaleIndex++]);
+            }
+            
+            // Add unknowns at the end
+            while (unknownIndex < unknown.length) {
+                result.push(unknown[unknownIndex++]);
+            }
+            
+            console.log(`   ✅ Balanced list: ${result.length} officers (${maxPairs} M-F pairs)`);
             return result;
+        }
+
+        function getGenderKey(person) {
+            const g = (person?.gender || '').toString().trim().toLowerCase();
+            if (g === 'male') return 'male';
+            if (g === 'female') return 'female';
+            return 'unknown';
+        }
+
+        function buildGenderQueues(people) {
+            return {
+                male: shuffleArray(people.filter(p => getGenderKey(p) === 'male')),
+                female: shuffleArray(people.filter(p => getGenderKey(p) === 'female')),
+                unknown: shuffleArray(people.filter(p => getGenderKey(p) === 'unknown'))
+            };
+        }
+
+        function popFromQueues(queues, order) {
+            for (const key of order) {
+                if (queues[key] && queues[key].length > 0) {
+                    return queues[key].shift();
+                }
+            }
+            return null;
+        }
+
+        function choosePreferredGender(preferred, counts) {
+            if ((counts.male - counts.female) >= 2) return 'female';
+            if ((counts.female - counts.male) >= 2) return 'male';
+            return preferred;
+        }
+
+        function incrementGenderCount(counts, person) {
+            const key = getGenderKey(person);
+            counts[key] = (counts[key] || 0) + 1;
+        }
+
+        function chooseGenderByQueue(queues, preferred) {
+            if (queues.male.length === 0 && queues.female.length === 0) return 'unknown';
+            if (queues.male.length === queues.female.length) return preferred;
+            return queues.male.length > queues.female.length ? 'male' : 'female';
+        }
+
+        function balanceAssAgainstPollingImbalance(assList, assQueues, assignedAssGender, pollGenderCount) {
+            let imbalance = (pollGenderCount.female || 0) - (pollGenderCount.male || 0);
+            if (imbalance <= 0) return;
+
+            for (let i = 1; i < assList.length && imbalance > 0; i++) {
+                const current = assList[i];
+                if (getGenderKey(current) === 'female' && assQueues.male.length > 0) {
+                    const replacement = assQueues.male.shift();
+                    assQueues.female.push(current);
+                    assList[i] = replacement;
+                    assignedAssGender.female = Math.max(0, assignedAssGender.female - 1);
+                    assignedAssGender.male = (assignedAssGender.male || 0) + 1;
+                    imbalance--;
+                }
+            }
         }
         
         // Stratified sampling: প্রতি ১০০ জনের গ্রুপ থেকে সমান সংখ্যক নির্বাচন করে
@@ -824,8 +891,16 @@
                     p => !isAssigned(p) && !requestedPollingIds.has(normalizeId(p.polling_iid))
                 );
 
-                const assPresidingAvailable = shuffleWithGenderBalance(assPresidingAvailableRaw);
-                const pollingAvailable = shuffleWithGenderBalance(pollingAvailableRaw);
+                console.log('🎯 Preparing gender-balanced officer pools...');
+                const assQueues = buildGenderQueues(assPresidingAvailableRaw);
+                const pollQueues = buildGenderQueues(pollingAvailableRaw);
+
+                const assPresidingMaleOnly = shuffleArray(
+                    assPresidingAvailableRaw.filter(p => getGenderKey(p) === 'male')
+                );
+                console.log(`   📊 Male ass_presiding pool: ${assPresidingMaleOnly.length} officers`);
+                console.log(`   📊 Ass queues: M=${assQueues.male.length}, F=${assQueues.female.length}, U=${assQueues.unknown.length}`);
+                console.log(`   📊 Poll queues: M=${pollQueues.male.length}, F=${pollQueues.female.length}, U=${pollQueues.unknown.length}`);
                 
                 // Calculate required officers
                 let totalBooths = 0;
@@ -839,8 +914,8 @@
 
                 const availableCounts = {
                     presiding: presidingAvailable.length + requestedPresidingIds.size,
-                    assPresiding: assPresidingAvailable.length + requestedAssPresidingIds.size,
-                    polling: pollingAvailable.length + requestedPollingIds.size
+                    assPresiding: (assQueues.male.length + assQueues.female.length + assQueues.unknown.length) + requestedAssPresidingIds.size,
+                    polling: (pollQueues.male.length + pollQueues.female.length + pollQueues.unknown.length) + requestedPollingIds.size
                 };
                 
                 console.log('📊 Requirements:', required);
@@ -891,6 +966,8 @@
                 
                 let skippedCentres = [];
                 let assignedCount = 0;
+                const assignedAssGender = { male: 0, female: 0, unknown: 0 };
+                const assignedPollGender = { male: 0, female: 0, unknown: 0 };
                 const usedRequestedIds = {
                     presiding: new Set(),
                     ass_presiding: new Set(),
@@ -898,7 +975,8 @@
                 };
                 
                 // Process each vote centre (now in priority order)
-                for (const centre of orderedCentres) {
+                for (let centreIndex = 0; centreIndex < orderedCentres.length; centreIndex++) {
+                    const centre = orderedCentres[centreIndex];
                     const boothCount = centre.voter_both_total || 0;
                     
                     if (boothCount === 0) continue;
@@ -938,12 +1016,14 @@
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (প্রিসাইডিং অফিসার নেই)`);
                         continue;
                     }
-                    if (assPresidingAvailable.length < remainingAssPresidingNeeded) {
+                    const assAvailableCount = assQueues.male.length + assQueues.female.length + assQueues.unknown.length;
+                    if (assAvailableCount < remainingAssPresidingNeeded) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough ass presiding`);
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (সহকারী প্রিসাইডিং কম)`);
                         continue;
                     }
-                    if (pollingAvailable.length < remainingPollingNeeded) {
+                    const pollAvailableCount = pollQueues.male.length + pollQueues.female.length + pollQueues.unknown.length;
+                    if (pollAvailableCount < remainingPollingNeeded) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough polling`);
                         skippedCentres.push(`কেন্দ্র ${centre.vote_centre_code} (পোলিং অফিসার কম)`);
                         continue;
@@ -982,14 +1062,53 @@
                             assPresidingForCentre[assEndIdx] = o;
                             assEndIdx--;
                             usedRequestedIds.ass_presiding.add(normalizeId(o.ass_presiding_iid));
+                            incrementGenderCount(assignedAssGender, o);
                         }
                     });
 
+                    // Fill remaining positions with gender balance
+                    // RULE: First ass_presiding MUST be Male (position 0)
+                    const remainingCentres = orderedCentres.length - centreIndex;
                     for (let i = 0; i < assPresidingForCentre.length; i++) {
                         if (!assPresidingForCentre[i]) {
-                            assPresidingForCentre[i] = assPresidingAvailable.shift();
+                            if (i === 0) {
+                                let maleOfficer = null;
+                                if (assQueues.male.length >= remainingCentres) {
+                                    maleOfficer = popFromQueues(assQueues, ['male']);
+                                } else if (assQueues.male.length > 0) {
+                                    maleOfficer = popFromQueues(assQueues, ['male']);
+                                }
+                                if (!maleOfficer && assPresidingMaleOnly.length > 0) {
+                                    maleOfficer = assPresidingMaleOnly.shift();
+                                }
+                                if (!maleOfficer) {
+                                    maleOfficer = popFromQueues(assQueues, ['female', 'unknown']);
+                                    console.log(`   ⚠️ No male available for first ass_presiding, using: ${maleOfficer?.gender}`);
+                                }
+                                assPresidingForCentre[i] = maleOfficer;
+                                if (maleOfficer) incrementGenderCount(assignedAssGender, maleOfficer);
+                            } else {
+                                const preferred = (i % 2 === 0) ? 'male' : 'female';
+                                const desired = chooseGenderByQueue(assQueues, preferred);
+                                const order = desired === 'male' ? ['male', 'female', 'unknown'] : ['female', 'male', 'unknown'];
+                                const picked = popFromQueues(assQueues, order) || popFromQueues(assQueues, ['unknown', 'male', 'female']);
+                                assPresidingForCentre[i] = picked;
+                                if (picked) incrementGenderCount(assignedAssGender, picked);
+                            }
                         }
                     }
+                    
+                    // Log gender distribution for this centre
+                    const assGenderCount = { male: 0, female: 0, unknown: 0 };
+                    assPresidingForCentre.forEach(o => {
+                        if (o) {
+                            const g = (o.gender || 'unknown').toLowerCase();
+                            if (g === 'male') assGenderCount.male++;
+                            else if (g === 'female') assGenderCount.female++;
+                            else assGenderCount.unknown++;
+                        }
+                    });
+                    console.log(`   👥 Ass_Presiding gender: M=${assGenderCount.male}, F=${assGenderCount.female}, U=${assGenderCount.unknown}`);
 
                     // Assign polling officers (requested to bottom booths first)
                     const pollingForCentre = new Array(pollingNeeded).fill(null);
@@ -1008,14 +1127,36 @@
                             pollingForCentre[pollEndIdx] = o;
                             pollEndIdx--;
                             usedRequestedIds.polling.add(normalizeId(o.polling_iid));
+                            incrementGenderCount(assignedPollGender, o);
                         }
                     });
 
                     for (let i = 0; i < pollingForCentre.length; i++) {
                         if (!pollingForCentre[i]) {
-                            pollingForCentre[i] = pollingAvailable.shift();
+                            const preferred = (i % 2 === 0) ? 'male' : 'female';
+                            const desired = chooseGenderByQueue(pollQueues, preferred);
+                            const order = desired === 'male' ? ['male', 'female', 'unknown'] : ['female', 'male', 'unknown'];
+                            const picked = popFromQueues(pollQueues, order) || popFromQueues(pollQueues, ['unknown', 'male', 'female']);
+                            pollingForCentre[i] = picked;
+                            if (picked) incrementGenderCount(assignedPollGender, picked);
                         }
                     }
+                    
+                    // Count polling gender for centre
+                    const pollGenderCount = { male: 0, female: 0, unknown: 0 };
+                    pollingForCentre.forEach(o => {
+                        if (o) {
+                            const g = (o.gender || 'unknown').toLowerCase();
+                            if (g === 'male') pollGenderCount.male++;
+                            else if (g === 'female') pollGenderCount.female++;
+                            else pollGenderCount.unknown++;
+                        }
+                    });
+
+                    // If polling is female-heavy, balance via ass_presiding (excluding position 0)
+                    balanceAssAgainstPollingImbalance(assPresidingForCentre, assQueues, assignedAssGender, pollGenderCount);
+
+                    console.log(`   👥 Polling gender: M=${pollGenderCount.male}, F=${pollGenderCount.female}, U=${pollGenderCount.unknown}`);
                     
                     // Create assignment object
                     const assignment = {

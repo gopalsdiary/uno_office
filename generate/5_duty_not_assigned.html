@@ -14,7 +14,7 @@
         }
         
         body {
-            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            font-family: 'NikoshBan', 'Nikosh', 'SolaimanLipi', 'Noto Sans Bengali', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -620,11 +620,11 @@
                 html += `
                     <tr>
                         <td>${toBengaliNumber(index + 1)}</td>
-                        <td>${getOfficerId(officer)}</td>
+                        <td>${toBengaliNumber(getOfficerId(officer))}</td>
                         <td style="text-align: left;"><strong>${getOfficerName(officer)}</strong></td>
-                        <td>${mobile || '-'}</td>
+                        <td>${mobile ? toBengaliNumber(mobile) : '-'}</td>
                         <td>${officer.gender || '-'}</td>
-                        <td>${officer.sallery_scale || '-'}</td>
+                        <td>${officer.sallery_scale ? toBengaliNumber(officer.sallery_scale) : '-'}</td>
                         <td>
                             ${isDisabled 
                                 ? '<span class="badge badge-warning">হ্যাঁ</span>' 
