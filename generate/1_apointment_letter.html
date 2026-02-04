@@ -677,7 +677,8 @@
                         tdPres.className = "center";
                         tdPres.style.border = "1px solid #000";
                         tdPres.style.padding = "5px";
-                        tdPres.style.verticalAlign = "middle";
+                        tdPres.style.verticalAlign = "top";
+                        tdPres.style.textAlign = "center";
                         tdPres.innerText = presidingText || '';
                         tr1.appendChild(tdPres);
                     }
@@ -697,10 +698,10 @@
                     tdAss.setAttribute('rowspan', 2);
                     tdAss.style.border = "1px solid #000";
                     tdAss.style.padding = "5px";
-                    // Align assistant presiding name to left and vertically center
-                    tdAss.style.verticalAlign = "middle";
-                    tdAss.style.textAlign = "left";
-                    tdAss.className = "left";
+                    // Align assistant presiding name to top and center
+                    tdAss.style.verticalAlign = "top";
+                    tdAss.style.textAlign = "center";
+                    tdAss.className = "center";
                     tdAss.innerText = formatOfficer(ass, 'ass_presiding');
                     tr1.appendChild(tdAss);
 
@@ -727,7 +728,8 @@
                         tdDuty.className = "center";
                         tdDuty.style.border = "1px solid #000";
                         tdDuty.style.padding = "5px";
-                        tdDuty.style.verticalAlign = "middle";
+                        tdDuty.style.verticalAlign = "top";
+                        tdDuty.style.textAlign = "center";
                         tdDuty.innerText = dutyAssistText;
                         tr1.appendChild(tdDuty);
                     }
