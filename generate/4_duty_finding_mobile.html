@@ -3,757 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duty Finding</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="../authentication.js"></script>
+    <title>নির্বাচনি দায়িত্ব অনুসন্ধান | Election Duty Search</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary-color: #10b981;
+            --background-start: #e0e7ff;
+            --background-end: #eff6ff;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Hind Siliguri', sans-serif;
         }
-        
+
         body {
-            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
             min-height: 100vh;
+            color: var(--text-dark);
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
-        
+
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .results-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 100px;
+        }
+
+        .officer-card {
             background: white;
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 20px;
+            border: 1px solid #f3f4f6;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
         }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 32px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
+
+        .officer-card.expanded {
+            border-color: var(--primary-color);
+            background: #fdfdff;
         }
-        
-        .controls {
+
+        .officer-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .officer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+        }
+
+        .officer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
-        }
-        
-        .btn-print {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .btn-print:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-        
-        .status {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .centres-container {
-            margin-top: 30px;
-        }
-        
-        .centre-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 2px solid #e9ecef;
-            page-break-after: always;
-        }
-        
-        .centre-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .centre-header h2 {
-            margin-bottom: 5px;
-        }
-        
-        .assignment-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .assignment-table th {
-            background: #667eea;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .assignment-table td {
-            padding: 10px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .assignment-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .officer-name {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .officer-designation {
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            
-            .container {
-                box-shadow: none;
-                padding: 0;
-            }
-            
-            .controls, .status, .loading {
-                display: none !important;
-            }
-            
-            .centre-card {
-                page-break-after: always;
-                margin-bottom: 0;
-            }
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .search-form {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 16px;
-        }
-        
-        .form-select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .result-container {
-            margin-top: 30px;
-        }
-        
-        .result-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 2px solid #667eea;
-        }
-        
-        .result-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .result-header h2 {
-            margin-bottom: 5px;
-        }
-        
-        .info-table {
-            width: 100%;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 15px;
-        }
-        
-        .info-table tr {
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .info-table tr:last-child {
-            border-bottom: none;
-        }
-        
-        .info-table td {
-            padding: 15px;
-        }
-        
-        .info-table td:first-child {
-            font-weight: bold;
-            background: #f8f9fa;
-            width: 35%;
-            color: #667eea;
-        }
-        
-        .info-table td:last-child {
-            color: #333;
         }
 
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            transition: border-color 0.3s ease;
+        .officer-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
         }
 
-        .input-field:focus {
-            outline: none;
-            border-color: #667eea;
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .search-actions {
+        .badge.presiding { background: #e0e7ff; color: #4338ca; }
+        .badge.ass_presiding { background: #d1fae5; color: #059669; }
+        .badge.polling { background: #f3f4f6; color: #4b5563; }
+
+        .officer-details {
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 10px;
+        }
+
+        .detail-row {
+            display: flex;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .detail-row i {
+            width: 16px;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .assignment-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px dashed #cbd5e1;
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .assignment-info.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .assignment-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .assignment-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        
+        .click-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: right;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .not-found {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+        }
+
+        .not-found i {
+            font-size: 40px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .center-loader {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            h1 { font-size: 24px; }
+            
+            .officer-card { padding: 15px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔍 Duty Finding</h1>
-        
-        <div class="status" id="status"></div>
-        
-        <div class="search-form">
-            <div class="form-group">
-                <label for="officerType">Select Officer Type:</label>
-                <select id="officerType" class="form-select" onchange="loadOfficers()">
-                    <option value="">-- Select --</option>
-                    <option value="presiding">Presiding Officer</option>
-                    <option value="ass_presiding">Assistant Presiding Officer</option>
-                    <option value="polling">Polling Officer</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="officerSelectGroup" style="display:none;">
-                <label for="officerSelect">Select Officer:</label>
-                <select id="officerSelect" class="form-select" onchange="findDuty()">
-                    <option value="">-- Select --</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="mobileSearch">মোবাইল নম্বর দিয়ে খুঁজুন:</label>
-                <div class="search-actions">
-                    <input id="mobileSearch" class="input-field" type="tel" placeholder="মোবাইল নম্বর লিখুন">
-                    <button class="btn btn-success" type="button" onclick="findDutyByMobile()">📱 মোবাইল দিয়ে খুঁজুন</button>
-                </div>
-            </div>
 
-            <button class="btn btn-primary" onclick="findDuty()">
-                🔍 Find Duty
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-vote-yea"></i> দায়িত্ব অনুসন্ধান</h1>
+            <p class="subtitle">আপনার নির্বাচনি দায়িত্বের কেন্দ্র খুঁজুন</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="আপনার নাম বা মোবাইল নম্বর লিখুন...">
+            <button class="search-btn" onclick="startSearch()">
+                <i class="fas fa-search"></i>
             </button>
         </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Loading information... Please wait...</p>
+
+        <div id="resultsArea" class="results-area">
+            <!-- Results will appear here -->
         </div>
-        
-        <div class="result-container" id="resultContainer"></div>
+
+        <div id="paginationControls" class="pagination" style="display: none;">
+            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">Previous</button>
+            <span class="page-info" id="pageInfo">Page 1</span>
+            <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next</button>
+        </div>
     </div>
 
     <script>
-        // Check authentication on page load
-        window.addEventListener('DOMContentLoaded', checkAuth);
-        
-        let allOfficers = [];
+        // Supabase Setup
+        const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function getOfficerConfig(officerType) {
-            if (officerType === 'presiding') {
-                return { tableName: 'presiding_list', idColumn: 'presiding_iid', nameColumn: 'presiding_name' };
-            }
-            if (officerType === 'ass_presiding') {
-                return { tableName: 'ass_presiding_list', idColumn: 'ass_presiding_iid', nameColumn: 'ass_presiding_name' };
-            }
-            if (officerType === 'polling') {
-                return { tableName: 'polling_list', idColumn: 'polling_iid', nameColumn: 'polling_name' };
-            }
-            return null;
-        }
-        
-        // Convert Arabic numerals to Bengali numerals
-        function toBengaliNumber(n) {
-            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
-            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
-        }
-        
-        // Show status message
-        function showStatus(message, type = 'info') {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // Show/hide loading
-        function setLoading(isLoading) {
-            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
-        }
-        
-        // Load officers based on selected type
-        async function loadOfficers() {
-            const officerType = document.getElementById('officerType').value;
-            const officerSelect = document.getElementById('officerSelect');
-            const officerSelectGroup = document.getElementById('officerSelectGroup');
-            
-            if (!officerType) {
-                officerSelectGroup.style.display = 'none';
-                return;
-            }
-            
-            setLoading(true);
-            officerSelect.innerHTML = '<option value="">-- Select --</option>';
-            
-            try {
-                const config = getOfficerConfig(officerType);
-                if (!config) {
-                    showStatus('⚠️ Invalid officer type', 'error');
-                    return;
-                }
-                const { tableName, idColumn, nameColumn } = config;
-                
-                // Fetch officers with assign_code
-                const { data: officers, error } = await window.supabaseClient
-                    .from(tableName)
-                    .select('*')
-                    .not('assign_code', 'is', null)
-                    .order(nameColumn);
-                
-                if (error) throw error;
-                
-                if (!officers || officers.length === 0) {
-                    showStatus('⚠️ No assigned officers found!', 'error');
-                    officerSelectGroup.style.display = 'none';
-                    return;
-                }
-                
-                allOfficers = officers;
-                
-                // Populate dropdown
-                officers.forEach(officer => {
-                    const option = document.createElement('option');
-                    option.value = officer[idColumn];
-                    const name = officer[nameColumn] || officer.name || 'N/A';
-                    option.textContent = `${name} - ${officer.designation || ''}`;
-                    officerSelect.appendChild(option);
-                });
-                
-                officerSelectGroup.style.display = 'block';
-                showStatus(`✅ Found ${officers.length} officers`, 'success');
-                
-            } catch (error) {
-                console.error('Error loading officers:', error);
-                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-        
-        async function loadDutyForOfficer(officer, officerType, successMessage = '✅ Duty information found') {
-            if (!officer?.assign_code) {
-                throw new Error('Assignment code not found for this officer');
-            }
+        let allSearchResults = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
 
-            const assignCode = officer.assign_code;
-            const centreId = assignCode.split('-')[0];
+        const input = document.getElementById('searchInput');
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startSearch();
+        });
 
-            const { data: centre, error: centreError } = await window.supabaseClient
-                .from('vote_centre')
-                .select('*')
-                .eq('vote_centre_iid', centreId)
-                .single();
-            
-            if (centreError) throw centreError;
-            
-            const { data: assignments, error: assignError } = await window.supabaseClient
-                .from('centre_assignments')
-                .select('*')
-                .eq('vote_centre_iid', centreId)
-                .in('officer_type', ['presiding', 'ass_presiding', 'polling']);
-            
-            if (assignError) throw assignError;
-            
-            const presidingAssignment = (assignments || []).find(a => a.officer_type === 'presiding');
-            const assPresidingAssignments = (assignments || []).filter(a => a.officer_type === 'ass_presiding');
-            const pollingAssignments = (assignments || []).filter(a => a.officer_type === 'polling');
-            
-            displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments, pollingAssignments);
-            if (successMessage) {
-                showStatus(successMessage, 'success');
-            }
-        }
-        
-        // Find duty for selected officer
-        async function findDuty() {
-            const officerType = document.getElementById('officerType').value;
-            const officerSelect = document.getElementById('officerSelect');
-            const selectedOfficerId = officerSelect.value;
-            
-            if (!officerType || !selectedOfficerId) {
-                showStatus('⚠️ Please select officer type and officer', 'error');
-                return;
-            }
-            
-            setLoading(true);
-            document.getElementById('resultContainer').innerHTML = '';
-            
-            try {
-                // Get selected officer details
-                const selectedOfficer = allOfficers.find(o => {
-                    if (officerType === 'presiding') return o.presiding_iid == selectedOfficerId;
-                    if (officerType === 'ass_presiding') return o.ass_presiding_iid == selectedOfficerId;
-                    if (officerType === 'polling') return o.polling_iid == selectedOfficerId;
-                    return false;
-                });
-                
-                if (!selectedOfficer) {
-                    throw new Error('Officer not found');
-                }
+        async function startSearch() {
+            const query = input.value.trim();
+            if (!query) return;
 
-                await loadDutyForOfficer(selectedOfficer, officerType);
-
-            } catch (error) {
-                console.error('Error finding duty:', error);
-                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        async function findDutyByMobile() {
-            const officerType = document.getElementById('officerType').value;
-            const mobileNumber = document.getElementById('mobileSearch').value.trim();
-
-            if (!mobileNumber) {
-                showStatus('⚠️ মোবাইল নম্বর লিখুন', 'error');
-                return;
-            }
-
-            setLoading(true);
-            document.getElementById('resultContainer').innerHTML = '';
+            const resultsArea = document.getElementById('resultsArea');
+            const paginationDiv = document.getElementById('paginationControls');
+            
+            resultsArea.innerHTML = '<div class="center-loader"><div class="loading-spinner"></div></div>';
+            paginationDiv.style.display = 'none';
+            allSearchResults = [];
+            currentPage = 1;
 
             try {
-                const normalizedMobile = mobileNumber.replace(/[^0-9+]/g, '');
-                const searchTypes = officerType ? [officerType] : ['presiding', 'ass_presiding', 'polling'];
-                let foundOfficer = null;
-                let foundType = null;
+                // 1. Search in all 3 tables with a higher limit to support client-side pagination
+                // We fetch 20 from each to have a good pool of candidates
+                const tables = [
+                    { name: 'presiding_list', type: 'presiding', label: 'প্রিজাইডিং অফিসার' },
+                    { name: 'ass_presiding_list', type: 'ass_presiding', label: 'সহকারী প্রিজাইডিং' },
+                    { name: 'polling_list', type: 'polling', label: 'পোলিং অফিসার' }
+                ];
 
-                for (const type of searchTypes) {
-                    const config = getOfficerConfig(type);
-                    if (!config) continue;
-
-                    console.log(`Searching ${type} in ${config.tableName} for mobile: ${normalizedMobile}`);
-                    
-                    const { data, error } = await window.supabaseClient
-                        .from(config.tableName)
+                const promises = tables.map(table => 
+                    supabaseClient
+                        .from(table.name)
                         .select('*')
-                        .not('assign_code', 'is', null)
-                        .ilike('mobile_number', `%${normalizedMobile}%`)
-                        .limit(1);
+                        .or(`${table.name.replace('_list', '_name')}.ilike.%${query}%,mobile_number.ilike.%${query}%`)
+                        .limit(20) 
+                );
 
-                    if (error) {
-                        console.error(`Error searching ${type}:`, error);
-                        throw error;
-                    }
-                    
-                    console.log(`Found ${data?.length || 0} ${type} officers`);
-                    if (data && data.length > 0) {
-                        console.log(`Officer data:`, data[0]);
-                    }
+                const responses = await Promise.all(promises);
+                
+                let combinedResults = [];
+                responses.forEach((res, index) => {
+                    if (res.data) {
+                        const tableInfo = tables[index];
+                        res.data.forEach(item => {
+                            const idKey = tableInfo.name.replace('_list', '_iid');
+                            const nameKey = tableInfo.name.replace('_list', '_name');
+                            const name = item[nameKey] || 'Unknown';
+                            const mobile = item.mobile_number || '';
 
-                    if (data && data.length > 0) {
-                        foundOfficer = data[0];
-                        foundType = type;
-                        break;
+                            combinedResults.push({
+                                id: item[idKey],
+                                name: name,
+                                mobile: mobile,
+                                type: tableInfo.type,
+                                typeLabel: tableInfo.label,
+                                designation: item.sallery_scale || item.designation,
+                            });
+                        });
                     }
-                }
+                });
 
-                if (!foundOfficer) {
-                    showStatus('⚠️ এই মোবাইল নম্বরে কোনো ডিউটি পাওয়া যায়নি', 'error');
+                if (combinedResults.length === 0) {
+                    resultsArea.innerHTML = `
+                        <div class="not-found">
+                            <i class="fas fa-user-slash"></i>
+                            <p>কোনো অফিসার পাওয়া যায়নি।</p>
+                            <small>নাম বা মোবাইল নম্বর সঠিক কিনা চেক করুন।</small>
+                        </div>`;
                     return;
                 }
 
-                document.getElementById('officerType').value = foundType;
-                await loadDutyForOfficer(foundOfficer, foundType, '✅ মোবাইল নম্বর অনুযায়ী ডিউটি পাওয়া গেছে');
-            } catch (error) {
-                console.error('Error finding duty by mobile:', error);
-                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
-            } finally {
-                setLoading(false);
+                // Sorting for "Perfect Matching"
+                // 1. Exact Mobile Match
+                // 2. Exact Name Match
+                // 3. Name starts with query
+                // 4. Others
+                const lowerQuery = query.toLowerCase();
+                
+                combinedResults.sort((a, b) => {
+                    const aName = a.name.toLowerCase();
+                    const bName = b.name.toLowerCase();
+                    const aMobile = String(a.mobile || '');
+                    const bMobile = String(b.mobile || '');
+
+                    // Priority 1: Exact Mobile
+                    if (aMobile === query && bMobile !== query) return -1;
+                    if (bMobile === query && aMobile !== query) return 1;
+
+                    // Priority 2: Exact Name
+                    if (aName === lowerQuery && bName !== lowerQuery) return -1;
+                    if (bName === lowerQuery && aName !== lowerQuery) return 1;
+
+                    // Priority 3: Name starts with
+                    const aStarts = aName.startsWith(lowerQuery);
+                    const bStarts = bName.startsWith(lowerQuery);
+                    if (aStarts && !bStarts) return -1;
+                    if (!aStarts && bStarts) return 1;
+
+                    return 0;
+                });
+
+                allSearchResults = combinedResults;
+                renderPage(1);
+
+            } catch (err) {
+                console.error(err);
+                resultsArea.innerHTML = `<p style="color:red; text-align:center;">ত্রুটি হয়েছে: ${err.message}</p>`;
             }
         }
-        
-        // Display duty information
-        function displayDutyInfo(officer, officerType, centre, presidingAssignment, assPresidingAssignments, pollingAssignments) {
-            const container = document.getElementById('resultContainer');
+
+        function renderPage(page) {
+            if (page < 1) page = 1;
+            currentPage = page;
             
-            let officerName = '';
-            if (officerType === 'presiding') {
-                officerName = officer.presiding_name || officer.name || 'N/A';
-            } else if (officerType === 'ass_presiding') {
-                officerName = officer.ass_presiding_name || officer.name || 'N/A';
-            } else if (officerType === 'polling') {
-                officerName = officer.polling_name || officer.name || 'N/A';
+            const resultsArea = document.getElementById('resultsArea');
+            const paginationDiv = document.getElementById('paginationControls');
+            
+            resultsArea.innerHTML = '';
+            
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = allSearchResults.slice(startIndex, endIndex);
+
+            if (pageItems.length === 0 && page > 1) {
+                // If current page has no items but previous did (rare edge case), go back
+                renderPage(page - 1);
+                return;
             }
-            
-            let officerTypeLabel = '';
-            if (officerType === 'presiding') officerTypeLabel = 'Presiding Officer';
-            else if (officerType === 'ass_presiding') officerTypeLabel = 'Assistant Presiding Officer';
-            else if (officerType === 'polling') officerTypeLabel = 'Polling Officer';
-            
-            let html = `
-                <div class="result-card">
-                    <div class="result-header">
-                        <h2>Duty Information</h2>
+
+            // Create cards
+            pageItems.forEach((officer) => {
+                const card = document.createElement('div');
+                card.className = 'officer-card';
+                // Add click event to toggle assignment
+                card.onclick = (e) => toggleAssignment(e, officer, card);
+                
+                card.innerHTML = `
+                    <div class="officer-header">
+                        <div class="officer-info">
+                            <h3>${officer.name}</h3>
+                            <span class="badge ${officer.type}">${officer.typeLabel}</span>
+                        </div>
                     </div>
+                    <div class="click-hint"><i class="fas fa-hand-pointer"></i> কেন্দ্র দেখতে ক্লিক করুন</div>
                     
-                    <table class="info-table">
-                        <tr>
-                            <td>Officer Name</td>
-                            <td>${officerName}</td>
-                        </tr>
-                        <tr>
-                            <td>Officer Type</td>
-                            <td>${officerTypeLabel}</td>
-                        </tr>
-                        <tr>
-                            <td>Designation</td>
-                            <td>${officer.designation || 'N/A'}</td>
-                        </tr>
-                        ${officer.gender ? `
-                        <tr>
-                            <td>Gender</td>
-                            <td>${officer.gender}</td>
-                        </tr>
-                        ` : ''}
-                        <tr>
-                            <td>Assignment Code</td>
-                            <td>${officer.assign_code}</td>
-                        </tr>
-                        <tr>
-                            <td>Vote Centre No.</td>
-                            <td>${centre.vote_centre_code || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <td>Vote Centre Name</td>
-                            <td><strong>${centre.vote_centre_name || 'N/A'}</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Vote Centre Location</td>
-                            <td>${centre.vote_centre_location || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <td>Total Booths</td>
-                            <td>${centre.voter_both_total || 0}</td>
-                        </tr>
-            `;
-            
-            // Add presiding officer info
-            if (presidingAssignment) {
-                html += `
-                        <tr>
-                            <td>Presiding Officer</td>
-                            <td><strong>${presidingAssignment.officer_name || 'N/A'}</strong></td>
-                        </tr>
+                    <div class="assignment-info" id="assign-${officer.type}-${officer.id}">
+                        <!-- Content loaded on click -->
+                    </div>
                 `;
+                resultsArea.appendChild(card);
+            });
+
+            // Handle Pagination Controls
+            const totalPages = Math.ceil(allSearchResults.length / itemsPerPage);
+            
+            if (totalPages > 1) {
+                paginationDiv.style.display = 'flex';
+                document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevBtn').disabled = currentPage === 1;
+                document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            } else {
+                paginationDiv.style.display = 'none';
             }
             
-            // Add assistant presiding officers info
-            if (assPresidingAssignments && assPresidingAssignments.length > 0) {
-                html += `
-                        <tr>
-                            <td>Assistant Presiding Officers</td>
-                            <td>
-                `;
-                
-                assPresidingAssignments.forEach((assPres, index) => {
-                    html += `${toBengaliNumber(index + 1)}। ${assPres.officer_name} (বুথ-${toBengaliNumber(assPres.booth_number)})<br>`;
-                });
-                
-                html += `
-                            </td>
-                        </tr>
-                `;
+            // Scroll to top of results
+            if (currentPage > 1) {
+                resultsArea.scrollIntoView({ behavior: 'smooth' });
             }
+        }
+
+        function changePage(delta) {
+            renderPage(currentPage + delta);
+        }
+
+        async function toggleAssignment(event, officer, cardElement) {
+            // Prevent triggering if clicked inside assignment info (if we had buttons there)
+            // But here the whole card is clickable.
+
+            // 1. Toggle expanded class
+            cardElement.classList.toggle('expanded');
             
-            // Add polling officers info
-            if (pollingAssignments && pollingAssignments.length > 0) {
-                html += `
-                        <tr>
-                            <td>Polling Officers</td>
-                            <td>
-                `;
-                
-                pollingAssignments.forEach((poll, index) => {
-                    html += `${toBengaliNumber(index + 1)}। ${poll.officer_name} (বুথ-${toBengaliNumber(poll.booth_number)}, ব্যক্তি-${toBengaliNumber(poll.person_number)})<br>`;
-                });
-                
-                html += `
-                            </td>
-                        </tr>
-                `;
+            const infoDiv = document.getElementById(`assign-${officer.type}-${officer.id}`);
+            
+            // 2. If already visible, just hide it? 
+            // The requirement says "Names shows center on click".
+            // Let's toggle visibility.
+            if (infoDiv.classList.contains('active')) {
+                infoDiv.classList.remove('active');
+                return;
             }
-            
-            html += `
-                    </table>
+
+            infoDiv.classList.add('active');
+
+            // 3. If content already loaded, don't fetch again
+            if (infoDiv.innerHTML.trim().length > 50) { // arbitrary length check for loaded content
+                return; 
+            }
+
+            // 4. Fetch data
+            infoDiv.innerHTML = `
+                <div class="detail-row" style="color: #64748b;">
+                    <div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                    <span>কেন্দ্র খোঁজা হচ্ছে...</span>
                 </div>
             `;
-            
-            container.innerHTML = html;
+
+            try {
+                const { data: assignData, error } = await supabaseClient
+                    .from('centre_assignments')
+                    .select('vote_centre_iid, vote_centre_code')
+                    .eq('officer_type', officer.type)
+                    .eq('officer_iid', officer.id)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!assignData) {
+                    infoDiv.innerHTML = `
+                        <div class="assignment-label">এসাইনমেন্ট স্ট্যাটাস</div>
+                        <div style="color: #d97706; font-weight: 600;">
+                            <i class="fas fa-user-clock"></i> Reserved
+                        </div>
+                    `;
+                    return;
+                }
+
+                const { data: centerData, error: centerError } = await supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_name')
+                    .eq('vote_centre_iid', assignData.vote_centre_iid)
+                    .maybeSingle();
+                
+                if (centerError) throw centerError;
+
+                const centerName = centerData ? centerData.vote_centre_name : 'অজানা কেন্দ্র';
+
+                infoDiv.innerHTML = `
+                    <div class="assignment-label">আপনার দায়িত্বের কেন্দ্র</div>
+                    <div class="assignment-value">
+                        ${centerName}
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error('Assignment fetch error', err);
+                infoDiv.innerHTML = `<span style="color:red; font-size:12px">তথ্য লোড করতে সমস্যা হয়েছে</span>`;
+            }
         }
     </script>
 </body>
