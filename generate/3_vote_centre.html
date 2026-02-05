@@ -419,6 +419,8 @@
                 <option value="all">🔍 View all centres</option>
             </select>
 
+            <input id="centreSearch" class="centre-select" type="text" placeholder="সেন্টার সার্চ (কোড/নাম বা > ১০)" oninput="onCentreSearch()" />
+
             <button class="btn btn-success" id="saveBtn" onclick="saveAssignments()" style="display:none;">
                 💾 Save
             </button>
@@ -468,6 +470,7 @@
         
         let generatedData = [];
         let selectedCentreCode = '';
+        let centreSearchQuery = '';
         let presidingPool = [];
         let assPresidingPool = [];
         let pollingPool = [];
@@ -979,13 +982,37 @@
             }
         }
         
-        // Get filtered data based on dropdown selection
+        // Get filtered data based on dropdown selection or centre search
         function getFilteredAssignments() {
+            const rawQuery = (centreSearchQuery || '').trim();
+            if (rawQuery) {
+                const q = rawQuery.toLowerCase();
+                function parseGreaterThan(qstr) {
+                    const match = qstr.match(/(?:centre|center|সেন্টার)?\s*>\s*(\d+)/i);
+                    if (!match) return null;
+                    return Number(match[1]);
+                }
+                const gtValue = parseGreaterThan(rawQuery);
+                return generatedData.filter(item => {
+                    if (!item || !item.centre) return false;
+                    const code = String(item.centre.vote_centre_code || '');
+                    const name = String(item.centre.vote_centre_name || '');
+                    const areaName = String(item.centre.vote_centre_area || '');
+                    if (gtValue !== null && !Number.isNaN(gtValue)) {
+                        const codeNum = Number(code);
+                        if (Number.isNaN(codeNum)) return false;
+                        return codeNum > gtValue;
+                    }
+                    const hay = `${code} ${name} ${areaName}`.toLowerCase();
+                    return hay.includes(q);
+                });
+            }
             if (selectedCentreCode === 'all') return generatedData;
+            if (!selectedCentreCode) return [];
             return generatedData.filter(item => item.centre.vote_centre_code === selectedCentreCode);
         }
 
-        // Populate centre dropdown (filtered by selected area when provided)
+        // Populate centre dropdown (filtered by selected area and search query when provided)
         function populateCentreDropdown(area = null) {
             const select = document.getElementById('centreSelect');
             if (!select) return;
@@ -995,13 +1022,44 @@
                 ? generatedData.filter(d => (d.centre.vote_centre_area || 'Unknown') === area)
                 : generatedData.slice();
 
-            const sorted = filtered.sort((a, b) => (String(a.centre.vote_centre_code) || '').localeCompare(String(b.centre.vote_centre_code) || ''));
+            const rawQuery = (centreSearchQuery || '').trim();
+            const query = rawQuery.toLowerCase();
+
+            function parseGreaterThan(q) {
+                const match = q.match(/(?:centre|center|সেন্টার)?\s*>\s*(\d+)/i);
+                if (!match) return null;
+                return Number(match[1]);
+            }
+
+            function centreMatchesSearch(item) {
+                if (!query) return true;
+                const code = String(item.centre.vote_centre_code || '');
+                const name = String(item.centre.vote_centre_name || '');
+                const areaName = String(item.centre.vote_centre_area || '');
+
+                const gtValue = parseGreaterThan(rawQuery);
+                if (gtValue !== null && !Number.isNaN(gtValue)) {
+                    const codeNum = Number(code);
+                    if (Number.isNaN(codeNum)) return false;
+                    return codeNum > gtValue;
+                }
+
+                const haystack = `${code} ${name} ${areaName}`.toLowerCase();
+                return haystack.includes(query);
+            }
+
+            const searched = filtered.filter(centreMatchesSearch);
+
+            const sorted = searched.sort((a, b) => (String(a.centre.vote_centre_code) || '').localeCompare(String(b.centre.vote_centre_code) || ''));
             sorted.forEach(item => {
                 const code = item.centre.vote_centre_code || '';
                 const name = item.centre.vote_centre_name || '';
                 const label = name ? `${code} - ${name}` : code;
                 options.push(`<option value="${code}">${label}</option>`);
             });
+            if (sorted.length === 0 && query) {
+                options.push('<option value="" disabled>কোনো কেন্দ্র পাওয়া যায়নি</option>');
+            }
             select.innerHTML = options.join('');
             select.value = selectedCentreCode || '';
         }
@@ -1030,6 +1088,16 @@
             populateCentreDropdown(area);
             // reset selected centre
             selectedCentreCode = '';
+            renderAssignmentsAndStats();
+        }
+
+        function onCentreSearch() {
+            const input = document.getElementById('centreSearch');
+            centreSearchQuery = input ? input.value : '';
+            const areaSelect = document.getElementById('areaSelect');
+            const area = areaSelect ? areaSelect.value : null;
+            populateCentreDropdown(area);
+            // Also render results immediately so search shows matching centre cards
             renderAssignmentsAndStats();
         }
 
@@ -1319,7 +1387,8 @@
 
         function renderAssignmentsAndStats() {
             const data = getFilteredAssignments();
-            if (!selectedCentreCode) {
+            const hasSearch = (centreSearchQuery || '').trim();
+            if (!selectedCentreCode && !hasSearch) {
                 document.getElementById('centresContainer').innerHTML = '';
                 document.getElementById('statsGrid').style.display = 'none';
                 return;
