@@ -142,7 +142,7 @@
                 <tr>
                     <td width="15%" class="bg-gray fw-bold text-center">ভোটকেন্দ্র নম্বর ও নামঃ</td>
                     <td colspan="3" width="67%"><b>{{vote_centre_code}}. {{vote_centre_name}}</b></td>
-                    <td width="8%" class="bg-gray fw-bold text-center">কক্ষঃ</td>
+                    <td width="8%" class="bg-gray fw-bold text-center">বুথ/কক্ষঃ</td>
                     <td width="10%" class="text-center fw-bold">{{voter_both_total}}</td>
                 </tr>
                 <tr class="bg-gray text-center fw-bold">
@@ -173,97 +173,65 @@
             <table width="100%" class="materials-table" style="margin-top: 5px;">
                 <tr class="bg-gray text-center fw-bold">
                     <td width="3%">ক্রঃ</td>
-                    <td colspan="5" width="28%">বিবরণ</td>
-                    <td colspan="3" width="19%">সংখ্যা</td>
-                    <td colspan="10" width="50%">স্বচ্ছ ব্যালট বাক্স নম্বরঃ</td>
-                </tr>
-                <tr>
-                    <td class="text-center">১</td>
-                    <td colspan="5">ব্যালট পেপার (সংসদ)</td>
-                    <td colspan="3" class="text-center">{{total_voter}}</td>
-                    <td rowspan="5" colspan="10"></td>
-                </tr>
-                <tr>
-                    <td class="text-center">২</td>
-                    <td colspan="5">গণভোট ব্যালট পেপার</td>
-                    <td colspan="3" class="text-center">{{total_voter}}</td>
-                </tr>
-                <tr>
-                    <td class="text-center">৩</td>
-                    <td colspan="5">ভোটার তালিকা (ছবি সহ) - সংশ্লিষ্ট এলাকার</td>
-                    <td colspan="3" class="text-center">০১ (এক) সেট</td>
-                </tr>
-                <tr>
-                    <td class="text-center">৪</td>
-                    <td colspan="5">স্বচ্ছ ব্যালট বাক্স (ঢাকনাসহ)</td>
-                    <td colspan="3" class="text-center"><b>{{ballot_box_qty}}</b></td>
-                </tr>
-                <tr>
-                    <td class="text-center">৫</td>
-                    <td colspan="5">স্বচ্ছ ব্যালট বাক্সের সিল (লক)</td>
-                    <td colspan="3" class="text-center"><b>{{ballot_box_seal_qty}}</b></td>
-                </tr>
-                
-                <tr class="bg-gray text-center fw-bold">
+                    <td colspan="5" width="31%">বিবরণ</td>
+                    <td width="10%" colspan="2">সংখ্যা</td>
+                    <td width="5%">একক</td>
                     <td width="3%">ক্রঃ</td>
-                    <td colspan="5" width="31%">নির্বাচনি দ্রব্যাদি</td>
-                    <td width="10%" colspan="2">পরিমাণ</td>
-                    <td width="4%">একক</td>
-                    <td width="3%">ক্রঃ</td>
-                    <td colspan="8" width="40%">ফরম সমূহ</td>
+                    <td colspan="8" width="40%">ফরম সমূহ ও প্যাকেট সমূহ</td>
                     <td width="8%">সংখ্যা</td>
                 </tr>
+                <!-- Section 1: Election Materials (Left) & Forms (Right) -->
                 <tr>
                     <td class="text-center">১</td>
-                    <td colspan="5">অমোচনীয় কালির কলম</td>
+                    <td colspan="5">অমোচনীয় কালির কলম (কক্ষ প্রতি ১টি+ কেন্দ্রে প্রতি -২টি)</td>
                     <td colspan="2" class="text-center">{{ink_qty}}</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">১</td>
-                    <td colspan="8">ফরম-১৩: ইস্যুকৃত ও ব্যবহৃত ব্যালট বাক্সের বিবরণী</td>
+                    <td colspan="8">ফরম-১৩: (প্রতিকেন্দ্র -৪টি) এ ইস্যুকৃত ও ব্যবহৃত স্বচ্ছ ব্যালট বাক্সের বিবরণী</td>
                     <td class="text-center">৪ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">২</td>
-                    <td colspan="5">রাবারের সিল মোহর (অফিসিয়াল সিল)</td>
+                    <td colspan="5">রাবারের সিল মোহর (অফিসিয়াল সিল) (কক্ষ প্রতি ১টি+ কেন্দ্র প্রতি ১টি)</td>
                     <td colspan="2" class="text-center">{{rubber_seal_qty}}</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">২</td>
-                    <td colspan="8">ফরম-১৪: টেন্ডার্ড ভোটের তালিকা</td>
+                    <td colspan="8">ফরম-১৪: (প্রতি কেন্দ্রের জন্য-৩টি) টেন্ডার্ড ভোটের তালিকা</td>
                     <td class="text-center">৩ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
-                    <td colspan="5">মার্কিং সিল</td>
+                    <td colspan="5">মার্কিং সিল (কক্ষ প্রতি ২টি+কেন্দ্র প্রতি-২টি)</td>
                     <td colspan="2" class="text-center">{{marking_seal_qty}}</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">৩</td>
-                    <td colspan="8">ফরম-১৫: আপত্তিকৃত ভোটের তালিকা</td>
+                    <td colspan="8">ফরম-১৫: (প্রতি কেন্দ্রের জন্য -৫টি) আপত্তিকৃত ভোটের তালিকা</td>
                     <td class="text-center">৫ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৪</td>
-                    <td colspan="5">পিতলের সিলমোহর (ব্রাস সিল)</td>
+                    <td colspan="5">পিতলের সিলমোহর (ব্রাস সিল) কেন্দ্র প্রতি ১টি</td>
                     <td colspan="2" class="text-center">১</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">৪</td>
-                    <td colspan="8">ফরম-১৬: ভোট গণনার বিবরণী</td>
+                    <td colspan="8">ফরম-১৬: ভোট গণনার বিবরণী ( প্রতি কেন্দ্রের জন্য ১৩টি)</td>
                     <td class="text-center">১৩ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৫</td>
-                    <td colspan="5">ষ্ট্যাম্প প্যাড (কালিসহ)</td>
+                    <td colspan="5">ষ্ট্যাম্প প্যাড (কক্ষ প্রতি ১টি+ কেন্দ্র প্রতি ১টি)</td>
                     <td colspan="2" class="text-center">{{stamp_pad_qty}}</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">৫</td>
-                    <td colspan="8">ফরম-১৭: ব্যালট পেপার হিসাব</td>
+                    <td colspan="8">ফরম-১৭: (প্রতি কেন্দ্রের জন্য ৮টি) ব্যালট পেপারের হিসাবে</td>
                     <td class="text-center">৮ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৬</td>
-                    <td colspan="5">গালা (প্যাকেট)</td>
+                    <td colspan="5">গালা (কেন্দ্র প্রতি ১ প্যাকেট)</td>
                     <td colspan="2" class="text-center">১</td>
                     <td class="text-center">প্যাক</td>
-                    <td colspan="10" class="bg-gray text-center fw-bold">প্যাকেট সমূহ</td>
+                    <td colspan="10" class="bg-gray text-center fw-bold">প্যাকেট সমূহ (সংসদ নির্বাচন)</td>
                 </tr>
                 <tr>
                     <td class="text-center">৭</td>
@@ -271,8 +239,8 @@
                     <td colspan="2" class="text-center">২</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">১</td>
-                    <td colspan="8">প্যাকেট-১, ২ ও ৩ (বৈধ, বাতিল ও সংরক্ষিত)</td>
-                    <td class="text-center">সকল</td>
+                    <td colspan="8">প্যাকেট-১: (কেন্দ্র প্রতি -১০টি) প্রার্থীদের পক্ষে প্রদত্ত বৈধ ব্যালট রাখার জন্য প্যাকেট</td>
+                    <td class="text-center">১০ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৮</td>
@@ -280,116 +248,209 @@
                     <td colspan="2" class="text-center">১</td>
                     <td class="text-center">টি</td>
                     <td class="text-center">২</td>
-                    <td colspan="8">প্যাকেট-৪ ও ৫ (অব্যবহৃত ও বিনষ্ট)</td>
-                    <td class="text-center">সকল</td>
+                    <td colspan="8">প্যাকেট-২: (কেন্দ্র প্রতি- ২টি) গণনা থেকে বাদ দেওয়া ব্যালট পেপার সমূহ রাখার প্যাকট</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৯</td>
-                    <td colspan="5">চার্জার লাইট/ক্যালকুলেটর/ষ্ট্যাপলার/পিন</td>
-                    <td colspan="2" class="text-center">১/১/১/১</td>
+                    <td colspan="5">চার্জার লাইট-১টি, ক্যালকুলেটর-১টি, স্ট্যাপলার-১টি, পিন-১ বক্স</td>
+                    <td colspan="2" class="text-center">১</td>
                     <td class="text-center">সেট</td>
                     <td class="text-center">৩</td>
-                    <td colspan="8">প্যাকেট-৯ ও ১০ (ভোটার তালিকা ও মুড়িপত্র)</td>
-                    <td class="text-center">সকল</td>
+                    <td colspan="8">প্যাকেট-৩: ( কেন্দ্র প্রতি ২টি) প্যাকেট-১,ও প্যাকেট-২ রাখার জন্য)</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
-                
+
+                <!-- Section: Stationery (Left) & More Packets (Right) -->
                 <tr class="bg-gray text-center fw-bold">
-                    <td width="3%">ক্রঃ</td>
-                    <td colspan="5" width="31%">মনিহারী দ্রব্যাদি</td>
-                    <td width="10%" colspan="2">পরিমাণ</td>
-                    <td width="4%">একক</td>
-                    <td width="3%">ক্রঃ</td>
-                    <td colspan="8" width="40%">গণভোটের জন্য ব্যবহৃত ফরম ও প্যাকেট</td>
-                    <td width="8%">সংখ্যা</td>
+                    <td colspan="9">মনিহারী দ্রব্যাদি</td>
+                    <td class="text-center">৪</td>
+                    <td colspan="8">প্যাকেট-৪: (কেন্দ্র প্রতি ২টি) অব্যহৃত ব্যালট পেপারসমূহ রাখার জন্য প্যাকেট</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">১</td>
                     <td colspan="5">বল পয়েন্ট কলম (প্রতি কর্মকর্তা ১টি)</td>
                     <td colspan="2" class="text-center">{{ball_point_qty}}</td>
                     <td class="text-center">টি</td>
-                    <td class="text-center">১</td>
-                    <td colspan="8">ফরম-৩ ও ৫ (গণনা ও ব্যালট হিসাব)</td>
-                    <td class="text-center">প্রয়োজন</td>
+                    <td class="text-center">৫</td>
+                    <td colspan="8">প্যাকেট-৫: (কেন্দ্র প্রতি-২টি) বিনষ্ট ব্যালট পেপার রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">২</td>
-                    <td colspan="5">রাবার ব্যান্ড / আলপিন</td>
+                    <td colspan="5">রাবার ব্যান্ড (প্রয়োজন অনুসারে)</td>
                     <td colspan="2" class="text-center">-</td>
                     <td class="text-center">প্রয়োজন</td>
-                    <td class="text-center">২</td>
-                    <td colspan="8">প্যাকেট-১ থেকে ৪ (বৈধ, অবৈধ ও অব্যবহৃত)</td>
-                    <td class="text-center">সকল</td>
+                    <td class="text-center">৬</td>
+                    <td colspan="8">প্যাকেট-৬: (কেন্দ্র প্রতি ৩টি) টেন্ডার্ড ব্যালট পেপার রাখার জন্য</td>
+                    <td class="text-center">৩ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
-                    <td colspan="5">সাদা কাগজ / কার্বন কাগজ / স্কেল</td>
-                    <td colspan="2" class="text-center">-</td>
-                    <td class="text-center">সেট</td>
-                    <td class="text-center">৩</td>
-                    <td colspan="8">প্যাকেট-৫ থেকে ৭ (মুড়িপত্র ও অন্যান্য)</td>
-                    <td class="text-center">সকল</td>
+                    <td colspan="5">সাদা কাগজ (কেন্দ্র প্রতি আধা দিস্তা)</td>
+                    <td colspan="2" class="text-center">আধা</td>
+                    <td class="text-center">দিস্তা</td>
+                    <td class="text-center">৭</td>
+                    <td colspan="8">প্যাকেট-৭: (কেন্দ্র প্রতি ২টি) ভিন্ন ভিন্ন প্রার্থীর (প্যাকেট-৬ ) রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৪</td>
-                    <td colspan="5">মোমবাতি (৬টি) / দিয়াশলাই (১টি)</td>
-                    <td colspan="2" class="text-center">১</td>
-                    <td class="text-center">সেট</td>
-                    <td rowspan="4" class="text-center">৪</td>
-                    <td rowspan="4" colspan="8">বিশেষ খাম (নিকস ও ডাকযোগের জন্য)</td>
-                    <td rowspan="4" class="text-center">২ টি</td>
-                </tr>
-                <tr>
-                    <td class="text-center">৫</td>
-                    <td colspan="5">গাম পট / সুপার গ্লু / ছুরি / সুই-সুতা</td>
-                    <td colspan="2" class="text-center">১</td>
-                    <td class="text-center">সেট</td>
-                </tr>
-                <tr>
-                    <td class="text-center">৬</td>
-                    <td colspan="5">প্লাস্টিকের স্কেল (কক্ষ প্রতি ১টি)</td>
-                    <td colspan="2" class="text-center">{{voter_both_total}}</td>
-                    <td class="text-center">টি</td>
-                </tr>
-                <tr>
-                    <td class="text-center">৭</td>
-                    <td colspan="5">সুতার বল (প্রতি কেন্দ্র ১টি)</td>
-                    <td colspan="2" class="text-center">১</td>
-                    <td class="text-center">টি</td>
-                </tr>
-                
-                <tr class="bg-gray text-center fw-bold">
-                    <td colspan="9">দেওয়ালপত্র</td>
-                    <td colspan="10">পরিচয়পত্র</td>
-                </tr>
-                <tr>
-                    <td class="text-center">১</td>
-                    <td colspan="6">(ক) "প্রবেশ", (খ) "বাহির"</td>
-                    <td colspan="2" class="text-center">১ সেট</td>
-                    <td class="text-center">১</td>
-                    <td colspan="7">প্রিজাইডিং অফিসার আইডি</td>
+                    <td colspan="5">কার্বন কাগজ (কেন্দ্র প্রতি ০২ সিট)</td>
+                    <td colspan="2" class="text-center">২</td>
+                    <td class="text-center">সিট</td>
+                    <td class="text-center">৮</td>
+                    <td colspan="8">প্যাকেট-৮: (কেন্দ্র প্রতি০১টি) আপত্তিকৃত ব্যালট রাখার জন্য</td>
                     <td class="text-center">১ টি</td>
                 </tr>
                 <tr>
+                    <td class="text-center">৫</td>
+                    <td colspan="5">ছুরি (১টি) / সুই বড় (১টি)</td>
+                    <td colspan="2" class="text-center">১+১</td>
+                    <td class="text-center">টি</td>
+                    <td class="text-center">৯</td>
+                    <td colspan="8">প্যাকেট-৯: (কেন্দ্র প্রতি ২টি) চিহিৃত ভোটার তালিকা রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৬</td>
+                    <td colspan="5">সুতার বল (কেন্দ্র প্রতি ১টি) / দিয়াশলাই (১টি)</td>
+                    <td colspan="2" class="text-center">১+১</td>
+                    <td class="text-center">টি</td>
+                    <td class="text-center">১০</td>
+                    <td colspan="8">প্যাকেট-১০: (কেন্দ্র প্রতি ২টি) ব্যবহৃত ব্যালটের মুড়ি রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৭</td>
+                    <td colspan="5">মোমবাতি (কেন্দ্র প্রতি ৬টি)</td>
+                    <td colspan="2" class="text-center">৬</td>
+                    <td class="text-center">টি</td>
+                    <td class="text-center">১১</td>
+                    <td colspan="8">প্যাকেট-১১: (কেন্দ্র প্রতি ২টি) ভোটার তালিকা রাখার জন্য টেন্ডার</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৮</td>
+                    <td colspan="5">গাম পট (১টি) / স্ট্যাম্প প্যাডের কালি (১ শিশি)</td>
+                    <td colspan="2" class="text-center">১+১</td>
+                    <td class="text-center">সেট</td>
+                    <td class="text-center">১২</td>
+                    <td colspan="8">প্যাকেট-১২: (কেন্দ্র প্রতি-০২টি)ইস্যুকৃত ও ব্যবহৃত স্বচ্ছ ব্যালট বাক্সের হিসাব</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৯</td>
+                    <td colspan="5">প্লাষ্টিকের স্কেল (কক্ষ প্রতি ১টি)</td>
+                    <td colspan="2" class="text-center">{{voter_both_total}}</td>
+                    <td class="text-center">টি</td>
+                    <td class="text-center">১৩</td>
+                    <td colspan="8">প্যাকেট-১৩: (কেন্দ্র প্রতি-০২টি) আপত্তিকৃত ভোটার তালিকা রাখার প্যাকেট</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">১০</td>
+                    <td colspan="5">সুপার গ্লু (১টি) / আলপিন</td>
+                    <td colspan="2" class="text-center">১</td>
+                    <td class="text-center">সেট</td>
+                    <td class="text-center">১৪</td>
+                    <td colspan="8">প্যাকেট-১৪: (কেন্দ্র প্রতি-২টি) ভোট গণনা হিসাব রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td colspan="9"></td>
+                    <td class="text-center">১৫</td>
+                    <td colspan="8">প্যাকেট-১৫: (কেন্দ্র প্রতি-২টি) ব্যালট পেপারের হিসাব রাখার জন্য</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                <tr>
+                    <td colspan="9"></td>
+                    <td class="text-center">১৬</td>
+                    <td colspan="8">প্যাকেট-১৬: (বিবিধ কাগজপত্র রাখার প্যাকেট)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td colspan="9" class="bg-gray text-center fw-bold">দেওয়ালপত্র ও পরিচয়পত্র</td>
+                    <td class="text-center">-</td>
+                    <td colspan="8">বিশেষ খামঃ(কেন্দ্র প্রতি ২টি ডাকযোগে নিকস তে ভোট গণনা প্রেরণ)</td>
+                    <td class="text-center">২ টি</td>
+                </tr>
+                
+                <!-- Section: Wall Stickers/IDs (Left) & Referendum (Right) -->
+                <tr>
+                    <td class="text-center">১</td>
+                    <td colspan="6">(ক) "প্রবেশ", " বাহির", </td>
+                    <td colspan="2" class="text-center">১ সেট</td>
+                    <td colspan="10" class="bg-gray text-center fw-bold" style="font-size: 8.5pt;">গণভোটের জন্য ব্যবহৃত ফরম ও প্যাকেট সমূহ  ২ টি</td>
+                </tr>
+                <tr>
                     <td class="text-center">২</td>
-                    <td colspan="6">(গ) ভোট কক্ষ নং (পুরুষ/মহিলা)</td>
+                    <td colspan="6">(খ) ভোট কক্ষ নং…………..(পুরুষ)</td>
                     <td colspan="2" class="text-center">প্রয়োজন</td>
-                    <td class="text-center">২</td>
-                    <td colspan="7">সহকারী প্রিজাইডিং অফিসার আইডি</td>
-                    <td class="text-center">{{voter_both_total}} টি</td>
+                    <td class="text-center">১</td>
+                    <td colspan="8">ফরম-৩ : প্রিজাইডিং অফিসার কর্তৃক ভোট গণনার বিবরণী (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">৮ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
+                    <td colspan="6">(গ) ভোট কক্ষ নং ………….(মহিলা)</td>
+                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td class="text-center">২</td>
+                    <td colspan="8">ফরম-৫ : ব্যালট পেপারের হিসাব বিবরণী (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">৪ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৪</td>
                     <td colspan="6">(ঘ) ভোটগ্রহণকারী কর্মকর্তা ও এজেন্টগণের দেয়ালপত্র</td>
                     <td colspan="2" class="text-center">প্রয়োজন</td>
-                    <td class="text-center">৩</td>
-                    <td colspan="7">পোলিং অফিসার আইডি</td>
-                    <td class="text-center">{{voter_both_total_x2}} টি</td>
+                    <td class="text-center">১</td>
+                    <td colspan="8">প্যাকেট-১: "হ্যাঁ" সূচক/ 'না' সূচক বৈধ ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">৬ টি</td>
                 </tr>
                 <tr>
-                    <td colspan="9" rowspan="1"></td>
+                    <td class="text-center">৫</td>
+                    <td colspan="6">প্রিজাইডিং অফিসারের পরিচয়পত্র (কেন্দ্র প্রতি ১টি)</td>
+                    <td colspan="2" class="text-center">১</td>
+                    <td class="text-center">২</td>
+                    <td colspan="8">প্যাকেট-২: অবৈধ বা গণনা থেকে বাদ দেওয়া ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৬</td>
+                    <td colspan="6">সহকারী প্রিজাইডিং অফিসারের পরিচয়পত্র (কক্ষ প্রতি ১টি)</td>
+                    <td colspan="2" class="text-center">{{voter_both_total}}</td>
+                    <td class="text-center">৩</td>
+                    <td colspan="8">প্যাকেট-৩: অব্যবহৃত ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৭</td>
+                    <td colspan="6">পোলিং অফিসারের পরিচয়পত্র (কক্ষ প্রতি ২টি)</td>
+                    <td colspan="2" class="text-center">{{voter_both_total_x2}}</td>
                     <td class="text-center">৪</td>
-                    <td colspan="7">পোলিং এজেন্ট আইডি</td>
-                    <td class="text-center">প্রয়োজন</td>
+                    <td colspan="8">প্যাকেট-৪: নষ্ট বা বাতিলকৃত ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৮</td>
+                    <td colspan="6">পোলিং এজেন্টের পরিচয়পত্র (প্রয়োজন অনুসারে)</td>
+                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td class="text-center">৫</td>
+                    <td colspan="8">প্যাকেট-৫: ব্যবহৃত ব্যালট পেপারের মুড়িপত্র রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td colspan="9"></td>
+                    <td class="text-center">৬</td>
+                    <td colspan="8">প্যাকেট-৬: ফলাফল বিববরণী (ফরম-৩) রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
+                </tr>
+                <tr>
+                    <td colspan="9"></td>
+                    <td class="text-center">৭</td>
+                    <td colspan="8">প্যাকেট-৭: ব্যালট পেপার হিসাব বিবরণী রাখার জন্য (কেন্দ্র প্রতি)</td>
+                    <td class="text-center">১ টি</td>
                 </tr>
             </table>
 
@@ -480,10 +541,10 @@
                 // Material Quantities
                 const ballotBoxQty = Math.ceil(totalVoter / 400); // 400 voters per box
                 const ballotBoxSealQty = ballotBoxQty * 3;
-                const inkQty = Math.ceil(voterBothTotal / 2) + 2;
-                const rubberSealQty = Math.ceil(voterBothTotal / 2) + 1;
-                const markingSealQty = voterBothTotal * 2 + 2;
-                const stampPadQty = Math.ceil(voterBothTotal / 2) + 1;
+                const inkQty = voterBothTotal + 2;
+                const rubberSealQty = voterBothTotal + 1;
+                const markingSealQty = (voterBothTotal * 2) + 2;
+                const stampPadQty = voterBothTotal + 1;
 
                 // Allowance Calculations
                 const presidingTotal = 8000;
