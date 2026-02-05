@@ -86,6 +86,18 @@
             padding: 0;
         }
 
+        .summary-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid black !important;
+            padding: 4px;
+            font-size: 10pt;
+        }
+
         @media print {
 
             body,
@@ -98,10 +110,26 @@
             .legal-page {
                 box-shadow: none !important;
                 margin: 0 !important;
-                padding: 0.1in 0.3in !important;
+                padding: 0.2in 0.3in !important;
                 width: 8.5in !important;
-                height: 14in !important;
+                min-height: 14in !important;
                 page-break-after: always !important;
+                position: relative;
+            }
+
+            /* Summary page should flow naturally across papers */
+            .summary-page {
+                height: auto !important;
+                page-break-after: always !important;
+            }
+
+            /* Detail forms should stay on one page if possible */
+            .detail-page {
+                height: 14in !important;
+                overflow: hidden !important;
+            }
+
+            tr {
                 page-break-inside: avoid !important;
             }
 
@@ -140,7 +168,8 @@
 
     <!-- Template for a single center -->
     <script type="text/template" id="page-template">
-        <div class="legal-page">
+        <div class="legal-page detail-page">
+            <h1 class="text-center" style="margin-top: 5px; font-size: 14pt;"><u>ভোটের দিন ভোটকেন্দ্রে ব্যবহৃত সরঞ্জাম ও মালামাল গ্রহণ/প্রেরণ এবং ভাতা প্রদানের বিবরণী</u></h1>
             <p align="right" style="margin: 0; padding: 0;">
                 <font face="Nikosh">কেন্দ্র নং- {{vote_centre_code}}</font>
             </p>
@@ -512,6 +541,50 @@
         </div>
     </script>
 
+    <script id="summary-template" type="text/template">
+        <div class="legal-page summary-page" style="height: auto; min-height: 14in;">
+            <h2 class="text-center" style="margin-top: 0; margin-bottom: 20px; text-decoration: underline;">ভোটগ্রহণ কর্মকর্তাদের ভাতা প্রদানের সংক্ষিপ্ত তালিকা</h2>
+            <table width="100%" class="summary-table">
+                <thead>
+                    <tr class="bg-gray text-center fw-bold">
+                        <td width="4%">ক্রঃ</td>
+                        <td width="8%">কেন্দ্র কোড</td>
+                        <td width="22%">কেন্দ্রের নাম</td>
+                        <td width="12%">এরিয়া</td>
+                        <td width="11%">মোট টাকা</td>
+                        <td width="11%">মোট কর্তন</td>
+                        <td width="11%">নিট পাওনা</td>
+                        <td width="21%">কর্মকর্তার স্বাক্ষর ও মোবাইল নম্বর</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{rows}}
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold bg-gray text-center">
+                        <td colspan="4" class="text-right">সর্বমোট:</td>
+                        <td>{{total_gross}}</td>
+                        <td>{{total_deduction}}</td>
+                        <td>{{total_net}}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <table width="100%" class="signature-table" style="margin-top: 50px; border: none;">
+                <tr valign="top" class="text-center" style="border: none;">
+                    <td width="45%" style="border: none;">
+                        <p style="border-top: 1px solid black; display: inline-block; width: 180px; padding-top: 5px;"><b>অফিস সহকারী/আইটি</b></p>
+                    </td>
+                    <td width="10%" style="border: none;"></td>
+                    <td width="45%" style="border: none;">
+                        <p style="border-top: 1px solid black; display: inline-block; width: 220px; padding-top: 5px;"><b>রিটার্নিং/সহকারী রিটার্নিং অফিসার</b></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </script>
+
     <script>
         const App = {
             config: { presiding: 8000, assistant: 6000, polling: 4000, travel: 1000, bestni: 800, tax: 0.1, vat: 0.18, rev: 390 },
@@ -530,6 +603,43 @@
                     const container = document.getElementById('app');
                     const filtered = c ? data.filter(d => d.vote_centre_code == c) : data;
 
+                    // Summary Logic
+                    let rowsHtml = '';
+                    let sumGross = 0, sumDeduction = 0, sumNet = 0;
+
+                    filtered.forEach((d, idx) => {
+                        const res = this.calculate(d);
+                        sumGross += res.gross;
+                        sumDeduction += res.deduction;
+                        sumNet += res.net;
+
+                        rowsHtml += `
+                            <tr>
+                                <td class="text-center">${this.toBn(idx + 1)}</td>
+                                <td class="text-center">${this.toBn(d.vote_centre_code)}</td>
+                                <td>${d.vote_centre_name}</td>
+                                <td class="text-center">${d.vote_centre_area || ''}</td>
+                                <td class="text-center">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
+                                <td class="text-center">${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
+                                <td class="text-center">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
+                                <td style="height: 45px;"></td>
+                            </tr>
+                        `;
+                    });
+
+                    // Add Summary Page
+                    if (filtered.length > 1) {
+                        let sTmp = document.getElementById('summary-template').innerHTML;
+                        sTmp = sTmp.replace('{{rows}}', rowsHtml)
+                            .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
+                            .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
+                            .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
+                        const sEl = document.createElement('div');
+                        sEl.innerHTML = sTmp;
+                        container.appendChild(sEl.firstElementChild);
+                    }
+
+                    // Individual Pages
                     filtered.forEach(d => {
                         const page = this.render(d);
                         container.appendChild(page);
@@ -542,11 +652,49 @@
                 }
             },
 
-            render(d) {
-                const data = d; // Use 'd' as 'data' for consistency with the provided snippet
+            calculate(data) {
                 const totalVoter = parseInt(this.toEn(data.total_voter || 0));
                 const voterBothTotal = parseInt(this.toEn(data.voter_both_total)) || Math.ceil(totalVoter / 1200);
                 const totalOfficer = 1 + voterBothTotal + (voterBothTotal * 2);
+
+                const presidingTotal = 8000;
+                const assistantTotal = voterBothTotal * 6000;
+                const pollingTotal = (voterBothTotal * 2) * 4000;
+                const honorariumTotal = presidingTotal + assistantTotal + pollingTotal;
+
+                const travelTotal = totalOfficer * 1000;
+                const bestniTotal = voterBothTotal * 800;
+
+                const grossTotal = honorariumTotal + travelTotal + bestniTotal;
+                const tax10 = Math.round(honorariumTotal * 0.10);
+                const vatIt = Math.round(bestniTotal * 0.18);
+                const revenue = 30 + (totalOfficer - 1) * 20;
+
+                const totalDeduction = tax10 + vatIt + revenue;
+                const netTotal = grossTotal - totalDeduction;
+
+                return {
+                    gross: grossTotal,
+                    deduction: totalDeduction,
+                    net: netTotal,
+                    vbt: voterBothTotal,
+                    voter: totalVoter,
+                    officer: totalOfficer,
+                    assistantTotal,
+                    pollingTotal,
+                    travelTotal,
+                    bestniTotal,
+                    tax10,
+                    vatIt,
+                    revenue
+                };
+            },
+
+            render(d) {
+                const res = this.calculate(d);
+                const voterBothTotal = res.vbt;
+                const totalVoter = res.voter;
+                const totalOfficer = res.officer;
 
                 // Material Quantities
                 const ballotBoxQty = Math.ceil(totalVoter / 400); // 400 voters per box
@@ -556,32 +704,14 @@
                 const markingSealQty = (voterBothTotal * 2) + 2;
                 const stampPadQty = voterBothTotal + 1;
 
-                // Allowance Calculations
-                const presidingTotal = 8000;
-                const assistantTotal = voterBothTotal * 6000;
-                const pollingTotal = (voterBothTotal * 2) * 4000;
-                const honorariumTotal = presidingTotal + assistantTotal + pollingTotal;
-
-                const travelTotal = totalOfficer * 1000;
-                const bestniTotal = voterBothTotal * 800; // 800 per booth
-
-                const grossTotal = honorariumTotal + travelTotal + bestniTotal;
-
-                const tax10 = Math.round(honorariumTotal * 0.10);
-                const vatIt = Math.round(bestniTotal * 0.18);
-                const revenue = 30 + (totalOfficer - 1) * 20;
-
-                const totalDeduction = tax10 + vatIt + revenue;
-                const netTotal = grossTotal - totalDeduction;
-
                 const vals = {
-                    vote_centre_code: this.toBn(data.vote_centre_code),
-                    vote_centre_name: data.vote_centre_name,
+                    vote_centre_code: this.toBn(d.vote_centre_code),
+                    vote_centre_name: d.vote_centre_name,
                     voter_both_total: this.toBn(voterBothTotal),
                     voter_both_total_x2: this.toBn(voterBothTotal * 2),
-                    male_voter: this.toBn(data.male_voter || 0),
-                    female_voter: this.toBn(data.female_voter || 0),
-                    hizra_voter: this.toBn(data.hizra_voter || 0),
+                    male_voter: this.toBn(d.male_voter || 0),
+                    female_voter: this.toBn(d.female_voter || 0),
+                    hizra_voter: this.toBn(d.hizra_voter || 0),
                     total_voter: this.toBn(totalVoter),
                     total_officer: this.toBn(totalOfficer),
                     ballot_box_qty: this.toBn(ballotBoxQty),
@@ -591,16 +721,16 @@
                     marking_seal_qty: this.toBn(markingSealQty),
                     stamp_pad_qty: this.toBn(stampPadQty),
                     ball_point_qty: this.toBn(totalOfficer),
-                    assistant_total: this.toBn(assistantTotal.toLocaleString('bn-BD')),
-                    polling_total: this.toBn(pollingTotal.toLocaleString('bn-BD')),
-                    travel_total: this.toBn(travelTotal.toLocaleString('bn-BD')),
-                    bestni_total: this.toBn(bestniTotal.toLocaleString('bn-BD')),
-                    gross_total: this.toBn(grossTotal.toLocaleString('bn-BD')),
-                    tax_10: this.toBn(tax10.toLocaleString('bn-BD')),
-                    vat_it: this.toBn(vatIt.toLocaleString('bn-BD')),
-                    revenue: this.toBn(revenue.toLocaleString('bn-BD')),
-                    net_total: this.toBn(netTotal.toLocaleString('bn-BD')),
-                    total_deduction: this.toBn(totalDeduction.toLocaleString('bn-BD'))
+                    assistant_total: this.toBn(res.assistantTotal.toLocaleString('bn-BD')),
+                    polling_total: this.toBn(res.pollingTotal.toLocaleString('bn-BD')),
+                    travel_total: this.toBn(res.travelTotal.toLocaleString('bn-BD')),
+                    bestni_total: this.toBn(res.bestniTotal.toLocaleString('bn-BD')),
+                    gross_total: this.toBn(res.gross.toLocaleString('bn-BD')),
+                    tax_10: this.toBn(res.tax10.toLocaleString('bn-BD')),
+                    vat_it: this.toBn(res.vatIt.toLocaleString('bn-BD')),
+                    revenue: this.toBn(res.revenue.toLocaleString('bn-BD')),
+                    net_total: this.toBn(res.net.toLocaleString('bn-BD')),
+                    total_deduction: this.toBn(res.deduction.toLocaleString('bn-BD'))
                 };
 
                 let h = document.getElementById('page-template').innerHTML;
