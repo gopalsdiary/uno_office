@@ -324,9 +324,13 @@
                 🔄 রিফ্রেশ করুন
             </button>
             
+            <button class="btn btn-primary" onclick="downloadCSV()" id="downloadCsvBtn" title="CSV ডাউনলোড">
+                ⬇️ CSV ডাউনলোড
+            </button>
+            
             <button class="btn btn-danger" onclick="window.print()">
                 🖨️ প্রিন্ট করুন
-            </button>
+            </button> 
         </div>
         
         <div class="loading" id="loading">
@@ -350,6 +354,7 @@
         };
         
         let filteredOfficers = [];
+        let lastRenderedList = [];
         
         // Convert Arabic numerals to Bengali numerals
         function toBengaliNumber(n) {
@@ -588,6 +593,7 @@
         
         // Render table
         function renderTable(officers) {
+            lastRenderedList = officers || [];
             const container = document.getElementById('dataContainer');
             
             if (!officers || officers.length === 0) {
@@ -652,6 +658,41 @@
             container.innerHTML = html;
         }
         
+        // Download currently displayed list as CSV
+        function downloadCSV() {
+            const list = (lastRenderedList && lastRenderedList.length) ? lastRenderedList : filteredOfficers;
+            if (!list || list.length === 0) {
+                showStatus('⚠️ ডাউনলোডের জন্য কোনো ডাটা নেই।', 'error');
+                return;
+            }
+            
+            const headers = ['ID','Name','Mobile','Gender','Salary Scale','Disability','Officer Type'];
+            const rows = list.map(o => {
+                const id = getOfficerId(o);
+                const name = getOfficerName(o);
+                const mobile = o.mobile_number || '';
+                const gender = o.gender || '';
+                const salary = o.sallery_scale || '';
+                const disability = (o.disability === 'Yes' || o.disability === 'yes' || o.disability === 'YES') ? 'Yes' : 'No';
+                const type = getOfficerTypeLabel(o.type);
+                return [id, name, mobile, gender, salary, disability, type];
+            });
+
+            const csvContent = [headers, ...rows].map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            a.href = url;
+            a.download = `unassigned_officers_${date}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('✅ CSV ডাউনলোড শুরু হয়েছে।', 'success');
+        }
+
         // Auto-load on page load
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
