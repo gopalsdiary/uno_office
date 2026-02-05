@@ -501,7 +501,7 @@
 						<span class="icon">⚡</span>
 						<span>1. Generate Duty List</span>
 					</a>
-					<a class="button success" href="generate/3_vote_centre.html" title="Edit Duty List">
+					<a class="button success" href="generate/3_vote_centre.html" title="Edit Duty List" onclick="return checkPassword(event, 'generate/3_vote_centre.html')">
 						<span class="icon">✏️</span>
 						<span>2. Edit Appointment Letter</span>
 					</a>
@@ -660,6 +660,19 @@
 			// Here you would typically send to server
 			// For now, just show success message
 			alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
+		}
+
+		// Password gate for protected links
+		function checkPassword(event, targetUrl) {
+			event.preventDefault();
+			const pwd = prompt('পাসওয়ার্ড লিখুন:');
+			if (pwd === null) return false;
+			if (pwd === '11223') {
+				window.location.href = targetUrl;
+				return false;
+			}
+			alert('❌ ভুল পাসওয়ার্ড!');
+			return false;
 		}
 	</script>
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
