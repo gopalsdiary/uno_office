@@ -1,0 +1,3183 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>মালামাল গ্রহণ/হস্তান্তর ফরম</title>
+    <style>
+        @page {
+            size: 8.5in 14in;
+            margin: 0.5in;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "NikoshBan", "Nikosh", "Noto Sans Bengali", sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.15;
+            color: #000 !important;
+            background: #fff;
+        }
+
+        /* Enforce black color site-wide to override inline colors */
+        body,
+        body * {
+            color: #000 !important;
+        }
+
+        /* Prevent inherited color from links/buttons from changing visual print color */
+        a,
+        button {
+            color: inherit !important;
+        }
+
+        img {
+            color: initial !important;
+        }
+
+        /* Specific row for vote centre details */
+        .vote-center {
+            font-size: 11pt;
+        }
+
+        @media screen {
+            body {
+                width: 8.5in;
+                min-height: 14in;
+                margin: 16px auto;
+                padding: 0.5in;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.12);
+            }
+        }
+
+        @media print {
+            @page {
+                size: 8.5in 14in;
+                margin: 0.4in;
+            }
+
+            html,
+            body {
+                height: 14in;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                line-height: 1.05;
+                background: #fff !important;
+                color: #000 !important;
+            }
+
+            table {
+                table-layout: fixed;
+                word-break: break-word;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            td,
+            th {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+                padding: 2px 4px;
+            }
+
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            /* allow page breaks inside elements so printing flows continuously */
+            table,
+            thead,
+            tbody,
+            tr,
+            td,
+            th,
+            div,
+            section {
+                page-break-inside: auto !important;
+                page-break-after: auto !important;
+                page-break-before: auto !important;
+            }
+
+            /* force page break between centres */
+            .page-break {
+                display: block !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                height: 0 !important;
+            }
+
+            /* force white backgrounds for printing */
+            * {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                background: #fff !important;
+                background-color: #fff !important;
+                color: #000 !important;
+            }
+
+            /* Try to scale slightly to fit on one legal page when printing */
+            body {
+                transform: scale(0.97);
+                transform-origin: top left;
+            }
+        }
+
+        p {
+            margin: 0 0 2px;
+        }
+
+        /* Equal width columns for items/forms table */
+        .table-items-forms {
+            table-layout: fixed;
+        }
+
+        .table-items-forms .items {
+            width: 50%;
+        }
+
+        .table-items-forms .forms {
+            width: 50%;
+        }
+
+        /* Utility classes for clean coding */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        /* Specific row for vote centre details */
+        .vote-center {
+            font-size: 11pt;
+        }
+
+        /* Table styling */
+        .table-main,
+        .table-items-forms {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-main td,
+        .table-items-forms td {
+            border: 1px solid #000;
+            padding: 2px 4px !important;
+            line-height: 1.05;
+            vertical-align: middle;
+        }
+
+        /* Reduce vertical whitespace for narrow numeric columns (R and ক্রঃ নং) */
+        .table-items-forms td.narrow-col,
+        .table-items-forms td[width="6%"],
+        .table-items-forms td[width="4%"],
+        .table-items-forms td[width="3%"],
+        .table-items-forms td[width="2%"] {
+            padding: 1px 2px !important;
+            line-height: 1 !important;
+            height: auto !important;
+            text-align: center;
+            vertical-align: middle !important;
+        }
+
+        .table-items-forms td.narrow-col p,
+        .table-items-forms td[width="6%"] p,
+        .table-items-forms td[width="4%"] p,
+        .table-items-forms td[width="3%"] p,
+        .table-items-forms td[width="2%"] p {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 10pt !important;
+        }
+
+        .header-row {
+            background: #c0c0c0;
+        }
+
+        .header-row td {
+            font-weight: bold;
+            vertical-align: middle !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+
+        td {
+            vertical-align: middle;
+            padding: 2px 4px;
+        }
+
+        font {
+            font-family: inherit !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script src="../authentication.js">
+    </script>
+</head>
+
+<body>
+    <div id="form-template">
+        <p align="right" style="line-height: 100%; margin-bottom: 0in">
+            কেন্দ্র
+            নং- vote_centre_code
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            ত্রয়োদশ জাতীয় সংসদ নির্বাচন ও গণভোট-২০২৬
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            ২৬৬ ফেনী-২ (ফেনী সদর উপজেলা)
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            প্রিজাইডিং অফিসারের নিকট নির্বাচনী দ্রব্যাদি সরবরাহ এবং ভাতা প্রদানের হিসাব বিবরণী
+        </p>
+        <table width="100%" cellpadding="4" cellspacing="0">
+            <colgroup>
+                <col width="21*" />
+            </colgroup>
+            <colgroup>
+                <col width="17*" />
+            </colgroup>
+            <colgroup>
+                <col width="25*" />
+            </colgroup>
+            <colgroup>
+                <col width="42*" />
+                <col width="21*" />
+            </colgroup>
+            <colgroup>
+                <col width="30*" />
+            </colgroup>
+            <colgroup>
+                <col width="35*" />
+            </colgroup>
+            <colgroup>
+                <col width="13*" />
+            </colgroup>
+            <colgroup>
+                <col width="18*" />
+            </colgroup>
+            <colgroup>
+                <col width="34*" />
+            </colgroup>
+            <tr>
+                <td colspan="2" width="15%" height="2" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>ভোটকেন্দ্র নম্বর ও নাম</b>
+
+                        :
+                    </p>
+                </td>
+                <td class="vote-center" colspan="6" width="65%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p>
+                        <b>১. প্রাইমারি টিচার্স ট্রেনিং ইনস্টিটিউট (পিটিআই), ফেনী</b>
+                    </p>
+                </td>
+                <td width="7%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        <b>কক্ষ সংখ্যাঃ </b>
+                    </p>
+                </td>
+                <td width="13%" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        voter_both_total
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td rowspan="2" width="8%" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>প্রিজাইডিং অফিসার </b>
+                    </p>
+                </td>
+                <td rowspan="2" colspan="2" width="16%" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>সহ: প্রিজাইডিং অফিসার</b>
+                    </p>
+                </td>
+                <td rowspan="2" width="16%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0in; padding-left: 0.08in; padding-right: 0in">
+                    <p align="center">
+                        <b>পোলিং অফিসার </b>
+                    </p>
+                </td>
+                <td rowspan="2" width="8%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>মোট</b>
+                    </p>
+                </td>
+                <td colspan="5" width="51%" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>কেন্দ্রের ভোটার সংখ্যা</b> (<b>প্রযোজ্য ক্ষেত্রে ক্রমিক সহ</b>)
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td width="12%" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>পুরুষ ভোটার </b>
+                    </p>
+                </td>
+                <td width="14%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        <b>মহিলা ভোটার</b>
+                    </p>
+                </td>
+                <td colspan="2" width="12%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        <br />
+                    </p>
+                </td>
+                <td width="13%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        <b>মোট</b>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td width="8%" height="16" bgcolor="#ffffff"
+                    style="background: #ffffff; border: 1px solid #000000; padding: 0in 0.08in">
+                    <p align="center">
+                        <b>১</b>
+                    </p>
+                </td>
+                <td colspan="2" width="16%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        voter_both_total
+                    </p>
+                </td>
+                <td width="16%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        voter_both_total*2
+                    </p>
+                </td>
+                <td width="8%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        Total officer
+                    </p>
+                </td>
+                <td width="12%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        male_voter
+                    </p>
+                </td>
+                <td width="14%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        female_voter
+                    </p>
+                </td>
+                <td colspan="2" width="12%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        hizra_voter
+                    </p>
+                </td>
+                <td width="13%" bgcolor="#ffffff"
+                    style="background: #ffffff; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                    <p align="center">
+                        total_voter
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            -
+        </p>
+        <table class="table-items-forms" width="100%" cellpadding="4" cellspacing="0">
+            <col width="5*" />
+            <col width="10*" />
+            <col width="10*" />
+            <col width="12*" />
+            <col width="12*" />
+            <col width="20*" />
+            <col width="14*" />
+            <col width="10*" />
+            <col width="10*" />
+            <col width="3*" />
+            <col width="2*" />
+            <col width="2*" />
+            <col width="3*" />
+            <col width="25*" />
+            <col width="20*" />
+            <col width="20*" />
+            <col width="25*" />
+            <col width="20*" />
+            <col width="10*" />
+            <tbody>
+                <tr>
+                    <td width="3%" height="12"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            <b>বিবরণ</b>
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            <b>সংখ্যা</b>
+                        </p>
+                    </td>
+                    <td colspan="10" width="50%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            <b>স্বচ্ছ ব্যালট বাক্স নম্বরঃ</b>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" valign="top"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ব্যালট পেপার
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            total_voter
+                        </p>
+                    </td>
+                    <td rowspan="5" colspan="10" width="50%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" valign="top"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            গণভোট ব্যালট পেপার
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            total_voter
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="10" valign="top"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ভোটার তালিকা
+                            (
+                            ছবি সহ
+                            ) -
+                            সংশ্লিষ্ট এলাকার
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ০১
+                            (
+                            এক
+                            )
+                            সেট
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" valign="top"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            স্বচ্ছ ব্যালট বাক্স
+                            (
+                            ঢাকনাসহ
+                            )
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total + 1
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৫
+                        </p>
+                    </td>
+                    <td colspan="5" width="28%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            স্বচ্ছ ব্যালট বাক্সের সিল
+                            (
+                            লক
+                            )
+                        </p>
+                    </td>
+                    <td colspan="3" width="19%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            (
+                            voter_both_total + 1)*5
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr class="header-row">
+                    <td width="2%" height="19" bgcolor="#c0c0c0"
+                        style="border-top: none; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000;">
+
+                    </td>
+                    <td class="items" colspan="6" width="28%" bgcolor="#c0c0c0"
+                        style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000;">
+                        <p align="center">
+                            <b>নির্বাচনি দ্রব্যাদি</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="7%" bgcolor="#c0c0c0"
+                        style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000;">
+                        <p align="center">
+                            <b>পরিমাণ</b>
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="2.5%" bgcolor="#c0c0c0"
+                        style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000;">
+                        <p align="center">
+                            <b>R</b>
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="2.5%" bgcolor="#c0c0c0"
+                        style="border: 1px solid #000000;">
+                        <p align="center">
+                            <b>ক্রঃ<br />নং</b>
+                        </p>
+                    </td>
+                    <td class="forms" colspan="5" width="53%" bgcolor="#c0c0c0" style="border: 1px solid #000000;">
+                        <p align="center">
+                            <b>ফরম সমূহ</b>
+                        </p>
+                    </td>
+                    <td width="5%" bgcolor="#c0c0c0" style="border: 1px solid #000000;">
+
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="17"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%" valign="top"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            অমোচনীয় কালির কলম
+                            (
+                            কক্ষ প্রতি ১টি
+                            +
+                            কেন্দ্রে প্রতি
+                            -
+                            ২টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total+2
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="12"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            রাবারের সিল মোহর
+                            ( অফিসিয়াল সিল
+                            ) (
+                            কক্ষ প্রতি ১টি
+                            +
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total + 1
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            ফরম
+                            -
+                            ১৩
+                            : (
+                            প্রতিকেন্দ্র
+                            -
+                            ৪টি
+                            )
+                            এ ইস্যুকৃত ও ব্যবহৃত স্বচ্ছ ব্যালট বাক্সের বিবরণী
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            4
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            মার্কিং সিল
+                            (
+                            কক্ষ প্রতি ২টি
+                            +
+                            কেন্দ্র প্রতি
+                            -
+                            ২টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            (voter_both_total * 2) + 2
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            ফরম
+                            -
+                            ১৪
+                            : (
+                            প্রতি কেন্দ্রের জন্য
+                            -
+                            ৩টি
+                            )
+                            টেন্ডার্ড ভোটের তালিকা
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            3
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            পিতলের সিলমোহর (ব্রাস সিল)
+                            কেন্দ্র প্রতি ১টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            1
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            ফরম
+                            -
+                            ১৫
+                            : (
+                            প্রতি কেন্দ্রের জন্য
+                            -
+                            ৫টি
+                            )
+                            আপত্তিকৃত ভোটের তালিকা
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            5
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="16"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৫
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ষ্ট্যাম্প প্যাড
+                            (
+                            কক্ষ প্রতি ১টি
+                            +
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total + 1
+
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            ফরম
+                            -
+                            ১৬
+                            :
+                            ভোট গণনার বিবরণী
+                            (
+                            প্রতি কেন্দ্রের জন্য ১৩টি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            ১৩ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="21"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৬
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            গালা
+                            (
+                            কেন্দ্র প্রতি ১ প্যাকেট
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            প্যাকেট
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ৫
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            ফরম
+                            -
+                            ১৭
+                            : (
+                            প্রতি কেন্দ্রের জন্য ৮টি
+                            )
+                            ব্যালট পেপারের হিসাবে
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            8
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="13"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৭
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            চটের থলি বড়
+                            (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="2.5%"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="7" width="53%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            <b>প্যাকেট সমূহ</b>
+                        </p>
+                    </td>
+                    <td width="5%" style="background: transparent; border: 1px solid #000000; padding: 0in">
+
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="7"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৮
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            চটের থলি ছোট
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td class="narrow-col" colspan="2" width="3%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="5" width="40%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ১০টি
+                            )
+                            প্রার্থীদের পক্ষে প্রদত্ত বৈধ ব্যালট পেপার রাখার জন্য প্যাকেট
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            ১০টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="16"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৯
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            চার্জার লাইট
+                            -
+                            ১টি
+                            ,
+                            ক্যালকুলেটর
+                            -
+                            ১টি
+                            ,
+                            স্ট্যাপলার
+                            -
+                            ১টি
+                            ,
+                            পিন
+                            -
+                            ১ বক্স
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ২
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ২টি
+                            )
+                            গণনা থেকে বাদ দেওয়া ব্যালট পেপার সমূহ রাখার প্যাকট
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="11" width="56%" height="13"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            <b>মনিহারী দ্রব্যাদি</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৩
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            প্যাকেট
+                            -
+                            ১
+                            ,
+                            ও প্যাকেট
+                            -
+                            ২ রাখার জন্য
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="10"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            বল পয়েন্ট কলম
+                            (
+                            প্রতি কর্মকর্তা ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            (voter_both_total * 3) + 1
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center"> টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৪
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            অব্যহৃত ব্যালট পেপারসমূহ রাখার জন্য প্যাকেট
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="18"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            রাবার ব্যান্ড
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            প্রয়োজনমত
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৫
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৫
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ২টি
+                            )
+                            বিনষ্ট ব্যালট পেপার রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="14"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            সাদা কাগজ
+                            (
+                            কেন্দ্র প্রতি আধা দিস্তা
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            -
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            পাতা
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৬
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৬
+                            : (
+                            কেন্দ্র প্রতি ৩টি
+                            )
+                            টেন্ডার্ড ব্যালট পেপার রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="20"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            কার্বন কাগজ
+                            (
+                            কেন্দ্র প্রতি ০২ সিট
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            সিট
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৭
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৭
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            ভিন্ন ভিন্ন প্রার্থীর
+                            (
+                            প্যাকেট
+                            -
+                            ৬
+                            )
+                            রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="17"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৫
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ছুরি
+                            (
+                            কেন্দ্র প্রতি
+                            -
+                            ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৮
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৮
+                            : (
+                            কেন্দ্র প্রতি০১টি
+                            )
+                            আপত্তিকৃত ব্যালট রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            1
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="19"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৬
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            সুই বড়
+                            (
+                            কেন্দ্র প্রতি
+                            -
+                            ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৯
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৯
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            চিহিৃত ভোটার তালিকা রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="16" bgcolor="#ffffff"
+                        style="background: #ffffff; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৭
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            সুতার বল
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১০
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১০
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            ব্যবহৃত ব্যালটের মুড়ি রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="17"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৮
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            মোমবাতি
+                            (
+                            কেন্দ্র প্রতি ৬টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            প্যাকেট
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১১
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১১
+                            : (
+                            কেন্দ্র প্রতি ২টি
+                            )
+                            ভোটার তালিকা রাখার জন্য টেন্ডার
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="35"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৯
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            দিয়াশলাই
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            প্যাকেট
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১২
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১২
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ০২টি
+                            )
+                            ইস্যুকৃত ও ব্যবহৃত স্বচ্ছ ব্যালট বাক্সের হিসাব রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="16"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১০
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            গাম পট
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৩
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১৩
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ০২টি
+                            )
+                            আপত্তিকৃত ভোটার তালিকা রাখার প্যাকেট
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="15"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১১
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            স্ট্যাম্প প্যাডের কালি
+                            (
+                            কেন্দ্র প্রতি ১ শিশি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৪
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১৪
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ২টি
+                            )
+                            ভোট গণনা হিসাব রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="14"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১২
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            প্লাষ্টিকের স্কেল
+                            (
+                            কক্ষ প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total
+
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৫
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১৫
+                            : (
+                            কেন্দ্র প্রতি
+                            -
+                            ২টি
+                            )
+                            ব্যালট পেপারের হিসাব রাখার জন্য
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="20"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৩
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            সুপার গ্লু
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৬
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১৬
+                            : (
+                            বিবিধ কাগজপত্র রাখার প্যাকেট
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="42"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৪
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            আলপিন
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            প্রয়োজনমত
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১৭
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            বিশেষ খামঃ
+                            (
+                            কেন্দ্র প্রতি ২টি ডাকযোগে নিকস তে ভোট গণনার বিবরণী প্রেরণ করার জন্য ।
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            2
+                            টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="19"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="8" width="47%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            <b>দেওয়ালপত্র</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="7" width="38%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            <b>গণভোটের জন্য ব্যবহৃত ফরম ও প্যাকেট সমূহ</b>
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="14"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            (
+                            ক
+                            ) &quot;
+                            প্রবেশ
+                            &quot;, &quot;
+                            বাহির
+                            &quot;,
+                        </p>
+                    </td>
+                    <td rowspan="4" colspan="2" width="12%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            প্রয়োজনমত
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ফরম
+                            -
+                            ৩
+                            :
+                            প্রিজাইডিং অফিসার কর্তৃক ভোট গণনার বিবরণী
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ৮ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="17"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            (
+                            খ
+                            )
+                            ভোট কক্ষ নং…………
+                            ..(
+                            পুরুষ
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ২
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            ফরম
+                            -
+                            ৫
+                            :
+                            ব্যালট পেপারের হিসাব বিবরণী
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ৪ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="26"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            (
+                            গ
+                            )
+                            ভোট কক্ষ নং …………
+                            .(
+                            মহিলা
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৩
+                        </p>
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ১
+                            : &quot;
+                            হ্যাঁ
+                            &quot;
+                            সূচক
+                            / '
+                            না
+                            '
+                            সূচক বৈধ ব্যালট পেপার রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ৬ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="21"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ৪
+                        </p>
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            (
+                            ঘ
+                            )
+                            ভোটগ্রহণকারী কর্মকর্তা ও এজেন্টগণের দেয়ালপত্র
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ২
+                            :
+                            অবৈধ বা গণনা থেকে বাদ দেওয়া ব্যালট পেপার রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="7"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৩
+                            :
+                            অব্যবহৃত ব্যালট পেপার রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="15"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            <b>পরিচয়পত্র</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৪
+                            :
+                            নষ্ট বা বাতিলকৃত ব্যালট পেপার রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="19"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0in; padding-left: 0.08in; padding-right: 0in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্রিজাইডিং অফিসারের পরিচয়পত্র
+                            (
+                            কেন্দ্র প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            ১
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৫
+                            :
+                            ব্যবহৃত ব্যালট পেপারের মুড়িপত্র রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="16"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            সহকারী প্রিজাইডিং অফিসারের পরিচয়পত্র
+                            (
+                            কক্ষ প্রতি ১টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total
+
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td colspan="2" width="4%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৬
+                            :
+                            ফলাফল বিববরণী
+                            (
+                            ফরম
+                            -
+                            ৩
+                            )
+                            রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="12"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            পোলিং অফিসারের পরিচয়পত্র
+                            (
+                            কক্ষ প্রতি ২টি
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            voter_both_total *2
+
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            টি
+                        </p>
+                    </td>
+                    <td rowspan="2" colspan="2" width="4%"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%" valign="bottom"
+                        style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p>
+                            প্যাকেট
+                            -
+                            ৭
+                            :
+                            ব্যালট পেপার হিসাব বিবরণী রাখার জন্য
+                            (
+                            কেন্দ্র প্রতি
+                            )
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center">
+                            ১ টি
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td width="3%" height="20"
+                        style="background: transparent; border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding: 0in 0.08in">
+
+                    </td>
+                    <td colspan="6" width="35%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p>
+                            পোলিং এজেন্টের পরিচয়পত্র
+                            (
+                            প্রয়োজন অনুসারে
+                            )
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+                        <p align="center">
+                            প্রয়োজনমত
+                        </p>
+                    </td>
+                    <td colspan="2" width="6%"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                    <td colspan="5" width="34%" valign="top"
+                        style="background: transparent; border-top: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; padding: 0in">
+                        <p> </p>
+                    </td>
+                    <td width="6%"
+                        style="background: transparent; border-top: none; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0in; padding-left: 0in; padding-right: 0.08in">
+
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <td width="3%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="4%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="4%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="5%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="5%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="10%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="7%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="5%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="7%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="3%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="2%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="2%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="2%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="4%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="10%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="8%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: none; padding: 0in">
+                        <p>
+                            <br />
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="19" width="100%" height="21" bgcolor="#ffffff"
+                        style="background: #fff !important; border: 1px solid #000000; padding: 0in 0.08in">
+                        <p align="center" class="section-header"
+                            style="background: #fff !important; color: #000 !important; margin: 0; padding: 4px 0;">
+                            <b>ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</b>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="3" width="11%" height="45"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>প্রিজাইডিং অফিসার<br />(৮০০০*১ হারে)</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="10%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>সহকারী প্রিজাইডিং<br />৬০০০*১</b>
+                        </p>
+                    </td>
+                    <td width="10%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>পোলিং অফিসার<br />(৪০০০*১ হারে)</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="12%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>যাতায়াত ভাতা<br />(প্রতিজন ১০০০/- হারে)</b>
+                        </p>
+                    </td>
+                    <td colspan="3" width="13%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>বেস্টনি নির্মাণ<br />(৮০০/- হারে)</b>
+                        </p>
+                    </td>
+                    <td colspan="3" width="10%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>মোট টাকার পরিমাণ</b>
+                        </p>
+                    </td>
+                    <td colspan="2" width="10%"
+                        style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>উৎস কর কর্তন (১০%)</b>
+                        </p>
+                    </td>
+                    <td width="10%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>বেষ্টনী ভাট বাবদ কর্তন ১৮% (১৫% ভ্যাট ও ৩% আইটি)</b>
+                        </p>
+                    </td>
+                    <td width="8%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>রেভিনিউ বাবদ কর্তন</b>
+                        </p>
+                    </td>
+                    <td width="8%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>মোট কর্তন</b>
+                        </p>
+                    </td>
+                    <td width="6%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>মোট প্রদত্ত টাকা</b>
+                        </p>
+                    </td>
+                <tr>
+                    <td width="10%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="right">
+                            <b>মোট কর্তন</b>
+                        </p>
+                    </td>
+                    <td width="8%" style="background: transparent; border: 1px solid #000000; padding: 2px 4px">
+                        <p align="center">
+                            <b>total_deduction</b>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            <br />
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            <br />
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            <a name="_GoBack">
+            </a>
+            <br />
+        </p>
+        <table width="735" cellpadding="4" cellspacing="0">
+            <col width="354" />
+            <col width="354" />
+            <tr valign="top">
+                <td width="354" style="border: none; padding: 0in">
+                    <p align="center" style="orphans: 2; widows: 2">
+                        প্রিজাইডিং অফিসারের স্বাক্ষর
+                    </p>
+                </td>
+                <td width="354" style="border: none; padding: 0in">
+                    <p align="center" style="orphans: 2; widows: 2">
+                        রিটার্নিং
+                        /
+                        সহকারী রিটার্নিং অফিসারের স্বাক্ষর
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            <br />
+        </p>
+        <p align="center" style="line-height: 100%; margin-bottom: 0in">
+            <br />
+        </p>
+    </div>
+    <!-- removed old inline script start
+                    // Get vote_centre_code from URL parameter
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const voteCentreCode = urlParams.get('vote_centre_code');
+
+                    // Utility function to safely replace text in document
+                    function replaceText(searchText, replaceWith) { const body = document.body; const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null, false); const nodesToReplace = []; while (walker.nextNode()) { const node = walker.currentNode; if (node.nodeValue && node.nodeValue.trim().includes(searchText)) { nodesToReplace.push(node); } } nodesToReplace.forEach(node => { const regex = new RegExp(searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'); node.nodeValue = node.nodeValue.replace(regex, replaceWith); }); console.log(`Replaced "${searchText}" with "${replaceWith}" in ${nodesToReplace.length} locations`);
+                    }
+
+                    // Convert Bengali numerals to English
+                    function bengaliToEnglish(text) { const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']; const englishNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']; let result = text; bengaliNumerals.forEach((bn, index) => { result = result.replace(new RegExp(bn, 'g'), englishNumerals[index]); }); return result;
+                    }
+
+                    // Function to evaluate and replace calculations
+                    function evaluateCalculations() {
+                        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+                        const nodes = [];
+                        while (walker.nextNode()) {
+                            const node = walker.currentNode;
+                            if (!node.nodeValue) continue;
+                            const t = node.nodeValue;
+                            // Look for digits and arithmetic operators (include Bengali digits and ×)
+                            if (/\d|[০-৯]/.test(t) && /[\+\-\*\/×\(\)]/.test(t)) nodes.push(node);
+                        }
+
+                        nodes.forEach(node => {
+                            try {
+                                const original = node.nodeValue;
+                                let converted = bengaliToEnglish(original).replace(/×/g, '*');
+
+                                // handle parenthesized expressions like (6 + 1) * 5
+                                converted = converted.replace(/\(([^)]+)\)\s*([\*\/])\s*(\d+)/g, (m, expr, op, num) => {
+                                    try {
+                                        const inner = eval(expr);
+                                        const out = eval(`${inner} ${op} ${num}`);
+                                        return isFinite(out) ? String(out) : m;
+                                    } catch (e) { return m; }
+                                });
+
+                                // handle simple binary operations
+                                converted = converted.replace(/(\d+)\s*([\+\-\*\/])\s*(\d+)/g, (m, a, op, b) => {
+                                    try {
+                                        const out = eval(`${a} ${op} ${b}`);
+                                        return isFinite(out) ? String(out) : m;
+                                    } catch (e) { return m; }
+                                });
+
+                                if (converted !== bengaliToEnglish(original).replace(/×/g, '*')) {
+                                    // format numbers back to Bengali digits
+                                    const bnMap = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+                                    const formatted = String(converted).replace(/\d/g, d => bnMap[+d]);
+                                    node.nodeValue = node.nodeValue.replace(original, formatted);
+                                    console.log('Calculated:', original.trim(), '→', formatted);
+                                }
+                            } catch (e) {
+                                console.error('evaluateCalculations error for', node.nodeValue, e);
+                            }
+                        });
+                    }
+
+                    // Remove inline fonts and attributes from DOM (unwrap  tags and clear inline font-size and colors)
+                    function removeInlineFonts() { try { // Clear inline font-size and color in style attributes document.querySelectorAll('[style]').forEach(el => { if (el.style) { if (el.style.fontSize) el.style.fontSize = ''; if (el.style.color) el.style.color = ''; el.style.removeProperty('color'); el.style.removeProperty('font-size'); } }); // Remove face/size/color attributes from any element document.querySelectorAll('[face], [size], [color]').forEach(el => { if (el.hasAttribute('face')) el.removeAttribute('face'); if (el.hasAttribute('size')) el.removeAttribute('size'); if (el.hasAttribute('color')) el.removeAttribute('color'); }); // Unwrap any remaining  tags (they may contain color attributes) document.querySelectorAll('font').forEach(f => { // remove color attribute if present if (f.hasAttribute('color')) f.removeAttribute('color'); // move children out while (f.firstChild) f.parentNode.insertBefore(f.firstChild, f); f.remove(); }); console.log('Removed inline font attributes, inline colors, and unwrapped  tags'); } catch (e) { console.error('Error removing font tags/colors:', e); }
+                    }
+
+                    // Function to fetch and populate data
+                    async function loadVoteCentreData() { if (!voteCentreCode) { console.error('No vote_centre_code provided in URL'); alert('অনুগ্রহ করে URL এ vote_centre_code প্যারামিটার দিন। উদাহরণ: ?vote_centre_code=5'); return; } try { // Show loading document.body.style.opacity = '0.6'; // Fetch vote centre data by vote_centre_code const { data, error } = await window.supabaseClient .from('vote_centre') .select('*') .eq('vote_centre_code', voteCentreCode) .maybeSingle(); // Hide loading document.body.style.opacity = '1'; if (error && error.code !== 'PGRST116') { console.error('Supabase error:', error); throw new Error(error.message || 'ডেটা লোড করতে সমস্যা হয়েছে'); } if (!data) { alert(`কোন ডেটা পাওয়া যায়নি। vote_centre_code: ${voteCentreCode} চেক করুন।`); console.error('No data found for vote_centre_code:', voteCentreCode); return; } console.log('✅ Raw data from Supabase:', data);
+
+                            // Helpers
+                            function parseNumberField(val) {
+                                if (val === null || val === undefined) return 0;
+                                const s = String(val).replace(/,/g, '').trim();
+                                const en = bengaliToEnglish(s);
+                                const n = parseInt(en, 10);
+                                return isNaN(n) ? 0 : n;
+                            }
+
+                            function formatNumberBn(n) {
+                                const en = Number(n).toLocaleString('en-US');
+                                const map = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+                                return String(en).replace(/\d/g, d => map[d]);
+                            }
+
+                            // Calculate values
+                            const voteCentreCodeValue = data.vote_centre_code || '';
+                            const voteCentreName = data.vote_centre_name || '';
+                            const maleVoter = parseNumberField(data.male_voter);
+                            const femaleVoter = parseNumberField(data.female_voter);
+                            const hizraVoter = parseNumberField(data.hizra_voter);
+                            const totalVoter = parseNumberField(data.total_voter) || (maleVoter + femaleVoter + hizraVoter);
+                            const voterBothTotal = parseNumberField(data.voter_both_total) || Math.ceil(totalVoter / 1200);
+                            const voterBothMale = parseNumberField(data.voter_both_male);
+                            const voterBothFemale = parseNumberField(data.voter_both_female);
+                            const totalOfficer = voterBothTotal * 3; // (voter_both_total + (voter_both_total * 2))
+
+                            // Store values globally for calculations
+                            window.voter_both_total = voterBothTotal;
+                            window.total_voter = totalVoter;
+                            window.male_voter = maleVoter;
+                            window.female_voter = femaleVoter;
+                            window.hizra_voter = hizraVoter;
+
+                            // Update vote centre name area
+                            const vcEl = document.querySelector('td.vote-center p');
+                            if (vcEl) vcEl.textContent = `${voteCentreCodeValue}. ${voteCentreName}`;
+
+                            // Replace placeholders using clean text replacement (display in Bengali digits)
+                            replaceText('vote_centre_code', voteCentreCodeValue);
+                            replaceText('voter_both_total', formatNumberBn(voterBothTotal));
+                            replaceText('voter_both_male', formatNumberBn(voterBothMale));
+                            replaceText('voter_both_female', formatNumberBn(voterBothFemale));
+                            replaceText('male_voter', formatNumberBn(maleVoter));
+                            replaceText('female_voter', formatNumberBn(femaleVoter));
+                            replaceText('hizra_voter', formatNumberBn(hizraVoter));
+                            replaceText('total_voter', formatNumberBn(totalVoter));
+                            replaceText('Total officer', formatNumberBn(totalOfficer));
+                            replaceText('total officer', formatNumberBn(totalOfficer));
+
+                            // Monetary calculations
+                            const presidingCount = 1;
+                            const presidingRate = 8000;
+                            const presidingTotal = presidingRate * presidingCount;
+
+                            const assistantCount = voterBothTotal; // per polling unit
+                            const assistantRate = 6000;
+                            const assistantTotal = assistantCount * assistantRate;
+
+                            const pollingCount = voterBothTotal; // per polling unit
+                            const pollingRate = 4000;
+                            const pollingTotal = pollingCount * pollingRate;
+
+                            const travelRate = 1000;
+                            const travelTotal = totalOfficer * travelRate;
+
+                            const bestniRate = 800;
+                            const bestniTotal = voterBothTotal * bestniRate;
+
+                            const grandTotal = presidingTotal + assistantTotal + pollingTotal + travelTotal + bestniTotal;
+
+                            function insertAmount(label, amount) {
+                                document.querySelectorAll('td p').forEach(p => {
+                                    try {
+                                        if (p.textContent && p.textContent.indexOf(label) !== -1) {
+                                            // Skip identity card rows for presiding officer (they shouldn't show monetary total)
+                                            if (label === 'প্রিজাইডিং অফিসার' && p.textContent.indexOf('পরিচয়পত্র') !== -1) {
+                                                const existing = p.querySelector('.computed-amount');
+                                                if (existing) existing.remove();
+                                                return;
+                                            }
+                                            if (p.querySelector('.computed-amount')) return;
+                                            const div = document.createElement('div');
+                                            div.className = 'computed-amount';
+                                            div.style.fontWeight = 'bold';
+                                            div.style.marginTop = '4px';
+                                            div.textContent = 'মোট: ' + formatNumberBn(amount) + ' টাকা';
+                                            p.appendChild(div);
+                                        }
+                                    } catch (e) {
+                                        console.error('Error inserting amount for', label, e);
+                                    }
+                                });
+                            }
+
+                            insertAmount('প্রিজাইডিং অফিসার', presidingTotal);
+                            insertAmount('সহকারী প্র্রিজাইডিং', assistantTotal);
+                            insertAmount('পোলিং অফিসার', pollingTotal);
+                            insertAmount('যাতায়াত ভাতা', travelTotal);
+                            insertAmount('বেস্টনি নির্মান', bestniTotal);
+
+                            // Append a grand total row after the section header if not present
+                            (function insertGrandTotalRow() {
+                                const headerTd = document.querySelector('td[colspan="19"]');
+                                if (!headerTd) return;
+                                const headerTr = headerTd.closest('tr');
+                                if (!headerTr) return;
+                                if (document.getElementById('grand-total-row')) return;
+                                const tr = document.createElement('tr');
+                                tr.id = 'grand-total-row';
+                                tr.innerHTML = `<td colspan="19" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">সর্বমোট ভাতা: ${formatNumberBn(grandTotal)} টাকা</td>`;
+                                headerTr.parentNode.insertBefore(tr, headerTr.nextSibling);
+                            })();
+
+                            // Evaluate calculations after all replacements (e.g., "5 * 2" -> "10")
+                            setTimeout(() => {
+                                evaluateCalculations();
+                                // Remove inline attributes and clean DOM
+                                removeInlineFonts();
+                            }, 200);
+
+                            console.log('✅ ডেটা সফলভাবে লোড হয়েছে:', { voteCentreCode: voteCentreCodeValue, voteCentreName, voterBothTotal, totalVoter, totalOfficer, maleVoter, femaleVoter, hizraVoter }); } catch (error) { document.body.style.opacity = '1'; console.error('❌ ডেটা লোড করতে সমস্যা হয়েছে:', error); alert(`ডেটা লোড করতে সমস্যা হয়েছে:\n${error.message}\n\nএই vote_centre_code চেক করুন: ${voteCentreCode}`); }
+                    }
+
+                    // Load data when DOM is ready
+                    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', loadVoteCentreData);
+                    } else { loadVoteCentreData();
+                    }
+                -->
+    <script>
+        // Fallback safe loader to replace broken inline script
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const voteCentreCode = urlParams.get('vote_centre_code');
+
+            function bengaliToEnglish(text) {
+                if (!text) return '';
+                const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+                const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                return String(text).split('').map(ch => {
+                    const i = bn.indexOf(ch);
+                    return i === -1 ? ch : en[i];
+                }).join('');
+            }
+
+            function formatNumberBn(n) {
+                const en = Number(n).toLocaleString('en-US');
+                const map = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+                return String(en).replace(/\d/g, d => map[d]);
+            }
+
+            function replaceText(searchText, replaceWith) {
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+                const nodes = [];
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (node.nodeValue && node.nodeValue.includes(searchText)) nodes.push(node);
+                }
+                nodes.forEach(node => {
+                    node.nodeValue = node.nodeValue.replace(new RegExp(searchText.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'g'), replaceWith);
+                });
+            }
+
+            function replaceTextInRoot(root, replacements) {
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+                const nodes = [];
+                while (walker.nextNode()) nodes.push(walker.currentNode);
+                nodes.forEach(node => {
+                    let v = node.nodeValue;
+                    if (!v) return;
+                    Object.keys(replacements).forEach(key => {
+                        if (v.indexOf(key) !== -1) {
+                            v = v.replace(new RegExp(key.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'g'), String(replacements[key]));
+                        }
+                    });
+                    if (v !== node.nodeValue) node.nodeValue = v;
+                });
+            }
+
+            function evaluateCalculations(root = document.body) {
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (!node.nodeValue) continue;
+                    const t = node.nodeValue;
+                    if (/\d|[০-৯]/.test(t) && /[\+\-\*\/×\(\)]/.test(t)) {
+                        try {
+                            const converted = bengaliToEnglish(t).replace(/×/g, '*');
+                            const res = converted.replace(/\(([^)]+)\)\s*([\*\/])\s*(\d+)/g, (m, expr, op, num) => {
+                                try { const inner = eval(expr); const out = eval(`${inner} ${op} ${num}`); return isFinite(out) ? out : m; } catch (e) { return m; }
+                            }).replace(/(\d+)\s*([\+\-\*\/])\s*(\d+)/g, (m, a, op, b) => {
+                                try { const out = eval(`${a} ${op} ${b}`); return isFinite(out) ? out : m; } catch (e) { return m; }
+                            });
+                            if (res !== converted) {
+                                const bnMap = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+                                const formatted = String(res).replace(/\d/g, d => bnMap[+d]);
+                                node.nodeValue = node.nodeValue.replace(t, formatted);
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
+                }
+            }
+
+            function removeInlineFonts(root = document) {
+                try {
+                    root.querySelectorAll('[style]').forEach(el => {
+                        if (!el.style) return;
+                        el.style.removeProperty('font-size');
+                        el.style.removeProperty('color');
+                    });
+                    root.querySelectorAll('[face],[size],[color]').forEach(el => { el.removeAttribute('face'); el.removeAttribute('size'); el.removeAttribute('color'); });
+                    root.querySelectorAll('font').forEach(f => { while (f.firstChild) f.parentNode.insertBefore(f.firstChild, f); f.remove(); });
+                } catch (e) { /* ignore */ }
+            }
+
+            function parseNumberField(val) {
+                if (val === null || val === undefined) return 0;
+                const s = String(val).replace(/,/g, '').trim();
+                const en = bengaliToEnglish(s);
+                const n = parseInt(en, 10);
+                return isNaN(n) ? 0 : n;
+            }
+
+            async function loadVoteCentreData() {
+                try {
+                    if (!window.supabaseClient) { console.error('Supabase client not available'); return; }
+
+                    const loadingEl = document.getElementById('loading-indicator') || (() => {
+                        const el = document.createElement('div');
+                        el.id = 'loading-indicator';
+                        el.style.position = 'fixed';
+                        el.style.top = '8px';
+                        el.style.right = '8px';
+                        el.style.padding = '6px 10px';
+                        el.style.background = '#fff';
+                        el.style.border = '1px solid #000';
+                        el.style.fontSize = '11pt';
+                        el.style.zIndex = '9999';
+                        el.textContent = 'লোড হচ্ছে...';
+                        document.body.appendChild(el);
+                        return el;
+                    })();
+
+                    const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+                    const template = document.getElementById('form-template');
+                    if (!template) { console.error('Template not found'); return; }
+
+                    // If a specific code is provided, load single centre and populate in place
+                    if (voteCentreCode) {
+                        const { data, error } = await window.supabaseClient.from('vote_centre').select('*').eq('vote_centre_code', voteCentreCode).maybeSingle();
+                        if (error) { console.error('Supabase error', error); return; }
+                        if (!data) { alert('কোন ডেটা পাওয়া যায়নি।'); return; }
+
+                        const cl = template.cloneNode(true);
+                        cl.removeAttribute('id');
+
+                        const maleVoter = parseNumberField(data.male_voter);
+                        const femaleVoter = parseNumberField(data.female_voter);
+                        const hizraVoter = parseNumberField(data.hizra_voter);
+                        const totalVoter = parseNumberField(data.total_voter) || (maleVoter + femaleVoter + hizraVoter);
+                        const voterBothTotal = parseNumberField(data.voter_both_total) || Math.ceil(totalVoter / 1200);
+                        const totalOfficer = voterBothTotal * 3;
+
+                        const presidingTotal = 1 * 8000;
+                        const assistantTotal = voterBothTotal * 6000;
+                        const pollingTotal = voterBothTotal * 4000;
+                        const travelTotal = totalOfficer * 1000;
+                        const bestniTotal = voterBothTotal * 800;
+
+                        // Based on image logic: Tax 10% on salary components
+                        const salarySubtotal = presidingTotal + assistantTotal + pollingTotal;
+                        const taxSum = Math.round(salarySubtotal * 0.1);
+                        const vatBestni = Math.round(bestniTotal * 0.18);
+                        const revenueTax = 390; // Fixed as seen in image example, or could be per person? Image shows 390.
+                        const totalDeduction = taxSum + vatBestni + revenueTax;
+                        const totalAllowance = salarySubtotal + travelTotal + bestniTotal;
+                        const grandPaidTotal = totalAllowance - totalDeduction;
+
+                        const replacements = {
+                            'vote_centre_code': data.vote_centre_code || '',
+                            'voter_both_total': formatNumberBn(voterBothTotal),
+                            'male_voter': formatNumberBn(maleVoter),
+                            'female_voter': formatNumberBn(femaleVoter),
+                            'hizra_voter': formatNumberBn(hizraVoter),
+                            'total_voter': formatNumberBn(totalVoter),
+                            'total officer': formatNumberBn(totalOfficer),
+                            'Total officer': formatNumberBn(totalOfficer),
+                            'total_allowance': formatNumberBn(totalAllowance),
+                            'tax_sum': formatNumberBn(taxSum),
+                            'vat_bestni': formatNumberBn(vatBestni),
+                            'revenue_tax': formatNumberBn(revenueTax),
+                            'total_deduction': formatNumberBn(totalDeduction),
+                            'grand_paid_total': formatNumberBn(grandPaidTotal)
+                        };
+                        replaceTextInRoot(cl, replacements);
+
+                        const vcEl = cl.querySelector('td.vote-center p');
+                        if (vcEl) vcEl.textContent = `${data.vote_centre_code}. ${data.vote_centre_name}`;
+
+                        cl.querySelectorAll('td p').forEach(p => {
+                            const text = p.textContent || '';
+                            if (text.indexOf('প্রিজাইডিং অফিসার') !== -1) {
+                                if (text.indexOf('পরিচয়পত্র') !== -1) {
+                                    const ex = p.querySelector('.computed-amount'); if (ex) ex.remove();
+                                } else if (!p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(presidingTotal) + ' টাকা'; p.appendChild(d); }
+                            }
+                            if (text.indexOf('সহকারী প্রিজাইডিং') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(assistantTotal) + ' টাকা'; p.appendChild(d); }
+                            if (text.indexOf('পোলিং অফিসার') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(pollingTotal) + ' টাকা'; p.appendChild(d); }
+                            if (text.indexOf('যাতায়াত ভাতা') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(travelTotal) + ' টাকা'; p.appendChild(d); }
+                            if (text.indexOf('বেস্টনি নির্মান') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(bestniTotal) + ' টাকা'; p.appendChild(d); }
+                        });
+
+                        const marker = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
+                        if (marker && !marker.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(totalAllowance) + ' টাকা'; marker.appendChild(d); }
+
+                        removeInlineFonts(cl); evaluateCalculations(cl);
+
+                        // show clone and hide original template
+                        template.parentNode.insertBefore(cl, template);
+                        template.style.display = 'none';
+
+                        if (loadingEl) loadingEl.remove();
+
+                    } else {
+                        // load ALL centres and render clones in batches
+                        const container = document.createElement('div');
+                        let from = 0;
+                        const pageSize = 200;
+                        let totalRendered = 0;
+
+                        while (true) {
+                            loadingEl.textContent = `লোড হচ্ছে... ${totalRendered}`;
+                            const { data, error } = await window.supabaseClient
+                                .from('vote_centre')
+                                .select('*')
+                                .range(from, from + pageSize - 1);
+                            if (error) { console.error('Supabase error', error); break; }
+                            if (!data || !data.length) break;
+
+                            data.forEach((row, idx) => {
+                                const cl = template.cloneNode(true); cl.removeAttribute('id');
+                                const maleVoter = parseNumberField(row.male_voter);
+                                const femaleVoter = parseNumberField(row.female_voter);
+                                const hizraVoter = parseNumberField(row.hizra_voter);
+                                const totalVoter = parseNumberField(row.total_voter) || (maleVoter + femaleVoter + hizraVoter);
+                                const voterBothTotal = parseNumberField(row.voter_both_total) || Math.ceil(totalVoter / 1200);
+                                const totalOfficer = voterBothTotal * 3;
+
+                                const presidingTotal = 1 * 8000;
+                                const assistantTotal = voterBothTotal * 6000;
+                                const pollingTotal = voterBothTotal * 4000;
+                                const travelTotal = totalOfficer * 1000;
+                                const bestniTotal = voterBothTotal * 800;
+
+                                // Based on image logic: Tax 10% on salary components
+                                const salarySubtotal = presidingTotal + assistantTotal + pollingTotal;
+                                const taxSum = Math.round(salarySubtotal * 0.1);
+                                const vatBestni = Math.round(bestniTotal * 0.18);
+                                const revenueTax = 390;
+                                const totalDeduction = taxSum + vatBestni + revenueTax;
+                                const totalAllowance = salarySubtotal + travelTotal + bestniTotal;
+                                const grandPaidTotal = totalAllowance - totalDeduction;
+
+                                const replacementsAll = {
+                                    'vote_centre_code': row.vote_centre_code || '',
+                                    'voter_both_total': formatNumberBn(voterBothTotal),
+                                    'male_voter': formatNumberBn(maleVoter),
+                                    'female_voter': formatNumberBn(femaleVoter),
+                                    'hizra_voter': formatNumberBn(hizraVoter),
+                                    'total_voter': formatNumberBn(totalVoter),
+                                    'total officer': formatNumberBn(totalOfficer),
+                                    'Total officer': formatNumberBn(totalOfficer),
+                                    'total_allowance': formatNumberBn(totalAllowance),
+                                    'tax_sum': formatNumberBn(taxSum),
+                                    'vat_bestni': formatNumberBn(vatBestni),
+                                    'revenue_tax': formatNumberBn(revenueTax),
+                                    'total_deduction': formatNumberBn(totalDeduction),
+                                    'grand_paid_total': formatNumberBn(grandPaidTotal)
+                                };
+                                replaceTextInRoot(cl, replacementsAll);
+
+                                const vcElAll = cl.querySelector('td.vote-center p');
+                                if (vcElAll) vcElAll.textContent = `${row.vote_centre_code}. ${row.vote_centre_name}`;
+
+                                cl.querySelectorAll('td p').forEach(p => {
+                                    const text = p.textContent || '';
+                                    if (text.indexOf('প্রিজাইডিং অফিসার') !== -1) {
+                                        if (text.indexOf('পরিচয়পত্র') !== -1) { const ex = p.querySelector('.computed-amount'); if (ex) ex.remove(); }
+                                        else if (!p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(presidingTotal) + ' টাকা'; p.appendChild(d); }
+                                    }
+                                    if (text.indexOf('সহকারী প্রিজাইডিং') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(assistantTotal) + ' টাকা'; p.appendChild(d); }
+                                    if (text.indexOf('পোলিং অফিসার') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(pollingTotal) + ' টাকা'; p.appendChild(d); }
+                                    if (text.indexOf('যাতায়াত ভাতা') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(travelTotal) + ' টাকা'; p.appendChild(d); }
+                                    if (text.indexOf('বেস্টনি নির্মান') !== -1 && !p.querySelector('.computed-amount')) { const d = document.createElement('div'); d.className = 'computed-amount'; d.style.fontWeight = 'bold'; d.style.marginTop = '4px'; d.textContent = 'মোট: ' + formatNumberBn(bestniTotal) + ' টাকা'; p.appendChild(d); }
+                                });
+
+                                const marker2 = Array.from(cl.querySelectorAll('td p')).find(p => p.textContent && p.textContent.indexOf('সর্বমোট') !== -1);
+                                if (marker2 && !marker2.querySelector('.computed-amount-grand')) { const d = document.createElement('div'); d.className = 'computed-amount-grand'; d.style.fontWeight = 'bold'; d.style.marginTop = '6px'; d.textContent = 'সর্বমোট: ' + formatNumberBn(totalAllowance) + ' টাকা'; marker2.appendChild(d); }
+
+                                removeInlineFonts(cl); evaluateCalculations(cl);
+
+                                container.appendChild(cl);
+                                if (idx !== data.length - 1) { const br = document.createElement('div'); br.className = 'page-break'; container.appendChild(br); }
+                                totalRendered += 1;
+                            });
+
+                            from += pageSize;
+                            await nextFrame();
+                        }
+
+                        template.parentNode.insertBefore(container, template.nextSibling);
+                        template.style.display = 'none';
+                        if (loadingEl) loadingEl.remove();
+                    }
+                } catch (e) {
+                    console.error('Fallback loader error', e);
+                }
+            }
+
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadVoteCentreData); else loadVoteCentreData();
+        })();
+    </script>
+</body>
+
+</html>
