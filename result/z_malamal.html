@@ -12,7 +12,7 @@
 
         @page {
             size: 8.5in 14in;
-            margin: 0.3in;
+            margin: 0;
         }
 
         * {
@@ -29,13 +29,14 @@
 
         .legal-page {
             width: 8.5in;
-            min-height: 14in;
-            padding: 0.3in;
+            height: 14in;
+            padding: 0.4in 0.5in;
             margin: 0 auto 20px auto;
             background: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
             page-break-after: always;
+            overflow: hidden;
         }
 
         #loading-indicator {
@@ -86,21 +87,30 @@
         }
 
         @media print {
-            body {
-                background: none;
-                padding: 0;
+
+            body,
+            html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: none !important;
             }
 
             .legal-page {
-                box-shadow: none;
-                margin: 0;
-                padding: 0.15in 0.3in;
-                width: 100%;
-                height: 100%;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0.1in 0.3in !important;
+                width: 8.5in !important;
+                height: 14in !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+            }
+
+            .legal-page:last-child {
+                page-break-after: auto !important;
             }
 
             #loading-indicator {
-                display: none;
+                display: none !important;
             }
         }
 
@@ -281,7 +291,7 @@
                     <td class="text-center">২</td>
                     <td colspan="5">রাবার ব্যান্ড (প্রয়োজন অনুসারে)</td>
                     <td colspan="2" class="text-center">-</td>
-                    <td class="text-center">প্রয়োজন</td>
+                    <td class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">৬</td>
                     <td colspan="8">প্যাকেট-৬: (কেন্দ্র প্রতি ৩টি) টেন্ডার্ড ব্যালট পেপার রাখার জন্য</td>
                     <td class="text-center">৩ টি</td>
@@ -387,7 +397,7 @@
                 <tr>
                     <td class="text-center">২</td>
                     <td colspan="6">(খ) ভোট কক্ষ নং…………..(পুরুষ)</td>
-                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td colspan="2" class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">১</td>
                     <td colspan="8">ফরম-৩ : প্রিজাইডিং অফিসার কর্তৃক ভোট গণনার বিবরণী (কেন্দ্র প্রতি)</td>
                     <td class="text-center">৮ টি</td>
@@ -395,7 +405,7 @@
                 <tr>
                     <td class="text-center">৩</td>
                     <td colspan="6">(গ) ভোট কক্ষ নং ………….(মহিলা)</td>
-                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td colspan="2" class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">২</td>
                     <td colspan="8">ফরম-৫ : ব্যালট পেপারের হিসাব বিবরণী (কেন্দ্র প্রতি)</td>
                     <td class="text-center">৪ টি</td>
@@ -403,7 +413,7 @@
                 <tr>
                     <td class="text-center">৪</td>
                     <td colspan="6">(ঘ) ভোটগ্রহণকারী কর্মকর্তা ও এজেন্টগণের দেয়ালপত্র</td>
-                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td colspan="2" class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">১</td>
                     <td colspan="8">প্যাকেট-১: "হ্যাঁ" সূচক/ 'না' সূচক বৈধ ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
                     <td class="text-center">৬ টি</td>
@@ -435,7 +445,7 @@
                 <tr>
                     <td class="text-center">৮</td>
                     <td colspan="6">পোলিং এজেন্টের পরিচয়পত্র (প্রয়োজন অনুসারে)</td>
-                    <td colspan="2" class="text-center">প্রয়োজন</td>
+                    <td colspan="2" class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">৫</td>
                     <td colspan="8">প্যাকেট-৫: ব্যবহৃত ব্যালট পেপারের মুড়িপত্র রাখার জন্য (কেন্দ্র প্রতি)</td>
                     <td class="text-center">১ টি</td>
@@ -459,14 +469,14 @@
                     <td colspan="11">ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</td>
                 </tr>
                 <tr class="bg-gray text-center fw-bold" style="font-size: 8pt;">
-                    <td width="10%">প্রিজাইডিং অফিসার (৮০০০*১)</td>
-                    <td width="10%">সহকারী প্রিজাইডিং (৬০০০*১)</td>
-                    <td width="10%">পোলিং অফিসার (৪০০০*১)</td>
-                    <td width="10%">যাতায়াত ভাতা (১০০০/- হারে)</td>
-                    <td width="10%">বেষ্টনি নির্মাণ (৮০০/- হারে)</td>
+                    <td width="10%">প্রিজাইডিং অফিসার (৮০০০*১জন হারে)</td>
+                    <td width="10%">সহকারী প্রিজাইডিং (৬০০০*১জন হারে)</td>
+                    <td width="10%">পোলিং অফিসার (৪০০০*১জন হারে)</td>
+                    <td width="10%">যাতায়াত ভাতা (১০০০*১জন হারে)</td>
+                    <td width="10%">বেষ্টনি নির্মাণ (৮০০*১জন হারে)</td>
                     <td width="10%">মোট টাকার পরিমাণ</td>
                     <td width="8%">উৎস কর কর্তন (১০%)</td>
-                    <td width="10%">বেষ্টনী ভ্যাট-আইটি (১৮%)</td>
+                    <td width="10%">বেস্টনী ভ্যাট বাবদ কর্তন ১৮% (১৫% ভ্যাট ও ৩% আইটি)</td>
                     <td width="8%">রেভিনিউ</td>
                     <td width="14%">নিট পাওনা (মোট প্রদত্ত টাকা)</td>
                 </tr>
@@ -488,7 +498,7 @@
                 </tr>
             </table>
 
-            <table width="100%" class="signature-table" style="margin-top: 15px;">
+            <table width="100%" class="signature-table" style="margin-top: 100px;">
                 <tr valign="top" class="text-center">
                     <td width="45%">
                         <p style="border-top: 1px solid black; display: inline-block; width: 180px; padding-top: 5px;"><b>প্রিজাইডিং অফিসারের স্বাক্ষর</b></p>
