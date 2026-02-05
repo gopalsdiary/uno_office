@@ -445,6 +445,25 @@
             const urlParams = new URLSearchParams(window.location.search);
             pendingCentreCode = urlParams.get('vote_centre_code');
             loadFromDatabase(); // Auto-load saved data on page load
+
+            // When the centre dropdown is opened (click or focus), ensure it shows all centres
+            // unless a specific area is selected. This makes the dropdown show all centres by
+            // default when user clicks it, and still allows area-based filtering.
+            const centreSelect = document.getElementById('centreSelect');
+            const areaSelect = document.getElementById('areaSelect');
+            function ensureCentreOptionsOnOpen() {
+                if (!centreSelect) return;
+                const area = areaSelect ? areaSelect.value : null;
+                if (!area || area === '') {
+                    populateCentreDropdown(null); // show all centres
+                } else {
+                    populateCentreDropdown(area); // show filtered by area
+                }
+            }
+            if (centreSelect) {
+                centreSelect.addEventListener('mousedown', ensureCentreOptionsOnOpen);
+                centreSelect.addEventListener('focus', ensureCentreOptionsOnOpen);
+            }
         });
         
         let generatedData = [];
@@ -932,6 +951,7 @@
                 // Display results (filtered by dropdown)
                 selectedCentreCode = 'all';
                 populateCentreDropdown();
+                populateAreaDropdown(); // populate area choices now that centres are available
                 renderAssignmentsAndStats();
                 
                 // Show save, regenerate and print buttons (always show regenerate for retry)
