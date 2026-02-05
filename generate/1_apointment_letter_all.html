@@ -539,6 +539,41 @@
                 Array.from(root.childNodes).forEach(traverseNodes);
             }
 
+            // Generic paginated fetch helper to bypass Supabase 1000-row limit
+            async function fetchAllData(tableName, idColumnName = 'id', selectCols = '*', filterCallback = null) {
+                if (!window.supabaseClient) throw new Error('Supabase client not initialized');
+                const batchSize = 1000;
+                let all = [];
+                let lastId = 0;
+                let batch = 0;
+
+                while (true) {
+                    batch++;
+                    const { data, error } = await window.supabaseClient
+                        .from(tableName)
+                        .select(selectCols)
+                        .gt(idColumnName, lastId)
+                        .order(idColumnName, { ascending: true })
+                        .limit(batchSize);
+
+                    if (error) {
+                        console.error(`Error fetching ${tableName} (batch ${batch}):`, error);
+                        throw error;
+                    }
+
+                    if (!data || data.length === 0) break;
+
+                    const filtered = filterCallback ? data.filter(filterCallback) : data;
+                    all.push(...filtered);
+
+                    lastId = data[data.length - 1][idColumnName];
+                    if (data.length < batchSize) break;
+                }
+
+                console.log(`Fetched ${all.length} rows from ${tableName} in ${batch} batch(es)`);
+                return all;
+            }
+
             // Load centre data from Supabase using centre_assignments table
             async function loadCentreDataFromSupabase(centreCode) {
                 if (!window.supabaseClient) {
@@ -888,16 +923,25 @@
                 // Otherwise load ALL centres and render each on its own page (using clones)
                 setStatus('Loading list of centres...');
                 try {
-                    const { data: centres, error: centresError } = await window.supabaseClient
-                        .from('vote_centre')
-                        .select('*')
-                        .order('vote_centre_code', { ascending: true });
+                    // Use paginated fetch to ensure we load all centres even if there are >1000 rows
+                    const centres = await fetchAllData('vote_centre', 'vote_centre_iid', '*');
 
-                    if (centresError) throw centresError;
                     if (!centres || centres.length === 0) {
                         setStatus('No centres found to render.', true);
                         return;
                     }
+
+                    // Ensure centres are sorted by code for consistent ordering
+                    centres.sort((a, b) => {
+                        const aRaw = a.vote_centre_code ?? '';
+                        const bRaw = b.vote_centre_code ?? '';
+                        const aNum = Number(aRaw);
+                        const bNum = Number(bRaw);
+                        if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
+                            return aNum - bNum;
+                        }
+                        return String(aRaw).localeCompare(String(bRaw));
+                    });
 
                     setStatus(`Found ${centres.length} centres. Rendering...`);
 
@@ -905,22 +949,16 @@
                     const parent = template.parentNode;
                     const originalTemplate = template.cloneNode(true);
 
-                    // Attempt to fetch all assignments in a single query to reduce round-trips
-                    const centreCodes = centres.map(c => c.vote_centre_code);
+                    // Attempt to fetch all assignments in a paginated way to reduce round-trips
                     let assignmentsMap = Object.create(null);
                     let bulkAssignmentsSucceeded = false;
 
                     try {
-                        const { data: allAssignments, error: assignErr } = await window.supabaseClient
-                            .from('centre_assignments')
-                            .select('*')
-                            .in('vote_centre_code', centreCodes);
-
-                        if (assignErr) throw assignErr;
+                        const allAssignments = await fetchAllData('centre_assignments', 'assignment_id', '*');
                         assignmentsMap = groupAssignmentsByCentre(allAssignments || []);
                         bulkAssignmentsSucceeded = true;
                     } catch (err) {
-                        console.warn('Bulk assignments fetch failed; will fallback to per-centre fetch as needed.', err);
+                        console.warn('Bulk assignments paginated fetch failed; will fallback to per-centre fetch as needed.', err);
                     }
 
                     // Render first centre (use bulk data if available, otherwise fetch single)
@@ -937,32 +975,52 @@
                         renderOfficerTable(firstFresh, template);
                         convertAllNumbersToBengali(template);
 
-                        // Render remaining centres using the assignment map
-                        for (let i = 1; i < centres.length; i++) {
-                            try {
-                                const centre = centres[i];
-                                const assignments = assignmentsMap[centre.vote_centre_code] || [];
-                                const fresh = {
-                                    centre: centre,
-                                    ...processAssignmentsRows(assignments)
-                                };
+                        // Render remaining centres using the assignment map in small async batches
+                        async function renderInBatchesUsingMap(centresList, assignmentsMap, templateNode, parentNode, originalTpl) {
+                            const total = centresList.length;
+                            // First one already rendered into 'templateNode'
+                            let rendered = 1;
+                            setStatus(`Rendered ${rendered} / ${total} centres...`);
 
-                                const clone = originalTemplate.cloneNode(true);
-                                clone.querySelectorAll('script').forEach(s => s.remove());
+                            const batchSize = 20; // tune for responsiveness
 
-                                renderCentreInfo(fresh.centre, clone);
-                                populateAreaRows(fresh.centre, clone);
-                                renderOfficerTable(fresh, clone);
-                                convertAllNumbersToBengali(clone);
+                            for (let i = 1; i < total; i++) {
+                                try {
+                                    const centre = centresList[i];
+                                    const assignments = assignmentsMap[centre.vote_centre_code] || [];
+                                    const fresh = {
+                                        centre: centre,
+                                        ...processAssignmentsRows(assignments)
+                                    };
 
-                                parent.appendChild(clone);
-                                setStatus(`Rendered ${i + 1} / ${centres.length} centres...`);
-                            } catch (innerErr) {
-                                console.error('Error rendering centre', centres[i], innerErr);
+                                    const clone = originalTpl.cloneNode(true);
+                                    clone.querySelectorAll('script').forEach(s => s.remove());
+
+                                    renderCentreInfo(fresh.centre, clone);
+                                    populateAreaRows(fresh.centre, clone);
+                                    renderOfficerTable(fresh, clone);
+                                    convertAllNumbersToBengali(clone);
+
+                                    parentNode.appendChild(clone);
+                                    rendered++;
+
+                                    // periodically yield control to avoid long-running script termination
+                                    if (i % batchSize === 0) {
+                                        setStatus(`Rendered ${rendered} / ${total} centres...`);
+                                        await new Promise(res => setTimeout(res, 50));
+                                    } else if (i % 5 === 0) {
+                                        // small yield
+                                        await new Promise(res => setTimeout(res, 0));
+                                    }
+                                } catch (innerErr) {
+                                    console.error('Error rendering centre', centresList[i], innerErr);
+                                }
                             }
+
+                            setStatus(`Rendering complete: ${total} centres.`);
                         }
 
-                        setStatus(`Rendering complete: ${centres.length} centres.`);
+                        await renderInBatchesUsingMap(centres, assignmentsMap, template, parent, originalTemplate);
                     } else {
                         // Fallback: bulk failed - use existing per-centre loader (sequential)
                         // Render first centre into existing template to minimize DOM churn
@@ -972,25 +1030,45 @@
                         renderOfficerTable(firstFresh, template);
                         convertAllNumbersToBengali(template);
 
-                        for (let i = 1; i < centres.length; i++) {
-                            try {
-                                const fresh = await loadCentreDataFromSupabase(centres[i].vote_centre_code);
-                                const clone = originalTemplate.cloneNode(true);
-                                clone.querySelectorAll('script').forEach(s => s.remove());
+                        // Fallback: fetch per-centre but render in batches to avoid script timeouts
+                        async function renderInBatchesWithFetch(centresList, templateNode, parentNode, originalTpl) {
+                            const total = centresList.length;
+                            let rendered = 1; // first centre already rendered into template
+                            setStatus(`Rendered ${rendered} / ${total} centres...`);
 
-                                renderCentreInfo(fresh.centre, clone);
-                                populateAreaRows(fresh.centre, clone);
-                                renderOfficerTable(fresh, clone);
-                                convertAllNumbersToBengali(clone);
+                            const batchSize = 10; // smaller because of network calls
 
-                                parent.appendChild(clone);
-                                setStatus(`Rendered ${i + 1} / ${centres.length} centres...`);
-                            } catch (innerErr) {
-                                console.error('Error loading centre', centres[i], innerErr);
+                            for (let i = 1; i < total; i++) {
+                                try {
+                                    const fresh = await loadCentreDataFromSupabase(centresList[i].vote_centre_code);
+                                    const clone = originalTpl.cloneNode(true);
+                                    clone.querySelectorAll('script').forEach(s => s.remove());
+
+                                    renderCentreInfo(fresh.centre, clone);
+                                    populateAreaRows(fresh.centre, clone);
+                                    renderOfficerTable(fresh, clone);
+                                    convertAllNumbersToBengali(clone);
+
+                                    parentNode.appendChild(clone);
+                                    rendered++;
+
+                                    if (i % batchSize === 0) {
+                                        setStatus(`Rendered ${rendered} / ${total} centres...`);
+                                        // yield a little to keep UI responsive
+                                        await new Promise(res => setTimeout(res, 100));
+                                    } else {
+                                        // small yield to avoid long-running script errors
+                                        await new Promise(res => setTimeout(res, 0));
+                                    }
+                                } catch (innerErr) {
+                                    console.error('Error loading centre', centresList[i], innerErr);
+                                }
                             }
+
+                            setStatus(`Rendering complete: ${total} centres.`);
                         }
 
-                        setStatus(`Rendering complete: ${centres.length} centres.`);
+                        await renderInBatchesWithFetch(centres, template, parent, originalTemplate);
                     }
                 } catch (error) {
                     console.error('Error loading all centres:', error);
