@@ -586,18 +586,23 @@
 
                 const { data: centerData, error: centerError } = await supabaseClient
                     .from('vote_centre')
-                    .select('vote_centre_name')
+                    .select('vote_centre_name, vote_centre_code')
                     .eq('vote_centre_iid', assignData.vote_centre_iid)
                     .maybeSingle();
                 
                 if (centerError) throw centerError;
 
                 const centerName = centerData ? centerData.vote_centre_name : 'অজানা কেন্দ্র';
+                const centerCode = (assignData && assignData.vote_centre_code) || (centerData && centerData.vote_centre_code) || '—';
 
                 infoDiv.innerHTML = `
                     <div class="assignment-label">আপনার দায়িত্বের কেন্দ্র</div>
                     <div class="assignment-value">
                         ${centerName}
+                    </div>
+                    <div class="assignment-label" style="margin-top:10px; text-transform:none;">কেন্দ্র কোড</div>
+                    <div class="assignment-value" style="font-size:15px;">
+                        ${centerCode}
                     </div>
                 `;
 
