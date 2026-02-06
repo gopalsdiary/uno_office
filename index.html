@@ -17,10 +17,30 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             min-height: 100vh;
             padding: 20px;
+            margin: 0;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 12px 0;
+            color: #fff;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        .footer a {
+            color: #fff;
+            text-decoration: underline;
         }
 
         .login-container {
@@ -123,28 +143,35 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>🏢 Uno Office, Feni Sadar</h1>
-            <p>Sign in to your account</p>
+    <main class="main">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🏢 Uno Office, Feni Sadar</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" id="loginBtn" class="login-btn">Sign In</button>
+            </form>
         </div>
+    </main>
 
-        <div id="errorMessage" class="error-message"></div>
-        <div id="successMessage" class="success-message"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-
-            <button type="submit" id="loginBtn" class="login-btn">Sign In</button>
-        </form>
+    <div class="footer">
+        <p>© 2026 Uno Feni Sadar Election Management System</p>
+        <p>Developed by : <a href="z_creator.html">Gopals Diary</a></p>
     </div>
 
     <script>
