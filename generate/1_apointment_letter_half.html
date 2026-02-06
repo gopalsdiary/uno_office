@@ -82,7 +82,8 @@
         }
 
         /* Ensure all text inside generated letters is black (overrides inline/colorful styles) */
-        .letter, .letter * {
+        .letter,
+        .letter * {
             color: #000 !important;
         }
 
@@ -107,7 +108,8 @@
             }
 
             /* Ensure printed letters are black */
-            .letter, .letter * {
+            .letter,
+            .letter * {
                 color: #000 !important;
                 -webkit-print-color-adjust: exact;
             }
@@ -119,12 +121,79 @@
                 /* no page-break-inside rules so tables may split when necessary */
             }
         }
+
+        /* Duplicate Report Styles */
+        .report-card {
+            background: #fff;
+            border: 2px solid #ff4d4d;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-card.success {
+            border-color: #38ef7d;
+        }
+
+        .report-card h2 {
+            margin-bottom: 15px;
+            color: #d32f2f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-card.success h2 {
+            color: #2e7d32;
+        }
+
+        .duplicate-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .duplicate-table th,
+        .duplicate-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .duplicate-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            background: #ff4d4d;
+        }
+
+        .type-badge {
+            background: #667eea;
+            margin-right: 5px;
+        }
+
+        @media print {
+            .report-card {
+                border-width: 1px;
+                box-shadow: none;
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-
+        <div id="duplicateReport"></div>
         <div id="appointmentContent">
             <div class="loading">
                 <h2>⏳ Loading data...</h2>
@@ -135,7 +204,7 @@
     <script>
         // Load all centres on page load
         window.addEventListener('DOMContentLoaded', async () => {
-            console.log('1_apointment_copy.html v2026-01-05-all');
+            console.log('Duplicate Check v1.0-2026-02-07');
             checkAuth();
             try {
                 const centres = await loadAllCentresData();
@@ -162,6 +231,9 @@
             if (!assignments || assignments.length === 0) {
                 throw new Error('No assignments found. Please generate and save first.');
             }
+
+            // Generate Duplicate Report
+            renderDuplicateReport(assignments);
 
             // Fetch requests to mark matching assignments
             const requests = await fetchAllRequests();
@@ -339,6 +411,86 @@
             if (type === 'ass_presiding') return officer.ass_presiding_name || officer.officer_name || officer.name || '';
             if (type === 'polling') return officer.polling_name || officer.officer_name || officer.name || '';
             return officer.officer_name || officer.name || '';
+        }
+
+        function renderDuplicateReport(assignments) {
+            const reportDiv = document.getElementById('duplicateReport');
+            if (!assignments || assignments.length === 0) return;
+
+            // Group by (type, iid) to find duplicates
+            const counts = new Map();
+            assignments.forEach(a => {
+                const key = `${a.officer_type}_${a.officer_iid}`;
+                if (!counts.has(key)) {
+                    counts.set(key, {
+                        officer: a,
+                        assignments: []
+                    });
+                }
+                counts.get(key).assignments.push(a);
+            });
+
+            const duplicates = Array.from(counts.values()).filter(group => group.assignments.length > 1);
+
+            if (duplicates.length === 0) {
+                reportDiv.innerHTML = `
+                    <div class="report-card success">
+                        <h2>✅ চমৎকার! কোনো ডুপলিকেট অফিসার পাওয়া যায়নি।</h2>
+                        <p>সব অফিসার একটি করেই কেন্দ্রে এসাইন হয়েছে।</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="report-card">
+                    <h2>⚠️ সতর্কতা: ডুপলিকেট অফিসার পাওয়া গেছে! (${toBengaliNumber(duplicates.length)} জন)</h2>
+                    <p>নিচের অফিসাররা একাধিক কেন্দ্রে এসাইন হয়েছেন। অনুগ্রহ করে চেক করুন।</p>
+                    <div style="overflow-x: auto;">
+                        <table class="duplicate-table">
+                            <thead>
+                                <tr>
+                                    <th>অফিসারের নাম ও পদবী</th>
+                                    <th>টাইপ</th>
+                                    <th>এসাইনমেন্ট সংখ্যা</th>
+                                    <th>ভোটকেন্দ্রের তালিকা (কোড - নাম)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            duplicates.forEach(group => {
+                const officer = group.officer;
+                const assignedCentres = group.assignments.map(a =>
+                    `• ${toBengaliNumber(a.vote_centre_code)} - ${a.vote_centre_name || 'N/A'}`
+                ).join('<br>');
+
+                let typeBn = officer.officer_type;
+                if (typeBn === 'presiding') typeBn = 'প্রিজাইডিং';
+                else if (typeBn === 'ass_presiding') typeBn = 'সহকারী প্রিজাইডিং';
+                else if (typeBn === 'polling') typeBn = 'পোলিং';
+
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${officer.officer_name}</strong><br>
+                            <span style="font-size: 12px; color: #666;">${officer.officer_designation || ''}</span>
+                        </td>
+                        <td><span class="badge type-badge">${typeBn}</span></td>
+                        <td style="text-align:center;"><span class="badge">${toBengaliNumber(group.assignments.length)} টি</span></td>
+                        <td style="font-size: 13px;">${assignedCentres}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            reportDiv.innerHTML = html;
         }
 
         function renderAllLetters(allData) {
