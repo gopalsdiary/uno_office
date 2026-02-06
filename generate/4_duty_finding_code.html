@@ -309,11 +309,20 @@
         .assignment-info {
             background: #f8fafc;
             border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #e2e8f0;
-            margin-top: 15px;
-            display: none;
-            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .assignment-info.loading {
+            border-style: dashed;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-light);
+            font-size: 13px;
         }
 
         .assignment-info.active {
@@ -678,25 +687,24 @@
             pageItems.forEach((officer) => {
                 const card = document.createElement('div');
                 card.className = 'officer-card';
+                card.style.cursor = 'default';
 
                 card.innerHTML = `
                     <div class="officer-header">
                         <div class="officer-info">
-                            <h3 style="margin-bottom: 0;">${highlightText(officer.name, query)}</h3>
+                            <h3 style="margin-bottom: 0; font-size: 18px;">${highlightText(officer.name, query)}</h3>
                         </div>
                     </div>
                     
-                    <div class="click-hint">
-                        <i class="fas fa-search-location"></i> কেন্দ্র দেখতে এখানে ক্লিক করুন
-                    </div>
-                    
-                    <div class="assignment-info" id="assign-${officer.type}-${officer.id}">
-                        <!-- Content loaded on click -->
+                    <div class="assignment-info loading" id="assign-${officer.type}-${officer.id}">
+                        <div class="loading-spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+                        <span>লেটার নং লোড হচ্ছে...</span>
                     </div>
                 `;
 
-                card.onclick = (e) => toggleAssignment(e, officer, card);
                 resultsArea.appendChild(card);
+                // Auto-load assignment result
+                loadAssignmentInfo(officer);
             });
 
             // Handle Pagination Controls
@@ -721,37 +729,8 @@
             renderPage(currentPage + delta);
         }
 
-        async function toggleAssignment(event, officer, cardElement) {
-            // Prevent triggering if clicked inside assignment info (if we had buttons there)
-            // But here the whole card is clickable.
-
-            // 1. Toggle expanded class
-            cardElement.classList.toggle('expanded');
-
+        async function loadAssignmentInfo(officer) {
             const infoDiv = document.getElementById(`assign-${officer.type}-${officer.id}`);
-
-            // 2. If already visible, just hide it? 
-            // The requirement says "Names shows center on click".
-            // Let's toggle visibility.
-            if (infoDiv.classList.contains('active')) {
-                infoDiv.classList.remove('active');
-                return;
-            }
-
-            infoDiv.classList.add('active');
-
-            // 3. If content already loaded, don't fetch again
-            if (infoDiv.innerHTML.trim().length > 50) { // arbitrary length check for loaded content
-                return;
-            }
-
-            // 4. Fetch data
-            infoDiv.innerHTML = `
-                <div class="detail-row" style="color: #64748b;">
-                    <div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                    <span>কেন্দ্র খোঁজা হচ্ছে...</span>
-                </div>
-            `;
 
             try {
                 const { data: assignData, error } = await supabaseClient
@@ -764,38 +743,27 @@
                 if (error) throw error;
 
                 if (!assignData) {
+                    infoDiv.classList.remove('loading');
                     infoDiv.innerHTML = `
-                        <div class="assignment-label">এসাইনমেন্ট স্ট্যাটাস</div>
-                        <div style="color: #d97706; font-weight: 600;">
-                            <i class="fas fa-user-clock"></i> Reserved
+                        <div style="color: #d97706; font-weight: 600; font-size: 16px;">
+                            <i class="fas fa-user-clock"></i> Reserved (সংরক্ষিত)
                         </div>
                     `;
                     return;
                 }
 
-                const { data: centerData, error: centerError } = await supabaseClient
-                    .from('vote_centre')
-                    .select('vote_centre_name, vote_centre_code')
-                    .eq('vote_centre_iid', assignData.vote_centre_iid)
-                    .maybeSingle();
+                const centerCode = assignData.vote_centre_code || '—';
 
-                if (centerError) throw centerError;
-
-                const centerName = centerData ? centerData.vote_centre_name : 'অজানা কেন্দ্র';
-                const centerCode = (assignData && assignData.vote_centre_code) || (centerData && centerData.vote_centre_code) || '—';
-
+                infoDiv.classList.remove('loading');
                 infoDiv.innerHTML = `
-                    <div style="text-align: center; animation: zoomIn 0.3s ease-out;">
-                        <div style="font-size: 14px; color: #64748b; margin-bottom: 8px; font-weight: 500;">অফিসারের নির্বাচনি কেন্দ্র</div>
-                        <div class="assignment-value" style="font-size: 22px; padding: 12px; background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; color: #1e293b; box-shadow: var(--shadow-sm); line-height: 1.4;">
-                            <div style="margin-bottom: 5px;">কেন্দ্র নং - <span style="color: var(--primary-color); font-weight: 800;">${toBengaliNumber(centerCode)}</span></div>
-                            <div style="font-size: 16px; color: #475569; font-weight: 600;">কেন্দ্র: ${centerName}</div>
-                        </div>
+                    <div class="assignment-value" style="font-size: 20px; font-weight: 800; color: #1e293b;">
+                        এপয়েন্টমেন্ট লেটার নং - <span style="color: var(--primary-color);">${toBengaliNumber(centerCode)}</span>
                     </div>
                 `;
 
             } catch (err) {
                 console.error('Assignment fetch error', err);
+                infoDiv.classList.remove('loading');
                 infoDiv.innerHTML = `<span style="color:red; font-size:12px">তথ্য লোড করতে সমস্যা হয়েছে</span>`;
             }
         }
