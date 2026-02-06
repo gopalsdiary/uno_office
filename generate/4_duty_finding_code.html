@@ -511,6 +511,51 @@
             return text.replace(regex, '<mark>$1</mark>');
         }
 
+        // Bengali to English digit mapping
+        const bengaliToEnglishMap = {
+            '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+            '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+        };
+
+        function convertBengaliToEnglish(text) {
+            if (!text) return '';
+            return text.replace(/[০-৯]/g, (match) => bengaliToEnglishMap[match] || match);
+        }
+
+        function maskMobileNumber(text) {
+            if (!text) return text;
+
+            let convertedText = convertBengaliToEnglish(text);
+            const regex = /(01[3-9]\d{8})/g;
+            const matches = [];
+            let match;
+
+            while ((match = regex.exec(convertedText)) !== null) {
+                matches.push({
+                    number: match[0],
+                    index: match.index
+                });
+            }
+
+            let result = text;
+            matches.reverse().forEach(m => {
+                const lastTwo = m.number.slice(-2);
+                const masked = '********' + lastTwo;
+
+                // Matches in original text by looking for 11 consecutive digits
+                const origRegex = /[0-9০-৯]{11}/g;
+                let origMatch;
+                while ((origMatch = origRegex.exec(text)) !== null) {
+                    const matchEng = convertBengaliToEnglish(origMatch[0]);
+                    if (matchEng === m.number) {
+                        result = result.substring(0, origMatch.index) + masked + result.substring(origMatch.index + origMatch[0].length);
+                    }
+                }
+            });
+
+            return result;
+        }
+
         const input = document.getElementById('searchInput');
         const clearBtn = document.getElementById('clearSearch');
         const statsDiv = document.getElementById('searchStats');
@@ -689,10 +734,12 @@
                 card.className = 'officer-card';
                 card.style.cursor = 'default';
 
+                const displayName = maskMobileNumber(officer.name);
+
                 card.innerHTML = `
                     <div class="officer-header">
                         <div class="officer-info">
-                            <h3 style="margin-bottom: 0; font-size: 18px;">${highlightText(officer.name, query)}</h3>
+                            <h3 style="margin-bottom: 0; font-size: 18px;">${highlightText(displayName, query)}</h3>
                         </div>
                     </div>
                     
