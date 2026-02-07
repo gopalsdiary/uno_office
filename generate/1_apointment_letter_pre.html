@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নিয়োগপত্র - Appointment Letter</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #38ef7d;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+
+        .letter {
+            margin-bottom: 15px;
+            background: white;
+            /* Force letter content to black text */
+            color: #000;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Ensure all text inside generated letters is black (overrides inline/colorful styles) */
+        .letter,
+        .letter * {
+            color: #000 !important;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            /* Allow multiple letters per printed page; allow splitting a single letter across pages when needed */
+            .letter {
+                margin-bottom: 0 !important;
+            }
+
+            /* Ensure printed letters are black */
+            .letter,
+            .letter * {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+            }
+
+            @page {
+                margin: 0.5in;
+            }
+
+            /* Allow tables and rows to split across pages when needed (lets centres be cut across pages) */
+            table,
+            tr,
+            td {
+                /* no page-break-inside rules so tables may split when necessary */
+            }
+        }
+
+        /* Duplicate Report Styles */
+        .report-card {
+            background: #fff;
+            border: 2px solid #ff4d4d;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-card.success {
+            border-color: #38ef7d;
+        }
+
+        .report-card h2 {
+            margin-bottom: 15px;
+            color: #d32f2f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-card.success h2 {
+            color: #2e7d32;
+        }
+
+        .duplicate-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .duplicate-table th,
+        .duplicate-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .duplicate-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            background: #ff4d4d;
+        }
+
+        .type-badge {
+            background: #667eea;
+            margin-right: 5px;
+        }
+
+        @media print {
+            .report-card {
+                border-width: 1px;
+                box-shadow: none;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="duplicateReport"></div>
+        <div id="summaryReport"></div>
+        <div id="appointmentContent">
+            <div class="loading">
+                <h2>⏳ Loading data...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load all centres on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('Duplicate Check v1.0-2026-02-07');
+            checkAuth();
+            try {
+                const centres = await loadAllCentresData();
+                renderAllLetters(centres);
+            } catch (error) {
+                console.error('Error loading centres:', error);
+                document.getElementById('appointmentContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error loading data</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+                    </div>
+                `;
+            }
+        });
+
+        async function loadAllCentresData() {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+
+            // Fetch all assignments with pagination to avoid row limits
+            const assignments = await fetchAllAssignments();
+            if (!assignments || assignments.length === 0) {
+                throw new Error('No assignments found. Please generate and save first.');
+            }
+
+            // Generate Duplicate Report
+            renderDuplicateReport(assignments);
+
+            // Fetch requests to mark matching assignments
+            const requests = await fetchAllRequests();
+            const requestSet = new Set();
+            if (requests) {
+                requests.forEach(r => {
+                    // Key: type_officerId_centreId
+                    // Ensure ID types match (using string for safety). 
+                    // assignment.officer_type matches request.officer_table_name ('presiding', 'ass_presiding', 'polling')
+                    const key = `${r.officer_table_name}_${r.officer_table_iid}_${r.vote_centre_iid}`;
+                    requestSet.add(key);
+                });
+            }
+
+            // Group by centre code
+            const centreMap = new Map();
+            for (const assignment of assignments) {
+                const code = assignment.vote_centre_code;
+                if (!centreMap.has(code)) {
+                    centreMap.set(code, {
+                        centre: {
+                            vote_centre_code: code,
+                            vote_centre_iid: assignment.vote_centre_iid,
+                            vote_centre_name: '',
+                            vote_centre_location: '',
+                            voter_both_male: 0,
+                            voter_both_female: 0,
+                            total_voter: ''
+                        },
+                        presiding: null,
+                        assPresiding: [],
+                        polling: []
+                    });
+                }
+
+                // Check if this specific assignment was requested
+                const reqKey = `${assignment.officer_type}_${assignment.officer_iid}_${assignment.vote_centre_iid}`;
+                const isRequested = requestSet.has(reqKey);
+
+                const bundle = centreMap.get(code);
+                if (assignment.officer_type === 'presiding') {
+                    bundle.presiding = {
+                        presiding_iid: assignment.officer_iid,
+                        presiding_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender,
+                        isRequested: isRequested
+                    };
+                } else if (assignment.officer_type === 'ass_presiding') {
+                    bundle.assPresiding.push({
+                        ass_presiding_iid: assignment.officer_iid,
+                        ass_presiding_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender,
+                        booth_number: assignment.booth_number,
+                        isRequested: isRequested
+                    });
+                } else if (assignment.officer_type === 'polling') {
+                    bundle.polling.push({
+                        polling_iid: assignment.officer_iid,
+                        polling_name: assignment.officer_name,
+                        designation: assignment.officer_designation,
+                        gender: assignment.officer_gender,
+                        booth_number: assignment.booth_number,
+                        person_number: assignment.person_number,
+                        isRequested: isRequested
+                    });
+                }
+            }
+
+            // Fetch centre meta for codes (normalize numeric strings to numbers for query)
+            const codes = Array.from(centreMap.keys()).filter(Boolean);
+            if (codes.length > 0) {
+                const codesForQuery = codes.map(c => {
+                    const n = Number(c);
+                    return isNaN(n) ? String(c) : n;
+                });
+
+                const { data: centres, error: centreError } = await window.supabaseClient
+                    .from('vote_centre')
+                    .select('vote_centre_code, vote_centre_name, vote_centre_location, vote_centre_area, voter_both_male, voter_both_female, total_voter')
+                    .in('vote_centre_code', codesForQuery);
+                if (!centreError && centres) {
+                    const meta = new Map();
+                    centres.forEach(c => meta.set(String(c.vote_centre_code), c));
+                    centreMap.forEach((bundle, code) => {
+                        const c = meta.get(String(code));
+                        if (c) {
+                            bundle.centre.vote_centre_name = c.vote_centre_name || bundle.centre.vote_centre_name;
+                            bundle.centre.vote_centre_location = c.vote_centre_location || bundle.centre.vote_centre_location;
+                            bundle.centre.vote_centre_area = c.vote_centre_area || bundle.centre.vote_centre_area;
+                            bundle.centre.voter_both_male = c.voter_both_male || 0;
+                            bundle.centre.voter_both_female = c.voter_both_female || 0;
+                            bundle.centre.total_voter = (c.total_voter !== undefined && c.total_voter !== null) ? c.total_voter : bundle.centre.total_voter;
+                        }
+                    });
+                }
+            }
+
+            // Sort arrays inside
+            centreMap.forEach(bundle => {
+                bundle.assPresiding.sort((a, b) => (a.booth_number || 0) - (b.booth_number || 0));
+                bundle.polling.sort((a, b) => {
+                    if ((a.booth_number || 0) !== (b.booth_number || 0)) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+            });
+
+            // Return sorted by numeric centre code
+            return Array.from(centreMap.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+        }
+
+        // Convert Arabic numerals to Bengali numerals (e.g., 1 -> ১)
+        function toBengaliNumber(n) {
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        // Fetch assignments with pagination (bypass Supabase 1000-row limit)
+        async function fetchAllAssignments() {
+            let all = [];
+            let lastId = 0;
+            const batchSize = 1000;
+            let batch = 0;
+            while (true) {
+                batch++;
+                const { data, error } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .select('*')
+                    .gt('assignment_id', lastId)
+                    .order('assignment_id', { ascending: true })
+                    .limit(batchSize);
+                if (error) throw new Error(`Failed to load assignments (batch ${batch}): ${error.message}`);
+                if (!data || data.length === 0) break;
+                all.push(...data);
+                lastId = data[data.length - 1].assignment_id;
+                if (data.length < batchSize) break;
+            }
+            return all;
+        }
+
+        // Fetch requests from request_table
+        async function fetchAllRequests() {
+            let all = [];
+            let lastId = 0;
+            const batchSize = 1000;
+            let batch = 0;
+            while (true) {
+                batch++;
+                const { data, error } = await window.supabaseClient
+                    .from('request_table')
+                    .select('*')
+                    .gt('request_id', lastId)
+                    .order('request_id', { ascending: true })
+                    .limit(batchSize);
+
+                if (error) {
+                    console.error('Error fetching requests:', error);
+                    break; // or throw, but better to just return what we have or empty so we don't block the page
+                }
+                if (!data || data.length === 0) break;
+                all.push(...data);
+                lastId = data[data.length - 1].request_id;
+                if (data.length < batchSize) break;
+            }
+            return all;
+        }
+
+        function getOfficerName(officer, type) {
+            if (!officer) return '';
+            // Fields from centre_assignments table
+            if (type === 'presiding') return officer.presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'ass_presiding') return officer.ass_presiding_name || officer.officer_name || officer.name || '';
+            if (type === 'polling') return officer.polling_name || officer.officer_name || officer.name || '';
+            return officer.officer_name || officer.name || '';
+        }
+
+        function renderDuplicateReport(assignments) {
+            const reportDiv = document.getElementById('duplicateReport');
+            if (!assignments || assignments.length === 0) return;
+
+            // Group by (type, iid) to find duplicates
+            const counts = new Map();
+            assignments.forEach(a => {
+                const key = `${a.officer_type}_${a.officer_iid}`;
+                if (!counts.has(key)) {
+                    counts.set(key, {
+                        officer: a,
+                        assignments: []
+                    });
+                }
+                counts.get(key).assignments.push(a);
+            });
+
+            const duplicates = Array.from(counts.values()).filter(group => group.assignments.length > 1);
+
+            if (duplicates.length === 0) {
+                reportDiv.innerHTML = `
+                    <div class="report-card success">
+                        <h2>কোনো ডুপলিকেট পাওয়া যায়নি। সব অফিসার একটি করেই কেন্দ্রে এসাইন হয়েছে।</h2>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="report-card">
+                    <h2>⚠️ সতর্কতা: ডুপলিকেট অফিসার পাওয়া গেছে! (${toBengaliNumber(duplicates.length)} জন)</h2>
+                    <p>নিচের অফিসাররা একাধিক কেন্দ্রে এসাইন হয়েছেন। অনুগ্রহ করে চেক করুন।</p>
+                    <div style="overflow-x: auto;">
+                        <table class="duplicate-table">
+                            <thead>
+                                <tr>
+                                    <th>অফিসারের নাম ও পদবী</th>
+                                    <th>টাইপ</th>
+                                    <th>এসাইনমেন্ট সংখ্যা</th>
+                                    <th>ভোটকেন্দ্রের তালিকা (কোড - নাম)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            duplicates.forEach(group => {
+                const officer = group.officer;
+                const assignedCentres = group.assignments.map(a =>
+                    `• ${toBengaliNumber(a.vote_centre_code)} - ${a.vote_centre_name || 'N/A'}`
+                ).join('<br>');
+
+                let typeBn = officer.officer_type;
+                if (typeBn === 'presiding') typeBn = 'প্রিজাইডিং';
+                else if (typeBn === 'ass_presiding') typeBn = 'সহকারী প্রিজাইডিং';
+                else if (typeBn === 'polling') typeBn = 'পোলিং';
+
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${officer.officer_name}</strong><br>
+                            <span style="font-size: 12px; color: #666;">${officer.officer_designation || ''}</span>
+                        </td>
+                        <td><span class="badge type-badge">${typeBn}</span></td>
+                        <td style="text-align:center;"><span class="badge">${toBengaliNumber(group.assignments.length)} টি</span></td>
+                        <td style="font-size: 13px;">${assignedCentres}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            reportDiv.innerHTML = html;
+        }
+
+        function renderAllLetters(allData) {
+            if (!allData || allData.length === 0) {
+                document.getElementById('appointmentContent').innerHTML = '<div class="error"><h2>❌ No data to show</h2></div>';
+                return;
+            }
+
+            // sort numerically by centre code
+            allData.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+
+            // Render Summary Table at the top - HIDDEN as per request
+            // renderSummaryTable(allData);
+
+            const sections = allData.map(renderSingleLetter).join('');
+            document.getElementById('appointmentContent').innerHTML = sections;
+        }
+
+        function renderSummaryTable(allData) {
+            const summaryDiv = document.getElementById('summaryReport');
+            if (!allData || allData.length === 0) return;
+
+            // Ensure appointment letters start on a new page after the summary
+            summaryDiv.style.pageBreakAfter = "always";
+
+            let totalBooths = 0;
+            let totalOfficers = 0;
+
+            let html = `
+                <div class="report-card success">
+                    <h2 style="font-family: Nikosh;">📊 কেন্দ্রের খসড়া সারসংক্ষেপ</h2>
+                    <table class="duplicate-table">
+                        <thead>
+                            <tr style="font-family: Nikosh;">
+                                <th style="text-align:center; width: 15%;">কেন্দ্র কোড</th>
+                                <th style="width: 45%;">কেন্দ্রের নাম</th>
+                                <th style="text-align:center; width: 20%;">মোট বুথ/কক্ষ</th>
+                                <th style="text-align:center; width: 20%;">মোট অফিসার</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            allData.forEach(data => {
+                const booths = data.assPresiding ? data.assPresiding.length : 0;
+                const pollingCount = data.polling ? data.polling.length : 0;
+                const officers = 1 + booths + pollingCount; // 1 Presiding officer
+
+                totalBooths += booths;
+                totalOfficers += officers;
+
+                html += `
+                    <tr style="font-family: Nikosh;">
+                        <td style="text-align:center;">${toBengaliNumber(data.centre.vote_centre_code)}</td>
+                        <td>${data.centre.vote_centre_name || 'N/A'}</td>
+                        <td style="text-align:center;">${toBengaliNumber(booths)} টি</td>
+                        <td style="text-align:center;">${toBengaliNumber(officers)} জন</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                        <tfoot>
+                            <tr style="font-weight:bold; background:#f0f9ff; font-family: Nikosh; font-size: 14pt;">
+                                <td colspan="4" style="text-align:center; padding: 15px;">
+                                    সর্বমোট (${toBengaliNumber(allData.length)} টি কেন্দ্র): ${toBengaliNumber(totalBooths)} টি ${toBengaliNumber(totalOfficers)} জন
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="no-print" style="margin-top: 15px; text-align: right;">
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+                    </div>
+                </div>
+            `;
+
+            summaryDiv.innerHTML = html;
+        }
+
+        function renderSingleLetter(data) {
+            const centre = data.centre;
+            const presiding = data.presiding;
+            const assPresiding = data.assPresiding || [];
+            const polling = data.polling || [];
+
+            // Build table rows - same format as 3_vote_centre.html
+            let tableRows = '';
+            const maxRows = Math.max(1, assPresiding.length);
+            const firstAssPres = assPresiding.length > 0 ? assPresiding[0] : null;
+
+            if (assPresiding.length === 0) {
+                tableRows = `
+                    <tr>
+                        <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
+                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? ((presiding.isRequested ? '' : '') + toBengaliNumber(getOfficerName(presiding, 'presiding'))) : 'N/A'}</span></p>
+                            ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
+                        </td>
+                        <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
+                        <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">&nbsp;</td>
+                    </tr>`;
+            } else {
+                for (let i = 0; i < maxRows; i++) {
+                    const assPres = assPresiding[i];
+                    const poll1 = polling[i * 2];
+                    const poll2 = polling[i * 2 + 1];
+                    const poll2Style = (poll1 && poll2) ? 'border-top:0.75pt solid #000; padding-top:5pt; margin-top:5pt;' : '';
+
+                    tableRows += `
+                        <tr>
+                            ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:2pt 5pt; text-align:left; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? ((presiding.isRequested ? '' : '') + toBengaliNumber(getOfficerName(presiding, 'presiding'))) : 'N/A'}</span></p>
+                                ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt; color:#444 !important;">${presiding.designation}</p>` : ''}
+                            </td>` : ''}
+                            
+                            <td style="border:0.75pt solid #000; padding:2pt 5pt; text-align:left; vertical-align:middle;">
+                                <p style="margin:0; font-size:10pt;">
+                                    ${assPres ? `<strong>${toBengaliNumber(i + 1)}।</strong> <span style="font-family:Nikosh;">${assPres.isRequested ? '' : ''}${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
+                                </p>
+                                ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt; color:#444 !important;">${assPres.designation}</p>` : ''}
+                            </td>
+                        </tr>`;
+                }
+            }
+
+            const maleCount = Number(centre.voter_both_male) || 0;
+            const femaleCount = Number(centre.voter_both_female) || 0;
+            const boothInfo = `<p style="font-size:12pt; margin-bottom:10px;"><span style="font-family:NikoshBAN; color:#ff0066;">যে ভোটার এলাকার ভোটারগণ ভোট প্রদান করবেন সে এলাকার নামঃ ${centre.vote_centre_location || 'N/A'}${(maleCount > 0 || femaleCount > 0) ? ` (পুরুষ বুথ-${toBengaliNumber(maleCount)} টি, মহিলা বুথ-${toBengaliNumber(femaleCount)} টি)` : ''}</span></p>`;
+
+            // Calculate a display value for total voters: prefer explicit total, otherwise sum the booth counts
+            const totalVoterDisplay = (centre.total_voter !== undefined && centre.total_voter !== null && centre.total_voter !== '')
+                ? toBengaliNumber(centre.total_voter)
+                : ((maleCount + femaleCount) > 0 ? toBengaliNumber(maleCount + femaleCount) : 'N/A');
+
+            const content = `
+                <div class="letter">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+                    <div style="flex: 1;"></div>
+                    <div style="flex: 2; text-align: center;">
+                        <p style="font-size:13pt; margin: 0;">
+                            <u><span style="font-family:NikoshBAN;">প্রিজাইডিং অফিসার এবং সহকারী প্রিজাইডিং অফিসারদের নাম</span></u>
+                        </p>
+                    </div>
+                    <div style="flex: 1; text-align: right;">
+                        <p style="font-size:14pt; margin: 0;">
+                            <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
+                        </p>
+                    </div>
+                </div>
+               
+                <p style="font-size:11pt; margin-bottom:1px;">
+                    <span style="font-family:NikoshBAN;"><strong>ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'} , <span style="color:#c00000 !important;">${centre.vote_centre_area || centre.vote_centre_location || 'N/A'}</span> ;  কেন্দ্র কোড- ${centre.vote_centre_code || 'N/A'} ;  ভোটার ${totalVoterDisplay} জন।</strong></span>
+                </p>
+                ${boothInfo.replace('margin-bottom:10px;', 'margin-bottom:2px;')}
+                
+                
+                <table style="width:100%; border:0.75pt solid #000; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:40%; border:0.75pt solid #000; padding:4pt; text-align:left;">
+                            <span style="font-family:Nikosh; font-size:10pt; font-weight:bold;">প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                        <td style="width:60%; border:0.75pt solid #000; padding:4pt; text-align:left;">
+                            <span style="font-family:Nikosh; font-size:10pt; font-weight:bold;">সহকারী প্রিজাইডিং অফিসারের নাম ও পদবী</span>
+                        </td>
+                    </tr>
+                    
+                    ${tableRows}
+                </table>
+                
+                
+                
+                <div style="margin-top:1px; border-top:1px solid #eee; padding-top:2px;">
+                </div>
+            </div>`;
+
+            return content;
+        }
+    </script>
+</body>
+
+</html>
