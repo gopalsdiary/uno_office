@@ -209,6 +209,41 @@
                 </tr>
             </table>
 
+            <table width="100%" class="top-materials-table" style="margin-top: 5px;">
+                <tr>
+                    <td width="3%"></td>
+                    <td width="35%" class="text-center bg-gray fw-bold">বিবরণ</td>
+                    <td width="15%" class="text-center bg-gray fw-bold">সংখ্যা</td>
+                    <td width="47%" class="text-center bg-gray fw-bold">স্বচ্ছ ব্যালট বাক্স নম্বরঃ</td>
+                </tr>
+                <tr>
+                    <td class="text-center">১</td>
+                    <td>ব্যালট পেপার</td>
+                    <td class="text-center">{{total_voter}}</td>
+                    <td rowspan="5" class="text-center fw-bold" style="font-size: 14pt;">{{ballot_box_numbers}}</td>
+                </tr>
+                <tr>
+                    <td class="text-center">২</td>
+                    <td>গণভোট ব্যালট পেপার</td>
+                    <td class="text-center">{{total_voter}}</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৩</td>
+                    <td>ভোটার তালিকা (ছবি সহ) -সংশ্লিষ্ট এলাকার</td>
+                    <td class="text-center">০১ (এক) সেট</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৪</td>
+                    <td>স্বচ্ছ ব্যালট বাক্স (ঢাকনাসহ)</td>
+                    <td class="text-center">{{ballot_box_qty_new}}</td>
+                </tr>
+                <tr>
+                    <td class="text-center">৫</td>
+                    <td>স্বচ্ছ ব্যালট বাক্সের সিল (লক)</td>
+                    <td class="text-center">{{ballot_box_seal_qty_new}}</td>
+                </tr>
+            </table>
+
             <table width="100%" class="materials-table" style="margin-top: 5px;">
                 <tr class="bg-gray text-center fw-bold">
                     <td width="3%">ক্রঃ</td>
@@ -601,7 +636,18 @@
                     if (error) throw error;
 
                     const container = document.getElementById('app');
-                    const filtered = c ? data.filter(d => d.vote_centre_code == c) : data;
+
+                    // Cumulative Voter Serial calculation for ALL centers
+                    let currentSerial = 1;
+                    const centersWithRange = data.map(d => {
+                        const voterCount = parseInt(this.toEn(d.total_voter || 0));
+                        const start = currentSerial;
+                        const end = currentSerial + voterCount - 1;
+                        currentSerial = end + 1;
+                        return { ...d, startSerial: start, endSerial: end };
+                    });
+
+                    const filtered = c ? centersWithRange.filter(d => d.vote_centre_code == c) : centersWithRange;
 
                     // Summary Logic
                     let rowsHtml = '';
@@ -716,6 +762,9 @@
                     total_officer: this.toBn(totalOfficer),
                     ballot_box_qty: this.toBn(ballotBoxQty),
                     ballot_box_seal_qty: this.toBn(ballotBoxSealQty),
+                    ballot_box_qty_new: this.toBn(voterBothTotal + 1),
+                    ballot_box_seal_qty_new: this.toBn((voterBothTotal + 1) * 5),
+                    ballot_box_numbers: this.toBn(d.startSerial) + '-' + this.toBn(d.endSerial),
                     ink_qty: this.toBn(inkQty),
                     rubber_seal_qty: this.toBn(rubberSealQty),
                     marking_seal_qty: this.toBn(markingSealQty),
@@ -735,7 +784,7 @@
 
                 let h = document.getElementById('page-template').innerHTML;
                 for (let key in vals) {
-                    h = h.replace(new RegExp(`{{${key}}}`, 'g'), vals[key] || '');
+                    h = h.replace(new RegExp(`{{${key}}}`, 'g'), vals[key] === undefined || vals[key] === null ? '' : vals[key]);
                 }
                 const el = document.createElement('div'); el.innerHTML = h; return el.firstElementChild;
             },
