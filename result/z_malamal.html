@@ -546,17 +546,18 @@
                 <tr class="bg-gray text-center fw-bold">
                     <td colspan="11">ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</td>
                 </tr>
-                <tr class="bg-gray text-center fw-bold" style="font-size: 8pt;">
-                    <td width="10%">প্রিজাইডিং অফিসার (৮০০০*১জন হারে)</td>
-                    <td width="10%">সহকারী প্রিজাইডিং (৬০০০*১জন হারে)</td>
-                    <td width="10%">পোলিং অফিসার (৪০০০*১জন হারে)</td>
-                    <td width="10%">যাতায়াত ভাতা (১০০০*১জন হারে)</td>
-                    <td width="10%">বেষ্টনি নির্মাণ (৮০০*১জন হারে)</td>
-                    <td width="10%">মোট টাকার পরিমাণ</td>
-                    <td width="8%">উৎস কর কর্তন (১০%)</td>
-                    <td width="10%">বেস্টনী ভ্যাট বাবদ কর্তন ১৮% (১৫% ভ্যাট ও ৩% আইটি)</td>
+                <tr class="bg-gray text-center fw-bold" style="font-size: 7.5pt;">
+                    <td width="8%">প্রিজাইডিং (৮০০০*১)</td>
+                    <td width="8%">সহঃ প্রিজাইডিং (৬০০০*)</td>
+                    <td width="8%">পোলিং অফিসার (৪০০০*)</td>
+                    <td width="8%">যাতায়াত (১০০০*)</td>
+                    <td width="8%">বেষ্টনি (১২০০)</td>
+                    <td width="8%">মনিহারি (১৫০০)</td>
+                    <td width="10%">মোট পরিমাণ</td>
+                    <td width="8%">উৎসে কর (১০%)</td>
+                    <td width="10%">বেষ্টনী ভ্যাট ৫% + আয়কর ১০% (১৫%)</td>
                     <td width="8%">রেভিনিউ</td>
-                    <td width="14%">নিট পাওনা (মোট প্রদত্ত টাকা)</td>
+                    <td width="16%">নিট পাওনা</td>
                 </tr>
                 <tr class="text-center fw-bold">
                     <td>৮,০০০</td>
@@ -564,6 +565,7 @@
                     <td>{{polling_total}}</td>
                     <td>{{travel_total}}</td>
                     <td>{{bestni_total}}</td>
+                    <td>{{monihari_total}}</td>
                     <td>{{gross_total}}</td>
                     <td>{{tax_10}}</td>
                     <td>{{vat_it}}</td>
@@ -571,8 +573,8 @@
                     <td style="background:#e9f7ef; font-size: 11pt;">{{net_total}}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right fw-bold">মোট কর্তন:</td>
-                    <td colspan="5" class="text-center fw-bold bg-gray">{{total_deduction}}</td>
+                    <td colspan="7" class="text-right fw-bold">মোট কর্তন:</td>
+                    <td colspan="4" class="text-center fw-bold bg-gray">{{total_deduction}}</td>
                 </tr>
             </table>
 
@@ -590,75 +592,7 @@
         </div>
     </script>
 
-    <script id="summary-template" type="text/template">
-        <div class="legal-page summary-page landscape-page" style="height: auto; min-height: 8.5in;">
-            <h2 class="text-center" style="margin-top: 0; margin-bottom: 5px;">ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</h2>
-            <table width="100%" class="summary-table" style="font-size: 8pt;">
-                <thead>
-                    <tr class="bg-gray text-center fw-bold">
-                        <td rowspan="2" width="3%">কেন্দ্র কোড</td>
-                        <td rowspan="2" width="10%">প্রিজাইডিং অফিসারের নাম</td>
-                        <td rowspan="2" width="15%">ভোটকেন্দ্রের নাম</td>
-                        <td rowspan="2" width="4%">কক্ষ সংখ্যা</td>
-                        <td width="6%">প্রিজাইডিং অফিসার (৮০০০x১ হারে)</td>
-                        <td width="6%">সহকারী প্রিজাইডিং (৬০০০xবুথ হারে)</td>
-                        <td width="6%">পোলিং অফিসার (৪০০০x২xবুথ হারে)</td>
-                        <td width="5%">যাতায়াত ভাতা (প্রতিজন ১০০০/- হারে)</td>
-                        <td width="5%">বেষ্টনী নির্মাণ (৮০০/- হারে)</td>
-                        <td rowspan="2" width="7%">মোট টাকার পরিমাণ</td>
-                        <td colspan="3" width="12%">কর্তন</td>
-                        <td rowspan="2" width="5%">মোট কর্তন</td>
-                        <td rowspan="2" width="7%">মোট প্রদত্ত টাকা</td>
-                        <td rowspan="2" width="8%">স্বাক্ষর</td>
-                    </tr>
-                    <tr class="bg-gray text-center fw-bold" style="font-size: 7pt;">
-                        <td>১</td>
-                        <td>২</td>
-                        <td>৩</td>
-                        <td>৪</td>
-                        <td>৫</td>
-                        <td>উৎসে কর ১০%</td>
-                        <td>বেষ্টনী ভ্যাট/আইটি</td>
-                        <td>রেভিনিউ স্ট্যাম্প</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{rows}}
-                </tbody>
-                <tfoot>
-                    <tr class="fw-bold bg-gray text-center">
-                        <td colspan="4" class="text-right">সর্বমোট:</td>
-                        <td>{{total_prv}}</td>
-                        <td>{{total_asst}}</td>
-                        <td>{{total_pol}}</td>
-                        <td>{{total_travel}}</td>
-                        <td>{{total_bestni}}</td>
-                        <td>{{total_gross}}</td>
-                        <td>{{total_tax}}</td>
-                        <td>{{total_vat}}</td>
-                        <td>{{total_rev}}</td>
-                        <td>{{total_deduction}}</td>
-                        <td>{{total_net}}</td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
 
-            <table width="100%" class="signature-table" style="margin-top: 20px; border: none;">
-                <tr valign="top" class="text-center" style="border: none;">
-                    <td width="33%" style="border: none;">
-                        <p style="border-top: 1px solid black; display: inline-block; width: 180px; padding-top: 5px;"><b>অফিস সহকারী/আইটি</b></p>
-                    </td>
-                    <td width="33%" style="border: none;">
-                         <p style="border-top: 1px solid black; display: inline-block; width: 220px; padding-top: 5px;"><b>হিসাব রক্ষণ কর্মকর্তা</b></p>
-                    </td>
-                    <td width="33%" style="border: none;">
-                        <p style="border-top: 1px solid black; display: inline-block; width: 220px; padding-top: 5px;"><b>রিটার্নিং/সহকারী রিটার্নিং অফিসার</b></p>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </script>
 
     <script id="serial-summary-template" type="text/template">
         <div class="legal-page summary-page" style="height: auto; min-height: 14in;">
@@ -704,8 +638,17 @@
                 const p = new URLSearchParams(window.location.search);
                 const c = p.get('vote_centre_code');
                 try {
-                    const { data, error } = await window.supabaseClient.from('vote_centre').select('*').order('vote_centre_code', { ascending: true });
-                    if (error) throw error;
+                    // Fetch centers and presiding assignments separately
+                    const [centersRes, assignmentsRes] = await Promise.all([
+                        window.supabaseClient.from('vote_centre').select('*').order('vote_centre_code', { ascending: true }),
+                        window.supabaseClient.from('centre_assignments').select('vote_centre_code, officer_name, officer_type').eq('officer_type', 'presiding')
+                    ]);
+
+                    if (centersRes.error) throw centersRes.error;
+                    if (assignmentsRes.error) throw assignmentsRes.error;
+
+                    const data = centersRes.data;
+                    const assignments = assignmentsRes.data;
 
                     const container = document.getElementById('app');
 
@@ -716,71 +659,19 @@
                         const start = currentSerial;
                         const end = currentSerial + voterCount - 1;
                         currentSerial = end + 1;
-                        return { ...d, startSerial: start, endSerial: end };
+
+                        // Find presiding officer for this centre code
+                        const presiding = assignments.find(a => String(a.vote_centre_code) === String(d.vote_centre_code));
+
+                        return {
+                            ...d,
+                            startSerial: start,
+                            endSerial: end,
+                            centre_assignments: presiding ? [presiding] : []
+                        };
                     });
 
                     const filtered = c ? centersWithRange.filter(d => d.vote_centre_code == c) : centersWithRange;
-
-                    // 1. Allowance Summary Logic (Landscape - Move to First)
-                    if (filtered.length > 1) {
-                        let rowsHtml = '';
-                        let sumPrv = 0, sumAsst = 0, sumPol = 0, sumTravel = 0, sumBestni = 0;
-                        let sumGross = 0, sumTax = 0, sumVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
-
-                        filtered.forEach((d, idx) => {
-                            const res = this.calculate(d);
-                            sumPrv += 8000;
-                            sumAsst += res.assistantTotal;
-                            sumPol += res.pollingTotal;
-                            sumTravel += res.travelTotal;
-                            sumBestni += res.bestniTotal;
-                            sumGross += res.gross;
-                            sumTax += res.tax10;
-                            sumVat += res.vatIt;
-                            sumRev += res.revenue;
-                            sumDeduction += res.deduction;
-                            sumNet += res.net;
-
-                            rowsHtml += `
-                                <tr class="text-center">
-                                    <td>${this.toBn(d.vote_centre_code)}</td>
-                                    <td></td>
-                                    <td class="text-left">${d.vote_centre_name}</td>
-                                    <td>${this.toBn(res.vbt)}</td>
-                                    <td>${this.toBn((8000).toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.assistantTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.pollingTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.travelTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.bestniTotal.toLocaleString('bn-BD'))}</td>
-                                    <td class="fw-bold">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.tax10.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.vatIt.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.revenue.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
-                                    <td class="fw-bold">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
-                                    <td></td>
-                                </tr>
-                            `;
-                        });
-
-                        let sTmp = document.getElementById('summary-template').innerHTML;
-                        sTmp = sTmp.replace('{{rows}}', rowsHtml)
-                            .replace('{{total_prv}}', this.toBn(sumPrv.toLocaleString('bn-BD')))
-                            .replace('{{total_asst}}', this.toBn(sumAsst.toLocaleString('bn-BD')))
-                            .replace('{{total_pol}}', this.toBn(sumPol.toLocaleString('bn-BD')))
-                            .replace('{{total_travel}}', this.toBn(sumTravel.toLocaleString('bn-BD')))
-                            .replace('{{total_bestni}}', this.toBn(sumBestni.toLocaleString('bn-BD')))
-                            .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
-                            .replace('{{total_tax}}', this.toBn(sumTax.toLocaleString('bn-BD')))
-                            .replace('{{total_vat}}', this.toBn(sumVat.toLocaleString('bn-BD')))
-                            .replace('{{total_rev}}', this.toBn(sumRev.toLocaleString('bn-BD')))
-                            .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
-                            .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
-
-                        const sEl = document.createElement('div');
-                        sEl.innerHTML = sTmp;
-                        container.appendChild(sEl.firstElementChild);
-                    }
 
                     // 2. Serial Summary Logic (Portrait)
                     if (filtered.length > 1) {
@@ -827,11 +718,15 @@
                 const honorariumTotal = presidingTotal + assistantTotal + pollingTotal;
 
                 const travelTotal = totalOfficer * 1000;
-                const bestniTotal = voterBothTotal * 800;
+                const bestniTotal = voterBothTotal * 1200;
+                const monihariTotal = 1500;
 
-                const grossTotal = honorariumTotal + travelTotal + bestniTotal;
-                const tax10 = Math.round(honorariumTotal * 0.10);
-                const vatIt = Math.round(bestniTotal * 0.18);
+                const grossTotal = honorariumTotal + travelTotal + bestniTotal + monihariTotal;
+
+                // Tax 10% on items 1, 2, 3, 4 (Honorarium + Travel)
+                const tax10 = Math.round((honorariumTotal + travelTotal) * 0.10);
+                // Beshtoni VAT 5% + IT 10% = 15%
+                const vatIt = Math.round(bestniTotal * 0.15);
                 const revenue = 30 + (totalOfficer - 1) * 20;
 
                 const totalDeduction = tax10 + vatIt + revenue;
@@ -848,6 +743,7 @@
                     pollingTotal,
                     travelTotal,
                     bestniTotal,
+                    monihariTotal,
                     tax10,
                     vatIt,
                     revenue
@@ -868,9 +764,12 @@
                 const markingSealQty = (voterBothTotal * 2) + 2;
                 const stampPadQty = voterBothTotal + 1;
 
+                const presidingName = d.centre_assignments?.find(a => a.officer_type === 'presiding')?.officer_name || '';
+
                 const vals = {
                     vote_centre_code: this.toBn(d.vote_centre_code),
                     vote_centre_name: d.vote_centre_name,
+                    presiding_name: presidingName,
                     voter_both_total: this.toBn(voterBothTotal),
                     voter_both_total_x2: this.toBn(voterBothTotal * 2),
                     male_voter: this.toBn(d.male_voter || 0),
@@ -892,6 +791,7 @@
                     polling_total: this.toBn(res.pollingTotal.toLocaleString('bn-BD')),
                     travel_total: this.toBn(res.travelTotal.toLocaleString('bn-BD')),
                     bestni_total: this.toBn(res.bestniTotal.toLocaleString('bn-BD')),
+                    monihari_total: this.toBn(res.monihariTotal.toLocaleString('bn-BD')),
                     gross_total: this.toBn(res.gross.toLocaleString('bn-BD')),
                     tax_10: this.toBn(res.tax10.toLocaleString('bn-BD')),
                     vat_it: this.toBn(res.vatIt.toLocaleString('bn-BD')),
