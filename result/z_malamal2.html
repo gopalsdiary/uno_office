@@ -99,11 +99,6 @@
             margin: 0.1in;
         }
 
-        @page landscape-page {
-            size: 14in 8.5in;
-            margin: 0.1in;
-        }
-
         @media print {
 
             body,
@@ -122,12 +117,6 @@
                 page-break-after: always !important;
                 position: relative;
                 overflow: hidden !important;
-            }
-
-            .landscape-page {
-                page: landscape-page !important;
-                width: 13.8in !important;
-                height: 8.2in !important;
             }
 
             /* Summary page should flow naturally across papers */
@@ -591,35 +580,19 @@
     </script>
 
     <script id="summary-template" type="text/template">
-        <div class="legal-page summary-page landscape-page" style="height: auto; min-height: 8.5in;">
-            <h2 class="text-center" style="margin-top: 0; margin-bottom: 5px;">ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</h2>
-            <table width="100%" class="summary-table" style="font-size: 8pt;">
+        <div class="legal-page summary-page" style="height: auto; min-height: 14in;">
+            <h2 class="text-center" style="margin-top: 0; margin-bottom: 20px; text-decoration: underline;">ভোটগ্রহণ কর্মকর্তাদের ভাতা প্রদানের সংক্ষিপ্ত তালিকা</h2>
+            <table width="100%" class="summary-table">
                 <thead>
                     <tr class="bg-gray text-center fw-bold">
-                        <td rowspan="2" width="3%">কেন্দ্র কোড</td>
-                        <td rowspan="2" width="10%">প্রিজাইডিং অফিসারের নাম</td>
-                        <td rowspan="2" width="15%">ভোটকেন্দ্রের নাম</td>
-                        <td rowspan="2" width="4%">কক্ষ সংখ্যা</td>
-                        <td width="6%">প্রিজাইডিং অফিসার (৮০০০x১ হারে)</td>
-                        <td width="6%">সহকারী প্রিজাইডিং (৬০০০xবুথ হারে)</td>
-                        <td width="6%">পোলিং অফিসার (৪০০০x২xবুথ হারে)</td>
-                        <td width="5%">যাতায়াত ভাতা (প্রতিজন ১০০০/- হারে)</td>
-                        <td width="5%">বেষ্টনী নির্মাণ (৮০০/- হারে)</td>
-                        <td rowspan="2" width="7%">মোট টাকার পরিমাণ</td>
-                        <td colspan="3" width="12%">কর্তন</td>
-                        <td rowspan="2" width="5%">মোট কর্তন</td>
-                        <td rowspan="2" width="7%">মোট প্রদত্ত টাকা</td>
-                        <td rowspan="2" width="8%">স্বাক্ষর</td>
-                    </tr>
-                    <tr class="bg-gray text-center fw-bold" style="font-size: 7pt;">
-                        <td>১</td>
-                        <td>২</td>
-                        <td>৩</td>
-                        <td>৪</td>
-                        <td>৫</td>
-                        <td>উৎসে কর ১০%</td>
-                        <td>বেষ্টনী ভ্যাট/আইটি</td>
-                        <td>রেভিনিউ স্ট্যাম্প</td>
+                        <td width="4%">ক্রঃ</td>
+                        <td width="8%">কেন্দ্র কোড</td>
+                        <td width="22%">কেন্দ্রের নাম</td>
+                        <td width="12%">এরিয়া</td>
+                        <td width="11%">মোট টাকা</td>
+                        <td width="11%">মোট কর্তন</td>
+                        <td width="11%">নিট পাওনা</td>
+                        <td width="21%">কর্মকর্তার স্বাক্ষর ও মোবাইল নম্বর</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -628,15 +601,7 @@
                 <tfoot>
                     <tr class="fw-bold bg-gray text-center">
                         <td colspan="4" class="text-right">সর্বমোট:</td>
-                        <td>{{total_prv}}</td>
-                        <td>{{total_asst}}</td>
-                        <td>{{total_pol}}</td>
-                        <td>{{total_travel}}</td>
-                        <td>{{total_bestni}}</td>
                         <td>{{total_gross}}</td>
-                        <td>{{total_tax}}</td>
-                        <td>{{total_vat}}</td>
-                        <td>{{total_rev}}</td>
                         <td>{{total_deduction}}</td>
                         <td>{{total_net}}</td>
                         <td></td>
@@ -644,15 +609,13 @@
                 </tfoot>
             </table>
 
-            <table width="100%" class="signature-table" style="margin-top: 20px; border: none;">
+            <table width="100%" class="signature-table" style="margin-top: 50px; border: none;">
                 <tr valign="top" class="text-center" style="border: none;">
-                    <td width="33%" style="border: none;">
+                    <td width="45%" style="border: none;">
                         <p style="border-top: 1px solid black; display: inline-block; width: 180px; padding-top: 5px;"><b>অফিস সহকারী/আইটি</b></p>
                     </td>
-                    <td width="33%" style="border: none;">
-                         <p style="border-top: 1px solid black; display: inline-block; width: 220px; padding-top: 5px;"><b>হিসাব রক্ষণ কর্মকর্তা</b></p>
-                    </td>
-                    <td width="33%" style="border: none;">
+                    <td width="10%" style="border: none;"></td>
+                    <td width="45%" style="border: none;">
                         <p style="border-top: 1px solid black; display: inline-block; width: 220px; padding-top: 5px;"><b>রিটার্নিং/সহকারী রিটার্নিং অফিসার</b></p>
                     </td>
                 </tr>
@@ -721,68 +684,7 @@
 
                     const filtered = c ? centersWithRange.filter(d => d.vote_centre_code == c) : centersWithRange;
 
-                    // 1. Allowance Summary Logic (Landscape - Move to First)
-                    if (filtered.length > 1) {
-                        let rowsHtml = '';
-                        let sumPrv = 0, sumAsst = 0, sumPol = 0, sumTravel = 0, sumBestni = 0;
-                        let sumGross = 0, sumTax = 0, sumVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
-
-                        filtered.forEach((d, idx) => {
-                            const res = this.calculate(d);
-                            sumPrv += 8000;
-                            sumAsst += res.assistantTotal;
-                            sumPol += res.pollingTotal;
-                            sumTravel += res.travelTotal;
-                            sumBestni += res.bestniTotal;
-                            sumGross += res.gross;
-                            sumTax += res.tax10;
-                            sumVat += res.vatIt;
-                            sumRev += res.revenue;
-                            sumDeduction += res.deduction;
-                            sumNet += res.net;
-
-                            rowsHtml += `
-                                <tr class="text-center">
-                                    <td>${this.toBn(d.vote_centre_code)}</td>
-                                    <td></td>
-                                    <td class="text-left">${d.vote_centre_name}</td>
-                                    <td>${this.toBn(res.vbt)}</td>
-                                    <td>${this.toBn((8000).toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.assistantTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.pollingTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.travelTotal.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.bestniTotal.toLocaleString('bn-BD'))}</td>
-                                    <td class="fw-bold">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.tax10.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.vatIt.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.revenue.toLocaleString('bn-BD'))}</td>
-                                    <td>${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
-                                    <td class="fw-bold">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
-                                    <td></td>
-                                </tr>
-                            `;
-                        });
-
-                        let sTmp = document.getElementById('summary-template').innerHTML;
-                        sTmp = sTmp.replace('{{rows}}', rowsHtml)
-                            .replace('{{total_prv}}', this.toBn(sumPrv.toLocaleString('bn-BD')))
-                            .replace('{{total_asst}}', this.toBn(sumAsst.toLocaleString('bn-BD')))
-                            .replace('{{total_pol}}', this.toBn(sumPol.toLocaleString('bn-BD')))
-                            .replace('{{total_travel}}', this.toBn(sumTravel.toLocaleString('bn-BD')))
-                            .replace('{{total_bestni}}', this.toBn(sumBestni.toLocaleString('bn-BD')))
-                            .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
-                            .replace('{{total_tax}}', this.toBn(sumTax.toLocaleString('bn-BD')))
-                            .replace('{{total_vat}}', this.toBn(sumVat.toLocaleString('bn-BD')))
-                            .replace('{{total_rev}}', this.toBn(sumRev.toLocaleString('bn-BD')))
-                            .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
-                            .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
-
-                        const sEl = document.createElement('div');
-                        sEl.innerHTML = sTmp;
-                        container.appendChild(sEl.firstElementChild);
-                    }
-
-                    // 2. Serial Summary Logic (Portrait)
+                    // Serial Summary Logic (New)
                     if (filtered.length > 1) {
                         let serialRowsHtml = '';
                         filtered.forEach((d, idx) => {
@@ -801,6 +703,42 @@
                         const serialEl = document.createElement('div');
                         serialEl.innerHTML = serialTmp;
                         container.appendChild(serialEl.firstElementChild);
+                    }
+
+                    // Allowance Summary Logic
+                    let rowsHtml = '';
+                    let sumGross = 0, sumDeduction = 0, sumNet = 0;
+
+                    filtered.forEach((d, idx) => {
+                        const res = this.calculate(d);
+                        sumGross += res.gross;
+                        sumDeduction += res.deduction;
+                        sumNet += res.net;
+
+                        rowsHtml += `
+                            <tr>
+                                <td class="text-center">${this.toBn(idx + 1)}</td>
+                                <td class="text-center">${this.toBn(d.vote_centre_code)}</td>
+                                <td>${d.vote_centre_name}</td>
+                                <td class="text-center">${d.vote_centre_area || ''}</td>
+                                <td class="text-center">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
+                                <td class="text-center">${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
+                                <td class="text-center">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
+                                <td style="height: 45px;"></td>
+                            </tr>
+                        `;
+                    });
+
+                    // Add Allowance Summary Page
+                    if (filtered.length > 1) {
+                        let sTmp = document.getElementById('summary-template').innerHTML;
+                        sTmp = sTmp.replace('{{rows}}', rowsHtml)
+                            .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
+                            .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
+                            .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
+                        const sEl = document.createElement('div');
+                        sEl.innerHTML = sTmp;
+                        container.appendChild(sEl.firstElementChild);
                     }
 
                     // Individual Pages
