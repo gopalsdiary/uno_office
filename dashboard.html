@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="bn">
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -11,9 +12,9 @@
 			margin: 0;
 			padding: 0;
 		}
-		
-		body { 
-			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			min-height: 100vh;
 			display: flex;
@@ -21,7 +22,7 @@
 			justify-content: center;
 			padding: 20px;
 		}
-		
+
 		.container {
 			max-width: 1000px;
 			width: 100%;
@@ -34,18 +35,19 @@
 			flex-direction: column;
 			min-height: 600px;
 		}
-		
+
 		@keyframes slideIn {
 			from {
 				opacity: 0;
 				transform: translateY(30px);
 			}
+
 			to {
 				opacity: 1;
 				transform: translateY(0);
 			}
 		}
-		
+
 		/* Header Section */
 		.header {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -57,14 +59,14 @@
 			gap: 20px;
 			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 		}
-		
+
 		.header-content {
 			flex: 1;
 			min-width: 250px;
 		}
-		
-		h1 { 
-			font-size: 32px; 
+
+		h1 {
+			font-size: 32px;
 			margin: 0 0 8px 0;
 			color: white;
 			font-weight: 800;
@@ -72,20 +74,20 @@
 			align-items: center;
 			gap: 12px;
 		}
-		
+
 		.subtitle {
 			font-size: 16px;
 			color: rgba(255, 255, 255, 0.9);
 			font-weight: 500;
 		}
-		
+
 		.user-menu {
 			display: flex;
 			align-items: center;
 			gap: 12px;
 			flex-wrap: wrap;
 		}
-		
+
 		.user-info {
 			display: flex;
 			align-items: center;
@@ -99,11 +101,11 @@
 			font-size: 14px;
 			border: 1px solid rgba(255, 255, 255, 0.3);
 		}
-		
+
 		.user-icon {
 			font-size: 20px;
 		}
-		
+
 		.action-btn {
 			padding: 6px 10px;
 			border: none;
@@ -117,33 +119,33 @@
 			gap: 6px;
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 		}
-		
+
 		.action-btn.reset {
 			background: white;
 			color: #3b82f6;
 		}
-		
+
 		.action-btn.reset:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 4px 10px rgba(255, 255, 255, 0.25);
 			background: #f0f9ff;
 		}
-		
+
 		.action-btn.logout {
 			background: rgba(239, 68, 68, 0.9);
 			color: white;
 		}
-		
+
 		.action-btn.logout:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
 			background: #ef4444;
 		}
-		
+
 		.action-btn:active {
 			transform: translateY(0);
 		}
-		
+
 		/* Middle Section - Buttons */
 		.main-content {
 			flex: 1;
@@ -155,7 +157,7 @@
 			justify-content: center;
 			background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 		}
-		
+
 		.button-section {
 			background: white;
 			border-radius: 18px;
@@ -190,14 +192,14 @@
 			color: #475569;
 		}
 
-		.btns { 
+		.btns {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 			gap: 12px;
 			width: 100%;
 		}
-		
-		a.button { 
+
+		a.button {
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -216,7 +218,7 @@
 			line-height: 1.35;
 			border: 2px solid transparent;
 		}
-		
+
 		a.button::before {
 			content: '';
 			position: absolute;
@@ -227,32 +229,32 @@
 			background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
 			transition: left 0.5s;
 		}
-		
+
 		a.button:hover::before {
 			left: 100%;
 		}
-		
-		a.button:hover { 
+
+		a.button:hover {
 			transform: translateY(-4px);
 			box-shadow: 0 8px 20px rgba(102, 126, 234, 0.18);
 			border-color: rgba(102, 126, 234, 0.8);
 		}
-		
+
 		a.button:active {
 			transform: translateY(-2px);
 		}
-		
-		a.button.secondary { 
+
+		a.button.secondary {
 			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 			color: #1e293b;
 		}
-		
+
 		a.button.secondary:hover {
 			background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
 			border-color: #94a3b8;
 			box-shadow: 0 12px 28px rgba(100, 116, 139, 0.25);
 		}
-		
+
 		a.button.primary {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			color: white;
@@ -282,12 +284,12 @@
 			background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 			box-shadow: 0 14px 32px rgba(245, 158, 11, 0.35);
 		}
-		
+
 		.icon {
 			margin-right: 10px;
 			font-size: 20px;
 		}
-		
+
 		/* Footer Section */
 		.footer {
 			background: #f8fafc;
@@ -295,102 +297,102 @@
 			text-align: center;
 			border-top: 1px solid #e2e8f0;
 		}
-		
+
 		.footer p {
 			color: #64748b;
 			font-size: 14px;
 			font-weight: 500;
 		}
-		
+
 		/* Mobile Responsive */
 		@media (max-width: 768px) {
 			body {
 				padding: 12px;
 			}
-			
+
 			.container {
 				border-radius: 20px;
 				min-height: auto;
 			}
-			
+
 			.header {
 				padding: 24px;
 				flex-direction: column;
 				align-items: flex-start;
 			}
-			
+
 			.header-content {
 				width: 100%;
 			}
-			
+
 			h1 {
 				font-size: 24px;
 			}
-			
+
 			.subtitle {
 				font-size: 14px;
 			}
-			
+
 			.user-menu {
 				width: 100%;
 				justify-content: space-between;
 			}
-			
+
 			.user-info {
 				padding: 8px 12px;
 				font-size: 13px;
 			}
-			
+
 			.user-icon {
 				font-size: 16px;
 			}
-			
+
 			.action-btn {
 				padding: 6px 10px;
 				font-size: 12px;
 			}
-			
+
 			.main-content {
 				padding: 32px 24px;
 				gap: 20px;
 			}
-			
+
 			.button-section {
 				padding: 22px;
 			}
-			
+
 			.btns {
 				grid-template-columns: 1fr;
 				gap: 14px;
 			}
-			
+
 			a.button {
 				padding: 14px 12px;
 				font-size: 14px;
 			}
-			
+
 			.footer {
 				padding: 20px 24px;
 			}
-			
+
 			.footer p {
 				font-size: 13px;
 			}
 		}
-		
+
 		@media (max-width: 480px) {
 			.header {
 				padding: 20px 16px;
 			}
-			
+
 			h1 {
 				font-size: 20px;
 			}
-			
+
 			.subtitle {
 				font-size: 13px;
 			}
-			
+
 			.user-menu {
 				gap: 10px;
 			}
@@ -400,7 +402,7 @@
 				justify-content: center;
 				background: rgba(255, 255, 255, 0.25);
 			}
-			
+
 			.action-btn {
 				flex: 1;
 				justify-content: center;
@@ -413,27 +415,28 @@
 			.action-btn span:last-child {
 				display: inline-block;
 			}
-			
+
 			.main-content {
 				padding: 24px 16px;
 			}
-			
+
 			a.button {
 				padding: 12px 10px;
 				font-size: 13px;
 			}
-			
+
 			.icon {
 				font-size: 18px;
 				margin-right: 8px;
 			}
-			
+
 			.footer {
 				padding: 16px;
 			}
 		}
 	</style>
 </head>
+
 <body>
 	<div class="container">
 		<!-- Header Section -->
@@ -445,13 +448,13 @@
 			<div class="user-menu">
 				<div class="user-info">
 					<span class="user-icon">👤</span>
-					   <span id="username">Loading...</span>
+					<span id="username">Loading...</span>
 				</div>
 				<button class="action-btn reset" onclick="changePassword()">
 					<span>🔑</span>
 					<span>Reset Password</span>
 				</button>
-				   <button class="action-btn logout" data-logout>
+				<button class="action-btn logout" data-logout>
 					<span>🚪</span>
 					<span>Logout</span>
 				</button>
@@ -501,13 +504,14 @@
 						<span class="icon">⚡</span>
 						<span>1. Generate Duty List</span>
 					</a>
-					<a class="button success" href="generate/3_vote_centre.html" title="Edit Duty List" onclick="return checkPassword(event, 'generate/3_vote_centre.html')">
+					<a class="button success" href="generate/3_vote_centre.html" title="Edit Duty List"
+						onclick="return checkPassword(event, 'generate/3_vote_centre.html')">
 						<span class="icon">✏️</span>
 						<span>2. Edit Appointment Letter</span>
 					</a>
 					<a class="button primary" href="generate/4_duty_finding_mobile.html" title="Duty Finding">
 						<span class="icon">🔎</span>
-						<span>3. Duty finding (Centre)</span>	
+						<span>3. Duty finding (Centre)</span>
 					</a>
 					<a class="button secondary" href="generate/1_apointment_letter_all.html" title="Appointment Letter">
 						<span class="icon">📨</span>
@@ -529,14 +533,16 @@
 						<span class="icon">⏳</span>
 						<span>নারী-পুরুষ</span>
 					</a>
-					<a class="button secondary" href="generate/7_assigned_officer_list.html" title="Duty Not assigned List">
+					<a class="button secondary" href="generate/7_assigned_officer_list.html"
+						title="Duty Not assigned List">
 						<span class="icon">⏳</span>
 						<span>Duty List</span>
 					</a>
-					<a class="button secondary" href="generate/1_apointment_letter_half.html" title="Duty Not assigned List">
+					<a class="button secondary" href="generate/1_apointment_letter_half.html"
+						title="Duty Not assigned List">
 						<span class="icon">⏳</span>
 						<span>খসড়া তালিকা</span>
-					</a>			
+					</a>
 				</div>
 			</div>
 
@@ -559,26 +565,30 @@
 						<span class="icon">💬</span>
 						<span>SMS</span>
 					</a>
-					<a class="button secondary" href="postal_ballet/google_map_location.html" title="Vote Centre Location">
+					<a class="button secondary" href="postal_ballet/google_map_location.html"
+						title="Vote Centre Location">
 						<span class="icon">�️</span>
 						<span>Vote Centre Location</span>
 					</a>
-					<a class="button secondary" href="postal_ballet/google_map_location_update.html" title="Vote Centre Location Update">
+					<a class="button secondary" href="postal_ballet/google_map_location_update.html"
+						title="Vote Centre Location Update">
 						<span class="icon">️</span>
 						<span>centre Location update</span>
 					</a>
-					<a class="button secondary" href="postal_ballet/smart_map_app/index.html" title="Vote Centre Location Update">
+					<a class="button secondary" href="postal_ballet/smart_map_app/index.html"
+						title="Vote Centre Location Update">
 						<span class="icon">🗺️</span>
 						<span>Smart Map App</span>
 					</a>
-					<a class="button secondary" href="generate/1_apointment_letter_word.html" title="Vote Centre Location Update">
+					<a class="button secondary" href="generate/1_apointment_letter_word.html"
+						title="Vote Centre Location Update">
 						<span class="icon">🗺️</span>
 						<span>Word</span>
 					</a>
 				</div>
 			</div>
 
-		<div class="button-section">
+			<div class="button-section">
 				<div class="section-header">
 					<div class="section-eyebrow">Election Results</div>
 					<div class="section-title">ফলাফল তৈরি </div>
@@ -611,20 +621,24 @@
 					</a>
 					<a class="button primary" href="result/z_malamal.html" title="Duty Finding">
 						<span class="icon">🔎</span>
-						<span>মালামাল</span>	
+						<span>মালামাল</span>
 					</a>
-					
+					<a class="button primary" href="result/vata.html" title="Duty Finding">
+						<span class="icon">🔎</span>
+						<span>ভাতা</span>
+					</a>
+
 					<a class="button primary" href="result/agent_list.html" title="Duty Finding">
 						<span class="icon">🔎</span>
-						<span>Agent List</span>	
+						<span>Agent List</span>
 					</a>
-					
+
 					<a class="button primary" href="result/result_billboard.html" title="Duty Finding">
 						<span class="icon">🔎</span>
-						<span>Result Billboard</span>	
+						<span>Result Billboard</span>
 					</a>
 				</div>
-		</div> 
+			</div>
 		</div>
 
 
@@ -640,54 +654,44 @@
 		function changePassword() {
 			const oldPassword = prompt('পুরাতন পাসওয়ার্ড লিখুন:');
 			if (!oldPassword) return;
-			
+
 			const newPassword = prompt('নতুন পাসওয়ার্ড লিখুন:');
 			if (!newPassword) return;
-			
+
 			const confirmPassword = prompt('নতুন পাসওয়ার্ড আবার লিখুন:');
 			if (!confirmPassword) return;
-			
+
 			if (newPassword !== confirmPassword) {
 				alert('❌ নতুন পাসওয়ার্ড মিলছে না!');
 				return;
 			}
-			
+
 			if (newPassword.length < 6) {
 				alert('❌ পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
 				return;
 			}
-			
+
 			// Here you would typically send to server
 			// For now, just show success message
 			alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
 		}
 
-		// Password gate for protected links
-		function checkPassword(event, targetUrl) {
-			event.preventDefault();
-			const pwd = prompt('পাসওয়ার্ড লিখুন:');
-			if (pwd === null) return false;
-			if (pwd === '11223') {
-				window.location.href = targetUrl;
-				return false;
-			}
-			alert('❌ ভুল পাসওয়ার্ড!');
-			return false;
-		}
+
 	</script>
 	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-	 <script src="authentication.js"></script>
-	 <script>
-	 document.addEventListener('DOMContentLoaded', async function() {
-		 if (window.supabaseClient) {
-			 const { data: { session } } = await window.supabaseClient.auth.getSession();
-			 if (session && session.user && session.user.email) {
-				 document.getElementById('username').textContent = session.user.email;
-			 } else {
-				 document.getElementById('username').textContent = 'Unknown User';
-			 }
-		 }
-	 });
-	 </script>
+	<script src="authentication.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', async function () {
+			if (window.supabaseClient) {
+				const { data: { session } } = await window.supabaseClient.auth.getSession();
+				if (session && session.user && session.user.email) {
+					document.getElementById('username').textContent = session.user.email;
+				} else {
+					document.getElementById('username').textContent = 'Unknown User';
+				}
+			}
+		});
+	</script>
 </body>
+
 </html>
