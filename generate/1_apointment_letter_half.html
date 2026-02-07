@@ -194,6 +194,7 @@
 <body>
     <div class="container">
         <div id="duplicateReport"></div>
+        <div id="summaryReport"></div>
         <div id="appointmentContent">
             <div class="loading">
                 <h2>⏳ Loading data...</h2>
@@ -502,8 +503,73 @@
             // sort numerically by centre code
             allData.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
 
+            // Render Summary Table at the top
+            renderSummaryTable(allData);
+
             const sections = allData.map(renderSingleLetter).join('');
             document.getElementById('appointmentContent').innerHTML = sections;
+        }
+
+        function renderSummaryTable(allData) {
+            const summaryDiv = document.getElementById('summaryReport');
+            if (!allData || allData.length === 0) return;
+
+            // Ensure appointment letters start on a new page after the summary
+            summaryDiv.style.pageBreakAfter = "always";
+
+            let totalBooths = 0;
+            let totalOfficers = 0;
+
+            let html = `
+                <div class="report-card success">
+                    <h2 style="font-family: Nikosh;">📊 কেন্দ্রের খসড়া সারসংক্ষেপ</h2>
+                    <table class="duplicate-table">
+                        <thead>
+                            <tr style="font-family: Nikosh;">
+                                <th style="text-align:center; width: 15%;">কেন্দ্র কোড</th>
+                                <th style="width: 45%;">কেন্দ্রের নাম</th>
+                                <th style="text-align:center; width: 20%;">মোট বুথ/কক্ষ</th>
+                                <th style="text-align:center; width: 20%;">মোট অফিসার</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            allData.forEach(data => {
+                const booths = data.assPresiding ? data.assPresiding.length : 0;
+                const pollingCount = data.polling ? data.polling.length : 0;
+                const officers = 1 + booths + pollingCount; // 1 Presiding officer
+
+                totalBooths += booths;
+                totalOfficers += officers;
+
+                html += `
+                    <tr style="font-family: Nikosh;">
+                        <td style="text-align:center;">${toBengaliNumber(data.centre.vote_centre_code)}</td>
+                        <td>${data.centre.vote_centre_name || 'N/A'}</td>
+                        <td style="text-align:center;">${toBengaliNumber(booths)} টি</td>
+                        <td style="text-align:center;">${toBengaliNumber(officers)} জন</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                        <tfoot>
+                            <tr style="font-weight:bold; background:#f0f9ff; font-family: Nikosh; font-size: 14pt;">
+                                <td colspan="4" style="text-align:center; padding: 15px;">
+                                    সর্বমোট (${toBengaliNumber(allData.length)} টি কেন্দ্র): ${toBengaliNumber(totalBooths)} টি ${toBengaliNumber(totalOfficers)} জন
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="no-print" style="margin-top: 15px; text-align: right;">
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+                    </div>
+                </div>
+            `;
+
+            summaryDiv.innerHTML = html;
         }
 
         function renderSingleLetter(data) {
