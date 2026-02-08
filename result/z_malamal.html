@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>মালামাল গ্রহণ/হস্তান্তর ও ভাতা বিবরণী (Z-Copy)</title>
+    <title>মালামাল গ্রহণ/হস্তান্তর ও ভাতা বিবরণী </title>
     <style>
         @font-face {
             font-family: 'NikoshBan';
@@ -168,6 +168,41 @@
             border: none;
         }
 
+        .page-header {
+            position: relative;
+            margin-top: 5px;
+            padding-bottom: 20px; /* increased spacing to ensure following text sits below the absolutely positioned header */
+        }
+
+        .page-header + p {
+            margin-top: 8px; /* extra gap for readability */
+        }
+
+        .page-header h1 {
+            position: absolute;
+            top: 0; /* pin to top of the header block */
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: 14pt;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .centre-info {
+            position: absolute;
+            right: 0;
+            top: 0;
+            text-align: right;
+            font-size: 14pt;
+            white-space: nowrap;
+        }
+
+        .no-bold-white {
+            font-weight: normal !important;
+            background: white !important;
+        }
+
         .v-top {
             vertical-align: top;
         }
@@ -183,13 +218,11 @@
     <!-- Template for a single center -->
     <script type="text/template" id="page-template">
         <div class="legal-page detail-page">
-            <h1 class="text-center" style="margin-top: 5px; font-size: 14pt;"><u>ভোটের দিন ভোটকেন্দ্রে ব্যবহৃত সরঞ্জাম ও মালামাল গ্রহণ/প্রেরণ এবং ভাতা প্রদানের বিবরণী</u></h1>
-            <p align="right" style="margin: 0; padding: 0;">
-                <font face="Nikosh">কেন্দ্র নং- {{vote_centre_code}}</font>
-            </p>
-            <p align="center" style="margin: 0; padding: 0;"><font face="Nikosh"><font size="4">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ও গণভোট-২০২৬</font></font></p>
+            <div class="page-header">
+                <h1><u>ভোটকেন্দ্রে নির্বাচনী মালামালের চালান</u></h1>
+                <div class="centre-info"><span>কেন্দ্র নং- </span><span style="font-weight:bold;">{{vote_centre_code}}</span></div>
+            </div>
             <p align="center" style="margin: 0; padding: 0;"><font face="Nikosh">২৬৬ ফেনী-২ (ফেনী সদর উপজেলা)</font></p>
-            <p align="center" style="margin-bottom: 5px; padding: 0;"><font face="Nikosh"><b>প্রিজাইডিং অফিসারের নিকট নির্বাচনী দ্রব্যাদি সরবরাহ এবং ভাতা প্রদানের হিসাব বিবরণী</b></font></p>
 
             <table width="100%" class="voter-info-table">
                 <tr>
@@ -352,9 +385,9 @@
                 <!-- Section: Stationery (Left) & More Packets (Right) -->
                 <tr class="bg-gray text-center fw-bold">
                     <td colspan="9">মনিহারী দ্রব্যাদি</td>
-                    <td class="text-center">৪</td>
-                    <td colspan="8">প্যাকেট-৪: (কেন্দ্র প্রতি ২টি) অব্যহৃত ব্যালট পেপারসমূহ রাখার জন্য প্যাকেট</td>
-                    <td class="text-center">২ টি</td>
+                    <td class="text-center no-bold-white">৪</td>
+                    <td colspan="8" class="no-bold-white">প্যাকেট-৪: (কেন্দ্র প্রতি ২টি) অব্যহৃত ব্যালট পেপারসমূহ রাখার জন্য প্যাকেট</td>
+                    <td class="text-center no-bold-white">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">১</td>
