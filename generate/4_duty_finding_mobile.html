@@ -682,7 +682,8 @@
                 card.innerHTML = `
                     <div class="officer-header">
                         <div class="officer-info">
-                            <h3 style="margin-bottom: 0;">${highlightText(officer.name, query)}</h3>
+                            <h3 style="margin-bottom: 5px;">${highlightText(officer.name, query)}</h3>
+                            <span class="badge ${officer.type}">${officer.typeLabel}</span>
                         </div>
                     </div>
                     
