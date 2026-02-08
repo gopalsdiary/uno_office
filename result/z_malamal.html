@@ -171,22 +171,28 @@
         .page-header {
             position: relative;
             margin-top: 5px;
-            padding-bottom: 20px; /* increased spacing to ensure following text sits below the absolutely positioned header */
+            padding-bottom: 28px; /* spacing to fit two stacked headings */
+            text-align: center;
         }
 
         .page-header + p {
             margin-top: 8px; /* extra gap for readability */
         }
 
+        /* Headings flow naturally so multiple lines stack */
         .page-header h1 {
-            position: absolute;
-            top: 0; /* pin to top of the header block */
-            left: 50%;
-            transform: translateX(-50%);
+            position: static;
             margin: 0;
             font-size: 16.8pt; /* increased 20% */
+            line-height: 1.15;
+            white-space: normal;
             text-align: center;
-            white-space: nowrap;
+        }
+
+        /* Slightly smaller and spaced second heading */
+        .page-header h1 + h1 {
+            margin-top: 6px;
+            font-size: 14pt;
         }
 
         .centre-info {
@@ -226,7 +232,9 @@
     <script type="text/template" id="page-template">
         <div class="legal-page detail-page">
             <div class="page-header">
-                <h1><u>ভোটকেন্দ্রে নির্বাচনী মালামালের চালান</u></h1>
+                <h1><u>ত্রয়োদশ জাতীয় সংসদ নির্বাচন ও গণভোট উপলক্ষ্যে</u></h1>
+                <h1><u>ভোটকেন্দ্রে ব্যবহারের জন্য প্রিজাইডিং অফিসারের অনুকূলে সরবরাহকৃত মালামালের চালান</u></h1>
+
                 <div class="centre-info"><span>কেন্দ্র নং- </span><span style="font-weight:bold;">{{vote_centre_code}}</span></div>
             </div>
             <p align="center" style="margin: 0; padding: 0;"><font face="Nikosh">২৬৬ ফেনী-২ (ফেনী সদর উপজেলা)</font></p>
