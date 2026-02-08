@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মাস্টাররোল - যাতায়াত ভাতা</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        @font-face {
+            font-family: 'NikoshBAN ';
+            src: local('Nikosh');
+        }
+
+        @font-face {
+            font-family: 'NikoshBAN';
+            src: local('NikoshBAN');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            line-height: 1.2;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header-text h1 {
+            font-size: 18pt;
+            margin-bottom: 2px;
+        }
+
+        .header-text h2 {
+            font-size: 14pt;
+            margin-bottom: 2px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        .signature-cell {
+            width: 3cm;
+            height: 2cm;
+            min-width: 3cm;
+            min-height: 2cm;
+        }
+
+        .revenue-cell {
+            width: 2.5cm;
+            height: 2cm;
+            min-width: 2.5cm;
+            min-height: 2cm;
+        }
+
+        .sl-cell {
+            width: 40px;
+        }
+
+        .amount-cell {
+            width: 80px;
+        }
+
+        .designation-cell {
+            width: 120px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: none;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            .signature-cell {
+                width: 3cm !important;
+                height: 2cm !important;
+            }
+
+            .revenue-cell {
+                width: 2.5cm !important;
+                height: 2cm !important;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+        <button class="btn btn-primary" onclick="window.history.back()">⬅ ফিরে যান</button>
+    </div>
+
+    <div class="container">
+        <div id="masterRollContent">
+            <div class="loading">
+                <h2>⏳ ডাটা লোড হচ্ছে...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load all data on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            try {
+                const data = await loadMasterRollData();
+                renderMasterRoll(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('masterRollContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ ত্রুটি দেখা দিয়েছে</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
+                    </div>
+                `;
+            }
+        });
+
+        async function loadMasterRollData() {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+
+            // Fetch all assignments
+            const { data: assignments, error: assignError } = await window.supabaseClient
+                .from('centre_assignments')
+                .select('*')
+                .order('vote_centre_code', { ascending: true });
+
+            if (assignError) throw assignError;
+            if (!assignments || assignments.length === 0) {
+                throw new Error('কোনো অ্যাসাইনমেন্ট পাওয়া যায়নি।');
+            }
+
+            // Fetch centre details
+            const { data: centres, error: centreError } = await window.supabaseClient
+                .from('vote_centre')
+                .select('*');
+
+            if (centreError) throw centreError;
+
+            const centreDetailsMap = new Map(centres.map(c => [String(c.vote_centre_code), c]));
+
+            // Fetch officer details for name, designation, workplace(address), mobile
+            const presidingIds = assignments.filter(a => a.officer_type === 'presiding').map(a => a.officer_iid);
+            const assPresidingIds = assignments.filter(a => a.officer_type === 'ass_presiding').map(a => a.officer_iid);
+            const pollingIds = assignments.filter(a => a.officer_type === 'polling').map(a => a.officer_iid);
+
+            const [pRes, apRes, poRes] = await Promise.all([
+                presidingIds.length ? window.supabaseClient.from('presiding_list').select('presiding_iid, presiding_name, mobile_number, address').in('presiding_iid', presidingIds) : { data: [] },
+                assPresidingIds.length ? window.supabaseClient.from('ass_presiding_list').select('ass_presiding_iid, ass_presiding_name, mobile_number, address').in('ass_presiding_iid', assPresidingIds) : { data: [] },
+                pollingIds.length ? window.supabaseClient.from('polling_list').select('polling_iid, polling_name, mobile_number, address').in('polling_iid', pollingIds) : { data: [] }
+            ]);
+
+            const officerDetails = {
+                presiding: new Map(pRes.data.map(o => [o.presiding_iid, o])),
+                ass_presiding: new Map(apRes.data.map(o => [o.ass_presiding_iid, o])),
+                polling: new Map(poRes.data.map(o => [o.polling_iid, o]))
+            };
+
+            // Group by centre
+            const groups = new Map();
+            assignments.forEach(a => {
+                const code = String(a.vote_centre_code);
+                if (!groups.has(code)) {
+                    groups.set(code, {
+                        centre: centreDetailsMap.get(code) || { vote_centre_code: code, vote_centre_name: 'N/A' },
+                        officers: []
+                    });
+                }
+                const bundle = groups.get(code);
+                const details = officerDetails[a.officer_type].get(a.officer_iid);
+                bundle.officers.push({
+                    ...a,
+                    name: details ? (details.presiding_name || details.ass_presiding_name || details.polling_name) : a.officer_name,
+                    mobile: details ? details.mobile_number : '',
+                    workplace: details ? details.address : '',
+                    designation_original: a.officer_designation
+                });
+            });
+
+            // Sort officers in each centre: Presiding, then Assistant Presiding, then Polling
+            groups.forEach(bundle => {
+                bundle.officers.sort((a, b) => {
+                    const order = { 'presiding': 1, 'ass_presiding': 2, 'polling': 3 };
+                    if (order[a.officer_type] !== order[b.officer_type]) {
+                        return order[a.officer_type] - order[b.officer_type];
+                    }
+                    if (a.booth_number !== b.booth_number) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+            });
+
+            return Array.from(groups.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+        }
+
+        function toBengaliNumber(n) {
+            if (n === null || n === undefined) return '';
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        function renderMasterRoll(allData) {
+            const container = document.getElementById('masterRollContent');
+            let html = '';
+
+            allData.forEach((bundle, index) => {
+                const { centre, officers } = bundle;
+                const totalBooths = (Number(centre.voter_both_male) || 0) + (Number(centre.voter_both_female) || 0);
+
+                html += `
+                    <div class="page ${index < allData.length - 1 ? 'page-break' : ''}">
+                        <div class="header-text">
+                            <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬</h1>
+                            <h2>প্রিজাইডিং অফিসার, সহকারি প্রিজাইডিং অফিসার ও পোলিং অফিসারদের যাতায়াত ভাতা প্রদানের মাস্টাররোল</h2>
+                            <h2>(জনপ্রতি ১০০০/- হারে)</h2>
+                        </div>
+
+                        <div class="info-row">
+                            <span>জেলাঃ ফেনী</span>
+                            <span>কেন্দ্র কোডঃ ${toBengaliNumber(centre.vote_centre_code)}</span>
+                        </div>
+
+                        <table>
+                            <tr>
+                                <td style="width: 25%;">ভোট কেন্দ্রের নাম ও নম্বর</td>
+                                <td class="text-left" style="width: 45%;"><strong>${toBengaliNumber(centre.vote_centre_name || '')}</strong></td>
+                                <td style="width: 15%;">বুথ সংখ্যা</td>
+                                <td style="width: 15%;"><strong>${toBengaliNumber(totalBooths)}</strong></td>
+                            </tr>
+                        </table>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sl-cell">ক্রমিক নং</th>
+                                    <th>নাম, পদবী, কর্মস্থল ও মোবাইল নম্বর</th>
+                                    <th class="designation-cell">পদবী</th>
+                                    <th class="amount-cell">প্রদত্ত অর্থের পরিমান</th>
+                                    <th class="signature-cell">গ্রহণকারীর স্বাক্ষর</th>
+                                    <th class="revenue-cell">রেভিনিউ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                officers.forEach((off, i) => {
+                    let typeBn = '';
+                    if (off.officer_type === 'presiding') typeBn = 'প্রিজাইডিং';
+                    else if (off.officer_type === 'ass_presiding') typeBn = 'সহকারী প্রিজাইডিং';
+                    else if (off.officer_type === 'polling') typeBn = 'পোলিং';
+
+                    html += `
+                        <tr>
+                            <td>${toBengaliNumber(i + 1)}</td>
+                            <td class="text-left">
+                                <strong>${toBengaliNumber(off.name || '')}</strong>
+                            </td>
+                            <td>${typeBn}</td>
+                            <td>১০০০/-</td>
+                            <td class="signature-cell"></td>
+                            <td class="revenue-cell"></td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 30px;">
+                             <span>কর্মকর্তার স্বাক্ষর ও সীল</span>
+                             <span>উপজেলা নির্বাচন অফিসার</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>
