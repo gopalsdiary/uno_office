@@ -20,7 +20,7 @@
             margin: 0;
             padding: 20px;
             font-family: 'NikoshBan', 'Nikosh', sans-serif;
-            font-size: 9.5pt;
+            font-size: 11.4pt; /* increased 20% */
         }
 
         .legal-page {
@@ -91,7 +91,7 @@
         .summary-table td {
             border: 1px solid black !important;
             padding: 4px;
-            font-size: 10pt;
+            font-size: 12pt; /* increased 20% */
         }
 
         @page {
@@ -157,11 +157,11 @@
         }
 
         .materials-table td {
-            font-size: 8.5pt;
+            font-size: 10.2pt; /* increased 20% */
         }
 
         .allowance-table td {
-            font-size: 8pt;
+            font-size: 9.6pt; /* increased 20% */
         }
 
         .signature-table td {
@@ -184,7 +184,7 @@
             left: 50%;
             transform: translateX(-50%);
             margin: 0;
-            font-size: 14pt;
+            font-size: 16.8pt; /* increased 20% */
             text-align: center;
             white-space: nowrap;
         }
@@ -194,13 +194,20 @@
             right: 0;
             top: 0;
             text-align: right;
-            font-size: 14pt;
+            font-size: 16.8pt; /* increased 20% */
             white-space: nowrap;
         }
 
         .no-bold-white {
             font-weight: normal !important;
             background: white !important;
+        }
+
+        /* remove border/background for specific empty cells */
+        .no-box {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
         }
 
         .v-top {
@@ -238,7 +245,7 @@
                     <td width="12%">মোট হিসাব</td>
                     <td colspan="4">কেন্দ্রের ভোটার সংখ্যা (প্রযোজ্য ক্ষেত্রে ক্রমিক সহ)</td>
                 </tr>
-                <tr class="bg-gray text-center fw-bold" style="font-size: 8pt;">
+                <tr class="bg-gray text-center fw-bold" style="font-size: 9.6pt;">
                     <td rowspan="2">১</td>
                     <td rowspan="2">{{voter_both_total}}</td>
                     <td rowspan="2">{{voter_both_total_x2}}</td>
@@ -265,14 +272,14 @@
                 </tr>
                 <tr>
                     <td class="text-center">১</td>
-                    <td>ব্যালট পেপার</td>
-                    <td class="text-center fw-bold" style="font-size: 11pt;">{{ballot_paper_numbers}}</td>
-                    <td rowspan="5" class="text-center fw-bold" style="font-size: 14pt;">{{ballot_box_numbers}}</td>
+                    <td>জাতীয় সংসদ নির্বাচনের ব্যালট পেপার</td>
+                    <td class="text-center fw-bold" style="font-size: 13.2pt;">{{ballot_paper_numbers}}</td>
+                    <td rowspan="5" class="text-center fw-bold" style="font-size: 16.8pt;">{{ballot_box_numbers}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">২</td>
                     <td>গণভোট ব্যালট পেপার</td>
-                    <td class="text-center fw-bold" style="font-size: 8.5pt;">{{referendum_ballot_numbers}}</td>
+                    <td class="text-center fw-bold" style="font-size: 10.2pt;">{{referendum_ballot_numbers}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
@@ -298,7 +305,7 @@
                     <td width="10%" colspan="2">সংখ্যা</td>
                     <td width="5%">একক</td>
                     <td width="3%">ক্রঃ</td>
-                    <td colspan="8" width="40%">ফরম সমূহ ও প্যাকেট সমূহ</td>
+                    <td colspan="8" width="40%">জাতীয় সংসদ নির্বাচনের ফরম সমূহ ও প্যাকেট সমূহ</td>
                     <td width="8%">সংখ্যা</td>
                 </tr>
                 <!-- Section 1: Election Materials (Left) & Forms (Right) -->
@@ -507,7 +514,7 @@
                     <td class="text-center">৩</td>
                     <td colspan="6">(গ) ভোট কক্ষ নং ………….(মহিলা)</td>
                     <td colspan="2" class="text-center">প্রয়োজনমত</td>
-                    <td colspan="10" class="bg-gray text-center fw-bold" style="font-size: 8.5pt;">গণভোটের জন্য ব্যবহৃত ফরম ও প্যাকেট সমূহ  ২ টি</td>
+                    <td colspan="10" class="bg-gray text-center fw-bold" style="font-size: 10.2pt;">গণভোটের ফরম ও প্যাকেট সমূহ  ২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৪</td>
@@ -515,7 +522,7 @@
                     <td colspan="2" class="text-center">প্রয়োজনমত</td>
                     <td class="text-center">১</td>
                     <td colspan="8">ফরম-৩ : প্রিজাইডিং অফিসার কর্তৃক ভোট গণনার বিবরণী (কেন্দ্র প্রতি)</td>
-                    <td class="text-center">৮ টি</td>
+                    <td class="text-center">১০ টি</td>
                 </tr>
                 <tr>
                     <td colspan="9" class="bg-gray text-center fw-bold">পরিচয়পত্র</td>
@@ -529,7 +536,7 @@
                     <td colspan="2" class="text-center">১</td>
                     <td class="text-center">১</td>
                     <td colspan="8">প্যাকেট-১: "হ্যাঁ" সূচক/ 'না' সূচক বৈধ ব্যালট পেপার রাখার জন্য (কেন্দ্র প্রতি)</td>
-                    <td class="text-center">৬ টি</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">২</td>
@@ -581,7 +588,7 @@
                     <td class="text-center">৩</td>
                     <td colspan="6">মূল্যায়ন ফরম</td>
                     <td colspan="2" class="text-center">৩</td>
-                    <td colspan="9"></td>
+                    <td colspan="9" class="no-box"></td>
                 </tr>
             </table>
 
@@ -727,7 +734,7 @@
                                     <td class="text-center">${this.toBn(d.vote_centre_code)}</td>
                                     <td>${d.vote_centre_name}</td>
                                     <td class="text-center">${this.toBn(d.total_voter)}</td>
-                                    <td class="text-center fw-bold" style="font-size: 11pt;">${this.toBn(d.startSerial)} - ${this.toBn(d.endSerial)}</td>
+                                    <td class="text-center fw-bold" style="font-size: 13.2pt;">${this.toBn(d.startSerial)} - ${this.toBn(d.endSerial)}</td>
                                 </tr>
                             `;
                         });
