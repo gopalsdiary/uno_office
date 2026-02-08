@@ -227,19 +227,19 @@
                 <tr>
                     <td width="3%"></td>
                     <td width="35%" class="text-center bg-gray fw-bold">বিবরণ</td>
-                    <td width="15%" class="text-center bg-gray fw-bold">সংখ্যা</td>
-                    <td width="47%" class="text-center bg-gray fw-bold">স্বচ্ছ ব্যালট বাক্স নম্বরঃ</td>
+                    <td width="38%" class="text-center bg-gray fw-bold">সংখ্যা</td>
+                    <td width="24%" class="text-center bg-gray fw-bold">স্বচ্ছ ব্যালট বাক্স নম্বরঃ</td>
                 </tr>
                 <tr>
                     <td class="text-center">১</td>
                     <td>ব্যালট পেপার</td>
-                    <td class="text-center">{{total_voter}}</td>
+                    <td class="text-center fw-bold" style="font-size: 11pt;">{{ballot_paper_numbers}}</td>
                     <td rowspan="5" class="text-center fw-bold" style="font-size: 14pt;">{{ballot_box_numbers}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">২</td>
                     <td>গণভোট ব্যালট পেপার</td>
-                    <td class="text-center">{{total_voter}}</td>
+                    <td class="text-center fw-bold" style="font-size: 8.5pt;">{{referendum_ballot_numbers}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
@@ -285,7 +285,7 @@
                     <td class="text-center">টি</td>
                     <td class="text-center">২</td>
                     <td colspan="8">ফরম-১৪: (প্রতি কেন্দ্রের জন্য-৩টি) টেন্ডার্ড ভোটের তালিকা</td>
-                    <td class="text-center">৩ টি</td>
+                    <td class="text-center">২ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">৩</td>
@@ -435,7 +435,7 @@
                     <td class="text-center">টি</td>
                     <td class="text-center">১৩</td>
                     <td colspan="8">প্যাকেট-১৩: (কেন্দ্র প্রতি-০২টি) আপত্তিকৃত ভোটার তালিকা রাখার প্যাকেট</td>
-                    <td class="text-center">২ টি</td>
+                    <td class="text-center">৩ টি</td>
                 </tr>
                 <tr>
                     <td class="text-center">১০</td>
@@ -450,7 +450,7 @@
                     <td colspan="9"></td>
                     <td class="text-center">১৫</td>
                     <td colspan="8">প্যাকেট-১৫: (কেন্দ্র প্রতি-২টি) ব্যালট পেপারের হিসাব রাখার জন্য</td>
-                    <td class="text-center">২ টি</td>
+                    <td class="text-center">৩ টি</td>
                 </tr>
                 <tr>
                     <td colspan="9"></td>
@@ -542,41 +542,7 @@
                 </tr>
             </table>
 
-            <table width="100%" class="allowance-table" style="margin-top: 5px;">
-                <tr class="bg-gray text-center fw-bold">
-                    <td colspan="11">ভোটগ্রহণকারী কর্মকর্তাদের ভাতা প্রদানের হিসাব বিবরণী</td>
-                </tr>
-                <tr class="bg-gray text-center fw-bold" style="font-size: 7.5pt;">
-                    <td width="8%">প্রিজাইডিং (৮০০০*১)</td>
-                    <td width="8%">সহঃ প্রিজাইডিং (৬০০০*)</td>
-                    <td width="8%">পোলিং অফিসার (৪০০০*)</td>
-                    <td width="8%">যাতায়াত (১০০০*)</td>
-                    <td width="8%">বেষ্টনি (১২০০)</td>
-                    <td width="8%">মনিহারি (১৫০০)</td>
-                    <td width="10%">মোট পরিমাণ</td>
-                    <td width="8%">উৎসে কর (১০%)</td>
-                    <td width="10%">বেষ্টনী ভ্যাট ৫% + আয়কর ১০% (১৫%)</td>
-                    <td width="8%">রেভিনিউ</td>
-                    <td width="16%">নিট পাওনা</td>
-                </tr>
-                <tr class="text-center fw-bold">
-                    <td>৮,০০০</td>
-                    <td>{{assistant_total}}</td>
-                    <td>{{polling_total}}</td>
-                    <td>{{travel_total}}</td>
-                    <td>{{bestni_total}}</td>
-                    <td>{{monihari_total}}</td>
-                    <td>{{gross_total}}</td>
-                    <td>{{tax_10}}</td>
-                    <td>{{vat_it}}</td>
-                    <td>{{revenue}}</td>
-                    <td style="background:#e9f7ef; font-size: 11pt;">{{net_total}}</td>
-                </tr>
-                <tr>
-                    <td colspan="7" class="text-right fw-bold">মোট কর্তন:</td>
-                    <td colspan="4" class="text-center fw-bold bg-gray">{{total_deduction}}</td>
-                </tr>
-            </table>
+
 
             <table width="100%" class="signature-table" style="margin-top: 100px;">
                 <tr valign="top" class="text-center">
@@ -631,7 +597,8 @@
             config: { presiding: 8000, assistant: 6000, polling: 4000, travel: 1000, bestni: 800, tax: 0.1, vat: 0.18, rev: 390 },
             bn: ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'],
 
-            toBn(n) { return n === null ? '' : String(n).replace(/\d/g, d => this.bn[+d]); },
+            padZero(n, len) { return String(n).padStart(len, '0'); },
+            toBn(n) { return n === null || n === undefined ? '' : String(n).replace(/\d/g, d => this.bn[+d]); },
             toEn(s) { const m = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' }; return String(s).replace(/[০-৯]/g, x => m[x]); },
 
             async init() {
@@ -654,11 +621,44 @@
 
                     // Cumulative Voter Serial calculation for ALL centers
                     let currentSerial = 1;
+                    
+                    // Referendum ranges logic
+                    let refRange1 = { start: 1, end: 134331, current: 1 };
+                    let refRange2 = { start: 1710001, end: 2000000, current: 1710001 };
+
                     const centersWithRange = data.map(d => {
                         const voterCount = parseInt(this.toEn(d.total_voter || 0));
+                        
+                        // Normal Ballot Paper Serial
                         const start = currentSerial;
                         const end = currentSerial + voterCount - 1;
                         currentSerial = end + 1;
+
+                        // Referendum Ballot Paper Serial calculation
+                        let refParts = [];
+                        let tempCount = voterCount;
+
+                        // Use Range 1 if available
+                        if (refRange1.current <= refRange1.end) {
+                            let available = refRange1.end - refRange1.current + 1;
+                            let usable = Math.min(tempCount, available);
+                            let rStart = refRange1.current;
+                            let rEnd = refRange1.current + usable - 1;
+                            refParts.push(this.toBn(this.padZero(rStart, 7)) + ' - ' + this.toBn(this.padZero(rEnd, 7)));
+                            refRange1.current += usable;
+                            tempCount -= usable;
+                        }
+
+                        // Use Range 2 if still need more
+                        if (tempCount > 0 && refRange2.current <= refRange2.end) {
+                            let available = refRange2.end - refRange2.current + 1;
+                            let usable = Math.min(tempCount, available);
+                            let rStart = refRange2.current;
+                            let rEnd = refRange2.current + usable - 1;
+                            refParts.push(this.toBn(this.padZero(rStart, 7)) + ' - ' + this.toBn(this.padZero(rEnd, 7)));
+                            refRange2.current += usable;
+                            tempCount -= usable;
+                        }
 
                         // Find presiding officer for this centre code
                         const presiding = assignments.find(a => String(a.vote_centre_code) === String(d.vote_centre_code));
@@ -667,6 +667,7 @@
                             ...d,
                             startSerial: start,
                             endSerial: end,
+                            referendumSerial: refParts.join(' ; '),
                             centre_assignments: presiding ? [presiding] : []
                         };
                     });
@@ -781,7 +782,9 @@
                     ballot_box_seal_qty: this.toBn(ballotBoxSealQty),
                     ballot_box_qty_new: this.toBn(voterBothTotal + 1),
                     ballot_box_seal_qty_new: this.toBn((voterBothTotal + 1) * 5),
-                    ballot_box_numbers: this.toBn(d.startSerial) + '-' + this.toBn(d.endSerial),
+                    ballot_paper_numbers: this.toBn(this.padZero(d.startSerial, 7)) + ' - ' + this.toBn(this.padZero(d.endSerial, 7)),
+                    referendum_ballot_numbers: d.referendumSerial,
+                    ballot_box_numbers: '',
                     ink_qty: this.toBn(inkQty),
                     rubber_seal_qty: this.toBn(rubberSealQty),
                     marking_seal_qty: this.toBn(markingSealQty),
