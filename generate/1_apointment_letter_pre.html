@@ -445,9 +445,7 @@
 
             if (duplicates.length === 0) {
                 reportDiv.innerHTML = `
-                    <div class="report-card success">
-                        <h2>কোনো ডুপলিকেট পাওয়া যায়নি। সব অফিসার একটি করেই কেন্দ্রে এসাইন হয়েছে।</h2>
-                    </div>
+                   
                 `;
                 return;
             }
@@ -512,171 +510,69 @@
             // sort numerically by centre code
             allData.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
 
-            // Render Summary Table at the top - HIDDEN as per request
-            // renderSummaryTable(allData);
-
-            const sections = allData.map(renderSingleLetter).join('');
-            document.getElementById('appointmentContent').innerHTML = sections;
-        }
-
-        function renderSummaryTable(allData) {
-            const summaryDiv = document.getElementById('summaryReport');
-            if (!allData || allData.length === 0) return;
-
-            // Ensure appointment letters start on a new page after the summary
-            summaryDiv.style.pageBreakAfter = "always";
-
-            let totalBooths = 0;
-            let totalOfficers = 0;
-
-            let html = `
-                <div class="report-card success">
-                    <h2 style="font-family: Nikosh;">📊 কেন্দ্রের খসড়া সারসংক্ষেপ</h2>
-                    <table class="duplicate-table">
+            const tableHtml = `
+                <div class="report-card">
+                    <h2 style="text-align:center; font-family: Nikosh;">ভোটকেন্দ্র ও অফিসারদের তালিকা (২৬৬ ফেনী ২)</h2> 
+                    <table class="duplicate-table" style="width:100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="font-family: Nikosh;">
-                                <th style="text-align:center; width: 15%;">কেন্দ্র কোড</th>
-                                <th style="width: 45%;">কেন্দ্রের নাম</th>
-                                <th style="text-align:center; width: 20%;">মোট বুথ/কক্ষ</th>
-                                <th style="text-align:center; width: 20%;">মোট অফিসার</th>
+                            <tr style="text-align: center; font-family: Nikosh; font-weight: bold; background-color: #f0f0f0;">
+                                <th style="border: 1px solid #000; padding: 5px;">কেন্দ্র নং</th>
+                                <th style="border: 1px solid #000; padding: 5px;">কেন্দ্রের নাম</th>
+                                <th style="border: 1px solid #000; padding: 5px;">এলাকা</th>
+                                <th style="border: 1px solid #000; padding: 5px;">প্রিজাইডিং অফিসারের নাম ও পদবী</th>
+                                <th style="border: 1px solid #000; padding: 5px;">সহকারী প্রিজাইডিং অফিসারে</th>
+                                <th style="border: 1px solid #000; padding: 5px;">মন্তব্য</th>
                             </tr>
                         </thead>
                         <tbody>
-            `;
-
-            allData.forEach(data => {
-                const booths = data.assPresiding ? data.assPresiding.length : 0;
-                const pollingCount = data.polling ? data.polling.length : 0;
-                const officers = 1 + booths + pollingCount; // 1 Presiding officer
-
-                totalBooths += booths;
-                totalOfficers += officers;
-
-                html += `
-                    <tr style="font-family: Nikosh;">
-                        <td style="text-align:center;">${toBengaliNumber(data.centre.vote_centre_code)}</td>
-                        <td>${data.centre.vote_centre_name || 'N/A'}</td>
-                        <td style="text-align:center;">${toBengaliNumber(booths)} টি</td>
-                        <td style="text-align:center;">${toBengaliNumber(officers)} জন</td>
-                    </tr>
-                `;
-            });
-
-            html += `
+                            ${allData.map(data => renderTableRow(data)).join('')}
                         </tbody>
-                        <tfoot>
-                            <tr style="font-weight:bold; background:#f0f9ff; font-family: Nikosh; font-size: 14pt;">
-                                <td colspan="4" style="text-align:center; padding: 15px;">
-                                    সর্বমোট (${toBengaliNumber(allData.length)} টি কেন্দ্র): ${toBengaliNumber(totalBooths)} টি ${toBengaliNumber(totalOfficers)} জন
-                                </td>
-                            </tr>
-                        </tfoot>
                     </table>
-                    <div class="no-print" style="margin-top: 15px; text-align: right;">
+                    <div class="no-print" style="margin-top: 15px; text-align: center;">
                         <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
                     </div>
                 </div>
             `;
 
-            summaryDiv.innerHTML = html;
+            document.getElementById('appointmentContent').innerHTML = tableHtml;
         }
 
-        function renderSingleLetter(data) {
+        function renderTableRow(data) {
             const centre = data.centre;
             const presiding = data.presiding;
             const assPresiding = data.assPresiding || [];
-            const polling = data.polling || [];
+            
+            // Get 1st Assistant Presiding Officer
+            const firstAss = assPresiding.length > 0 ? assPresiding[0] : null;
 
-            // Build table rows - same format as 3_vote_centre.html
-            let tableRows = '';
-            const maxRows = Math.max(1, assPresiding.length);
-            const firstAssPres = assPresiding.length > 0 ? assPresiding[0] : null;
-
-            if (assPresiding.length === 0) {
-                tableRows = `
-                    <tr>
-                        <td rowspan="1" style="border:0.75pt solid #000; padding:5pt; text-align:center; vertical-align:middle;">
-                            <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? ((presiding.isRequested ? '' : '') + toBengaliNumber(getOfficerName(presiding, 'presiding'))) : 'N/A'}</span></p>
-                            ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt;">${presiding.designation}</p>` : ''}
-                        </td>
-                        <td style="border:0.75pt solid #000; padding:5pt; text-align:center;">&nbsp;</td>
-                        <td style="border:0.75pt solid #000; padding:5pt; vertical-align:top;">&nbsp;</td>
-                    </tr>`;
-            } else {
-                for (let i = 0; i < maxRows; i++) {
-                    const assPres = assPresiding[i];
-                    const poll1 = polling[i * 2];
-                    const poll2 = polling[i * 2 + 1];
-                    const poll2Style = (poll1 && poll2) ? 'border-top:0.75pt solid #000; padding-top:5pt; margin-top:5pt;' : '';
-
-                    tableRows += `
-                        <tr>
-                            ${i === 0 ? `<td rowspan="${maxRows}" style="border:0.75pt solid #000; padding:2pt 5pt; text-align:left; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;"><span style="font-family:Nikosh;">${presiding ? ((presiding.isRequested ? '' : '') + toBengaliNumber(getOfficerName(presiding, 'presiding'))) : 'N/A'}</span></p>
-                                ${presiding && presiding.designation ? `<p style="margin:0; font-size:9pt; color:#444 !important;">${presiding.designation}</p>` : ''}
-                            </td>` : ''}
-                            
-                            <td style="border:0.75pt solid #000; padding:2pt 5pt; text-align:left; vertical-align:middle;">
-                                <p style="margin:0; font-size:10pt;">
-                                    ${assPres ? `<strong>${toBengaliNumber(i + 1)}।</strong> <span style="font-family:Nikosh;">${assPres.isRequested ? '' : ''}${toBengaliNumber(getOfficerName(assPres, 'ass_presiding'))}</span>` : ''}
-                                </p>
-                                ${assPres && assPres.designation ? `<p style="margin:0; font-size:9pt; color:#444 !important;">${assPres.designation}</p>` : ''}
-                            </td>
-                        </tr>`;
+            // Formatter for Presiding
+            let presInfo = '';
+            if (presiding) {
+                presInfo = `<strong>${getOfficerName(presiding, 'presiding')}</strong>`;
+                if (presiding.designation) {
+                    presInfo += `<br><span style="font-size: 12px;">${presiding.designation}</span>`;
                 }
             }
 
-            const maleCount = Number(centre.voter_both_male) || 0;
-            const femaleCount = Number(centre.voter_both_female) || 0;
-            const boothInfo = `<p style="font-size:12pt; margin-bottom:10px;"><span style="font-family:NikoshBAN; color:#ff0066;">যে ভোটার এলাকার ভোটারগণ ভোট প্রদান করবেন সে এলাকার নামঃ ${centre.vote_centre_location || 'N/A'}${(maleCount > 0 || femaleCount > 0) ? ` (পুরুষ বুথ-${toBengaliNumber(maleCount)} টি, মহিলা বুথ-${toBengaliNumber(femaleCount)} টি)` : ''}</span></p>`;
+            // Formatter for Assistant Presiding
+            let assInfo = '';
+            if (firstAss) {
+                assInfo = `<strong>${getOfficerName(firstAss, 'ass_presiding')}</strong>`;
+                if (firstAss.designation) {
+                    assInfo += `<br><span style="font-size: 12px;">${firstAss.designation}</span>`;
+                }
+            }
 
-            // Calculate a display value for total voters: prefer explicit total, otherwise sum the booth counts
-            const totalVoterDisplay = (centre.total_voter !== undefined && centre.total_voter !== null && centre.total_voter !== '')
-                ? toBengaliNumber(centre.total_voter)
-                : ((maleCount + femaleCount) > 0 ? toBengaliNumber(maleCount + femaleCount) : 'N/A');
-
-            const content = `
-                <div class="letter">
-                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
-                    <div style="flex: 1;"></div>
-                    <div style="flex: 2; text-align: center;">
-                        <p style="font-size:13pt; margin: 0;">
-                            <u><span style="font-family:NikoshBAN;">প্রিজাইডিং অফিসার এবং সহকারী প্রিজাইডিং অফিসারদের নাম</span></u>
-                        </p>
-                    </div>
-                    <div style="flex: 1; text-align: right;">
-                        <p style="font-size:14pt; margin: 0;">
-                            <strong><span style="font-family:NikoshBAN;">কেন্দ্র নং</span> – <span style="font-family:NikoshBAN;">${toBengaliNumber(centre.vote_centre_code || '')}</span></strong>
-                        </p>
-                    </div>
-                </div>
-               
-                <p style="font-size:11pt; margin-bottom:1px;">
-                    <span style="font-family:NikoshBAN;"><strong>ভোটকেন্দ্রের নাম ও অবস্থানঃ ${centre.vote_centre_name || 'N/A'} , <span style="color:#c00000 !important;">${centre.vote_centre_area || centre.vote_centre_location || 'N/A'}</span> ;  কেন্দ্র কোড- ${centre.vote_centre_code || 'N/A'} ;  ভোটার ${totalVoterDisplay} জন।</strong></span>
-                </p>
-                ${boothInfo.replace('margin-bottom:10px;', 'margin-bottom:2px;')}
-                
-                
-                <table style="width:100%; border:0.75pt solid #000; border-collapse:collapse;">
-                    <tr>
-                        <td style="width:40%; border:0.75pt solid #000; padding:4pt; text-align:left;">
-                            <span style="font-family:Nikosh; font-size:10pt; font-weight:bold;">প্রিজাইডিং অফিসারের নাম ও পদবী</span>
-                        </td>
-                        <td style="width:60%; border:0.75pt solid #000; padding:4pt; text-align:left;">
-                            <span style="font-family:Nikosh; font-size:10pt; font-weight:bold;">সহকারী প্রিজাইডিং অফিসারের নাম ও পদবী</span>
-                        </td>
-                    </tr>
-                    
-                    ${tableRows}
-                </table>
-                
-                
-                
-                <div style="margin-top:1px; border-top:1px solid #eee; padding-top:2px;">
-                </div>
-            </div>`;
-
-            return content;
+            return `
+                <tr style="font-family: Nikosh;">
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">${toBengaliNumber(centre.vote_centre_code)}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${centre.vote_centre_name || ''}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${centre.vote_centre_area || ''}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${presInfo}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${assInfo}</td>
+                    <td style="border: 1px solid #000; padding: 5px;"></td>
+                </tr>
+            `;
         }
     </script>
 </body>
