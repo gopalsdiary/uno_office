@@ -470,7 +470,7 @@
             duplicates.forEach(group => {
                 const officer = group.officer;
                 const assignedCentres = group.assignments.map(a =>
-                    `• ${toBengaliNumber(a.vote_centre_code)} - ${a.vote_centre_name || 'N/A'}`
+                    `• ${toBengaliNumber(a.vote_centre_code)} - ${toBengaliNumber(a.vote_centre_name || 'N/A')}`
                 ).join('<br>');
 
                 let typeBn = officer.officer_type;
@@ -548,26 +548,30 @@
             // Formatter for Presiding
             let presInfo = '';
             if (presiding) {
-                presInfo = `<strong>${getOfficerName(presiding, 'presiding')}</strong>`;
-                if (presiding.designation) {
-                    presInfo += `<br><span style="font-size: 12px;">${presiding.designation}</span>`;
+                const name = toBengaliNumber(getOfficerName(presiding, 'presiding'));
+                const designation = presiding.designation ? toBengaliNumber(presiding.designation) : '';
+                presInfo = `<strong>${name}</strong>`;
+                if (designation) {
+                    presInfo += `<br><span style="font-size: 12px;">${designation}</span>`;
                 }
             }
 
             // Formatter for Assistant Presiding
             let assInfo = '';
             if (firstAss) {
-                assInfo = `<strong>${getOfficerName(firstAss, 'ass_presiding')}</strong>`;
-                if (firstAss.designation) {
-                    assInfo += `<br><span style="font-size: 12px;">${firstAss.designation}</span>`;
+                const name = toBengaliNumber(getOfficerName(firstAss, 'ass_presiding'));
+                const designation = firstAss.designation ? toBengaliNumber(firstAss.designation) : '';
+                assInfo = `<strong>${name}</strong>`;
+                if (designation) {
+                    assInfo += `<br><span style="font-size: 12px;">${designation}</span>`;
                 }
             }
 
             return `
                 <tr style="font-family: Nikosh;">
-                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">${toBengaliNumber(centre.vote_centre_code)}</td>
-                    <td style="border: 1px solid #000; padding: 5px;">${centre.vote_centre_name || ''}</td>
-                    <td style="border: 1px solid #000; padding: 5px;">${centre.vote_centre_area || ''}</td>
+                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">${toBengaliNumber(centre.vote_centre_code || '')}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${toBengaliNumber(centre.vote_centre_name || '')}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${toBengaliNumber(centre.vote_centre_area || '')}</td>
                     <td style="border: 1px solid #000; padding: 5px;">${presInfo}</td>
                     <td style="border: 1px solid #000; padding: 5px;">${assInfo}</td>
                     <td style="border: 1px solid #000; padding: 5px;"></td>
