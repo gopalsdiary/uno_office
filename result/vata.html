@@ -159,7 +159,7 @@
                         <td>৪</td>
                         <td>৫</td>
                         <td>৬</td>
-                        <td>উৎসে কর ১০% (১,২,৩,৪)</td>
+                        <td>উৎসে কর ১০% (১,২,৩)</td>
                         <td>বেষ্টনী ভ্যাট ৫% + আয়কর ১০% (১৫%)</td>
                         <td>মনিহারি (ভ্যাট ১০%, আয়কর ৫%) ১৫%</td>
                         <td>রেভিনিউ</td>
@@ -316,7 +316,7 @@
                 const monihariTotal = 1500;
 
                 const grossTotal = honorariumTotal + travelTotal + bestniTotal + monihariTotal;
-                const tax10 = Math.round((honorariumTotal + travelTotal) * 0.10);
+                const tax10 = Math.round(honorariumTotal * 0.10);
                 const vatIt = Math.round(bestniTotal * 0.15);
                 const monihariVat = Math.round(monihariTotal * 0.15);
                 const revenue = (totalOfficer + 2) * 10;
