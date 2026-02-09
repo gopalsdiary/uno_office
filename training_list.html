@@ -1,660 +1,250 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ডিউটি এসাইন হয়েছে - Assigned Officers</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="../authentication.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 32px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-        
-        .dropdown-select {
-            padding: 12px 20px;
-            font-size: 16px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            background: white;
-            color: #333;
-            cursor: pointer;
-            min-width: 220px;
-        }
-        
-        .dropdown-select:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-        }
-        
-        .search-box {
-            padding: 12px 15px;
-            font-size: 14px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            width: 250px;
-        }
-        
-        .search-box:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .status {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-card.warning {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-        
-        .stat-card.success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        
-        .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        
-        .data-table th {
-            background: #667eea;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .data-table td {
-            padding: 12px;
-            border: 1px solid #dee2e6;
-            text-align: center;
-        }
-        
-        .data-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .data-table tbody tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .badge-primary {
-            background: #cce5ff;
-            color: #004085;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 50px;
-            background: #d4edda;
-            border-radius: 10px;
-            color: #155724;
-            font-size: 20px;
-        }
-
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            
-            .container {
-                box-shadow: none;
-                padding: 0;
-            }
-            
-            .controls {
-                display: none !important;
-            }
-            
-            .data-table {
-                font-size: 12px;
-            }
-            
-            .data-table th, .data-table td {
-                padding: 6px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-            }
-            
-            .dropdown-select, .search-box {
-                width: 100%;
-            }
-            
-            .data-table {
-                font-size: 12px;
-            }
-            
-            .data-table th, .data-table td {
-                padding: 8px 4px;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duplicate Officers — Names</title>
+  <style>
+    body{font-family:kalpurush, Tahoma, Arial; background:#fff; margin:0; padding:16px}
+    h1{font-size:20px;margin:0 0 12px}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+    .btn-primary{background:#6366f1;color:#fff}
+    .btn-secondary{background:#10b981;color:#fff}
+    .btn-plain{background:#f3f4f6}
+    #results{margin-top:16px}
+    .group{border:1px solid #e5e7eb;padding:10px;border-radius:8px;margin-bottom:8px}
+    .group-title{font-weight:700;color:#111827;margin-bottom:6px}
+    .names{display:flex;flex-wrap:wrap;gap:6px}
+    .name-pill{background:#f8fafc;padding:6px 10px;border-radius:999px;border:1px solid #e6eef6}
+    .member-card{background:#fff;border:1px solid #e5e7eb;padding:12px;border-radius:10px;min-width:180px;max-width:280px;box-shadow:0 8px 20px rgba(2,6,23,0.08);transition:transform .15s ease, box-shadow .18s ease}
+    .member-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.12)}
+    #loading{display:none;margin-top:8px}
+    #empty{color:#6b7280;margin-top:8px}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📋 ডিউটি এসাইন হয়েছে - Assigned Officers</h1>
-        
-        <div class="status" id="status"></div>
-        
-        <div class="controls">
-            <select class="dropdown-select" id="officerType" onchange="filterByType()">
-                <option value="all">সকল অফিসার</option>
-                <option value="presiding">প্রিজাইডিং অফিসার</option>
-                <option value="ass_presiding">সহ-প্রিজাইডিং অফিসার</option>
-                <option value="polling">পোলিং অফিসার</option>
-            </select>
-            
-            <input type="text" class="search-box" id="searchBox" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." oninput="searchOfficers()">
-            
-            <button class="btn btn-primary" onclick="loadAssignedOfficers()">
-                🔄 রিফ্রেশ করুন
-            </button>
-            
-            <button class="btn btn-danger" onclick="window.print()">
-                🖨️ প্রিন্ট করুন
-            </button>
-        </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>ডেটা লোড হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন...</p>
-        </div>
-        
-        <div class="stats-grid" id="statsGrid" style="display:none;"></div>
-        
-        <div id="dataContainer"></div>
-    </div>
+  <h1>Duplicate officers (names only)</h1>
 
-    <script>
-        // Check authentication on page load
-        window.addEventListener('DOMContentLoaded', checkAuth);
-        
-        let allAssignedOfficers = {
-            presiding: [],
-            ass_presiding: [],
-            polling: []
-        };
-        
-        let filteredOfficers = [];
-        
-        // Convert Arabic numerals to Bengali numerals
-        function toBengaliNumber(n) {
-            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
-            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+  <div class="controls">
+    <button id="btn-refresh" class="btn-plain">Refresh Data</button>
+    <button id="btn-export" class="btn-plain">Export CSV</button>
+  </div>
+
+  <div id="loading">⏳ Loading data...</div>
+  <div id="empty" style="display:none">No duplicates found</div>
+
+  <div id="results"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Supabase singleton (same project as other pages)
+    if (!window.supabaseClient) {
+      const SUPABASE_URL = 'https://tschsyozvlneslqylqii.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    const supabaseClient = window.supabaseClient || window.supabase; 
+
+    const CHUNK = 1000;
+    const MAX_FETCH = 50000;
+
+    let allOfficers = [];
+
+    async function fetchAllFromTable(table, sel, orderBy) {
+      const rows = [];
+      let from = 0;
+      while (true) {
+        const res = await supabaseClient.from(table).select(sel).order(orderBy, { ascending: true }).range(from, from + CHUNK - 1);
+        if (res.error) throw res.error;
+        const chunk = res.data || [];
+        rows.push(...chunk);
+        if (chunk.length < CHUNK) break;
+        from += CHUNK;
+        if (rows.length >= MAX_FETCH) break;
+      }
+      return rows;
+    }
+
+    async function loadAll() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('empty').style.display = 'none';
+      document.getElementById('results').innerHTML = '';
+
+      try {
+        // Parallel fetch the three tables
+        const [p, a, pol] = await Promise.all([
+          fetchAllFromTable('presiding_list', 'presiding_iid, presiding_name, mobile_number, Nid_number', 'presiding_iid'),
+          fetchAllFromTable('ass_presiding_list', 'ass_presiding_iid, ass_presiding_name, mobile_number, Nid_number', 'ass_presiding_iid'),
+          fetchAllFromTable('polling_list', 'polling_iid, polling_name, mobile_number, Nid_number', 'polling_iid')
+        ]);
+
+        // Normalize into common shape
+        allOfficers = [];
+        p.forEach(r => allOfficers.push({ src: 'presiding', id: r.presiding_iid, name: (r.presiding_name || '').trim(), mobile: (r.mobile_number || '').trim(), nid: (r.Nid_number || '').trim() }));
+        a.forEach(r => allOfficers.push({ src: 'ass_presiding', id: r.ass_presiding_iid, name: (r.ass_presiding_name || '').trim(), mobile: (r.mobile_number || '').trim(), nid: (r.Nid_number || '').trim() }));
+        pol.forEach(r => allOfficers.push({ src: 'polling', id: r.polling_iid, name: (r.polling_name || '').trim(), mobile: (r.mobile_number || '').trim(), nid: (r.Nid_number || '').trim() }));
+
+        document.getElementById('loading').style.display = 'none';
+        alert('Data updated — total ' + allOfficers.length + ' records');
+
+        // Automatically show duplicates for both NID and Mobile
+        const foundNid = findDuplicatesBy('nid');
+        const foundMobile = findDuplicatesBy('mobile');
+        if (!foundNid && !foundMobile) {
+          document.getElementById('empty').style.display = 'block';
+        } else {
+          document.getElementById('empty').style.display = 'none';
         }
-        
-        // Show status message
-        function showStatus(message, type = 'info') {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // Show/hide loading
-        function setLoading(isLoading) {
-            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
-        }
-        
-        // Fetch all data with pagination (Supabase default limit is 1000)
-        async function fetchAllData(tableName, idColumn, selectColumns = '*') {
-            let allData = [];
-            let lastId = 0;
-            let hasMore = true;
-            const batchSize = 1000;
-            
-            while (hasMore) {
-                const { data, error } = await window.supabaseClient
-                    .from(tableName)
-                    .select(selectColumns)
-                    .gt(idColumn, lastId)
-                    .order(idColumn, { ascending: true })
-                    .limit(batchSize);
-                
-                if (error) throw error;
-                
-                if (!data || data.length === 0) {
-                    hasMore = false;
-                    break;
-                }
-                
-                allData.push(...data);
-                lastId = data[data.length - 1][idColumn];
-                
-                if (data.length < batchSize) {
-                    hasMore = false;
-                }
-            }
-            
-            return allData;
-        }
-        
-        // Load assigned officers
-        async function loadAssignedOfficers() {
-            setLoading(true);
-            
-            try {
-                showStatus('📊 অফিসার তথ্য লোড হচ্ছে...', 'info');
-                
-                // Fetch all assignments to know who is assigned
-                const assignments = await fetchAllData('centre_assignments', 'assignment_id', 'assignment_id, officer_type, officer_iid, vote_centre_iid, vote_centre_code');
-                console.log(`✅ Assignments loaded: ${assignments.length}`);
-                
-                // Fetch vote centres to get centre names
-                showStatus('📊 কেন্দ্র তথ্য লোড হচ্ছে...', 'info');
-                const voteCentres = await fetchAllData('vote_centre', 'vote_centre_iid', 'vote_centre_iid, vote_centre_code, vote_centre_name');
-                console.log(`✅ Vote centres loaded: ${voteCentres.length}`);
-                
-                // Create a map of vote centre info by iid
-                const centreMap = new Map();
-                voteCentres.forEach(c => {
-                    centreMap.set(c.vote_centre_iid, { 
-                        centre_name: c.vote_centre_name, 
-                        centre_number: c.vote_centre_code 
-                    });
-                });
-                
-                // Create maps of assigned officer IDs by type with centre info
-                const assignedPresiding = new Map();
-                const assignedAssPresiding = new Map();
-                const assignedPolling = new Map();
-                
-                assignments.forEach(a => {
-                    const centreInfo = centreMap.get(a.vote_centre_iid) || { centre_name: '-', centre_number: a.vote_centre_code };
-                    if (a.officer_type === 'presiding') {
-                        assignedPresiding.set(a.officer_iid, centreInfo);
-                    } else if (a.officer_type === 'ass_presiding') {
-                        assignedAssPresiding.set(a.officer_iid, centreInfo);
-                    } else if (a.officer_type === 'polling') {
-                        assignedPolling.set(a.officer_iid, centreInfo);
-                    }
-                });
-                
-                // Fetch all officers
-                showStatus('📊 প্রিজাইডিং অফিসার লোড হচ্ছে...', 'info');
-                const presidingList = await fetchAllData('presiding_list', 'presiding_iid', 
-                    'presiding_iid, presiding_name, mobile_number, gender, disability, sallery_scale, own_discrict');
-                
-                showStatus('📊 সহ-প্রিজাইডিং অফিসার লোড হচ্ছে...', 'info');
-                const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid',
-                    'ass_presiding_iid, ass_presiding_name, mobile_number, gender, disability, sallery_scale, own_discrict');
-                
-                showStatus('📊 পোলিং অফিসার লোড হচ্ছে...', 'info');
-                const pollingList = await fetchAllData('polling_list', 'polling_iid',
-                    'polling_iid, polling_name, mobile_number, gender, disability, sallery_scale, own_discrict');
-                
-                console.log(`✅ Officers loaded: Presiding=${presidingList.length}, AssPresiding=${assPresidingList.length}, Polling=${pollingList.length}`);
-                
-                // Filter assigned officers and add centre info
-                allAssignedOfficers.presiding = presidingList
-                    .filter(o => assignedPresiding.has(o.presiding_iid))
-                    .map(o => ({ ...o, ...assignedPresiding.get(o.presiding_iid) }));
-                    
-                allAssignedOfficers.ass_presiding = assPresidingList
-                    .filter(o => assignedAssPresiding.has(o.ass_presiding_iid))
-                    .map(o => ({ ...o, ...assignedAssPresiding.get(o.ass_presiding_iid) }));
-                    
-                allAssignedOfficers.polling = pollingList
-                    .filter(o => assignedPolling.has(o.polling_iid))
-                    .map(o => ({ ...o, ...assignedPolling.get(o.polling_iid) }));
-                
-                console.log(`✅ Assigned: Presiding=${allAssignedOfficers.presiding.length}, AssPresiding=${allAssignedOfficers.ass_presiding.length}, Polling=${allAssignedOfficers.polling.length}`);
-                
-                // Display stats
-                displayStats();
-                
-                // Filter and display
-                filterByType();
-                
-                const totalAssigned = allAssignedOfficers.presiding.length + 
-                                        allAssignedOfficers.ass_presiding.length + 
-                                        allAssignedOfficers.polling.length;
-                
-                showStatus(`✅ মোট ${toBengaliNumber(totalAssigned)} জন অফিসারের ডিউটি এসাইন হয়েছে!`, 'success');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showStatus(`❌ ত্রুটি: ${error.message}`, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-        
-        // Display stats
-        function displayStats() {
-            const totalPresiding = allAssignedOfficers.presiding.length;
-            const totalAssPresiding = allAssignedOfficers.ass_presiding.length;
-            const totalPolling = allAssignedOfficers.polling.length;
-            const totalAssigned = totalPresiding + totalAssPresiding + totalPolling;
-            
-            const statsGrid = document.getElementById('statsGrid');
-            statsGrid.style.display = 'grid';
-            statsGrid.innerHTML = `
-                <div class="stat-card success">
-                    <div class="stat-number">${toBengaliNumber(totalAssigned)}</div>
-                    <div class="stat-label">মোট এসাইন হয়েছে</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${toBengaliNumber(totalPresiding)}</div>
-                    <div class="stat-label">প্রিজাইডিং অফিসার</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${toBengaliNumber(totalAssPresiding)}</div>
-                    <div class="stat-label">সহ-প্রিজাইডিং অফিসার</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${toBengaliNumber(totalPolling)}</div>
-                    <div class="stat-label">পোলিং অফিসার</div>
-                </div>
-            `;
-        }
-        
-        // Filter by officer type
-        function filterByType() {
-            const type = document.getElementById('officerType').value;
-            document.getElementById('searchBox').value = '';
-            
-            if (type === 'all') {
-                // Combine all
-                filteredOfficers = [
-                    ...allAssignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' })),
-                    ...allAssignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' })),
-                    ...allAssignedOfficers.polling.map(o => ({ ...o, type: 'polling' }))
-                ];
-            } else if (type === 'presiding') {
-                filteredOfficers = allAssignedOfficers.presiding.map(o => ({ ...o, type: 'presiding' }));
-            } else if (type === 'ass_presiding') {
-                filteredOfficers = allAssignedOfficers.ass_presiding.map(o => ({ ...o, type: 'ass_presiding' }));
-            } else if (type === 'polling') {
-                filteredOfficers = allAssignedOfficers.polling.map(o => ({ ...o, type: 'polling' }));
-            }
-            
-            renderTable(filteredOfficers);
-        }
-        
-        // Search officers
-        function searchOfficers() {
-            const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
-            
-            if (!searchTerm) {
-                filterByType();
-                return;
-            }
-            
-            const searched = filteredOfficers.filter(o => {
-                const name = getOfficerName(o).toLowerCase();
-                const mobile = (o.mobile_number || '').toLowerCase();
-                return name.includes(searchTerm) || mobile.includes(searchTerm);
-            });
-            
-            renderTable(searched);
-        }
-        
-        // Get officer name based on type
-        function getOfficerName(officer) {
-            if (officer.presiding_name) return officer.presiding_name;
-            if (officer.ass_presiding_name) return officer.ass_presiding_name;
-            if (officer.polling_name) return officer.polling_name;
-            return 'N/A';
-        }
-        
-        // Get officer ID based on type
-        function getOfficerId(officer) {
-            if (officer.presiding_iid) return officer.presiding_iid;
-            if (officer.ass_presiding_iid) return officer.ass_presiding_iid;
-            if (officer.polling_iid) return officer.polling_iid;
-            return 'N/A';
-        }
-        
-        // Get officer type label in Bengali
-        function getOfficerTypeLabel(type) {
-            switch(type) {
-                case 'presiding': return 'প্রিজাইডিং';
-                case 'ass_presiding': return 'সহ-প্রিজাইডিং';
-                case 'polling': return 'পোলিং';
-                default: return type;
-            }
-        }
-        
-        // Render table
-        function renderTable(officers) {
-            const container = document.getElementById('dataContainer');
-            
-            if (!officers || officers.length === 0) {
-                container.innerHTML = '<div class="no-data">❌ কোনো অফিসারের ডিউটি এসাইন করা হয়নি!</div>';
-                return;
-            }
-            
-            let html = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ক্রম</th>
-                            <th>আইডি</th>
-                            <th>নাম</th>
-                            <th>মোবাইল</th>
-                            <th>কেন্দ্র নম্বর</th>
-                            <th>কেন্দ্রের নাম</th>
-                            <th>বেতন স্কেল</th>
-                            <th>অফিসার টাইপ</th>
-                            <th>Call</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            officers.forEach((officer, index) => {
-                const mobile = officer.mobile_number || '';
-                html += `
-                    <tr>
-                        <td>${toBengaliNumber(index + 1)}</td>
-                        <td>${getOfficerId(officer)}</td>
-                        <td style="text-align: left;"><strong>${getOfficerName(officer)}</strong></td>
-                        <td>${mobile || '-'}</td>
-                        <td>${officer.centre_number || '-'}</td>
-                        <td style="text-align: left;">${officer.centre_name || '-'}</td>
-                        <td>${officer.sallery_scale || '-'}</td>
-                        <td>
-                            <span class="badge badge-primary">${getOfficerTypeLabel(officer.type)}</span>
-                        </td>
-                        <td>
-                            ${mobile ? `<a href="tel:${mobile}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">📞</a>` : '-'}
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                    </tbody>
-                </table>
-                <p style="margin-top: 15px; text-align: center; color: #666;">
-                    মোট ${toBengaliNumber(officers.length)} জন অফিসার দেখাচ্ছে
-                </p>
-            `;
-            
-            container.innerHTML = html;
-        }
-        
-        // Auto-load on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                loadAssignedOfficers();
-            }, 500);
+
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        console.error(err);
+        alert('Error loading data: ' + (err.message || err));
+      }
+    }
+
+    // utility to normalize digits
+    function normalizeDigits(str) {
+      if (!str) return '';
+      return ('' + str).replace(/\D/g, '').trim();
+    }
+
+    // Find duplicates by field ('nid' or 'mobile') and render only names
+    function findDuplicatesBy(field) {
+      if (!allOfficers || allOfficers.length === 0) {
+        alert('Data is not loaded — please click "Refresh Data" first');
+        return false;
+      }
+
+      const map = new Map();
+      allOfficers.forEach(off => {
+        const raw = off[field] || '';
+        const norm = normalizeDigits(raw);
+        if (!norm) return; // skip empty
+        if (!map.has(norm)) map.set(norm, []);
+        map.get(norm).push(off);
+      });
+
+      // collect names that belong to groups with more than 1 member
+      const duplicateGroups = Array.from(map.entries()).filter(([k, arr]) => arr.length > 1);
+
+      const resultsEl = document.getElementById('results');
+      // do NOT clear results here so both NID and Mobile results can accumulate
+      // caller will handle showing or hiding the empty message
+
+
+      if (duplicateGroups.length === 0) {
+        return false;
+      }
+
+      // Render groups as cards with members side-by-side
+      duplicateGroups.forEach(([key, arr]) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'group';
+        // attach metadata for export and tracing
+        groupDiv.dataset.key = key;
+        groupDiv.dataset.field = field;
+
+        const title = document.createElement('div');
+        title.className = 'group-title';
+        title.textContent = (field === 'nid' ? 'Duplicate by NID: ' : 'Duplicate by Mobile: ') + key + ' — ' + arr.length + ' matches';
+        groupDiv.appendChild(title);
+
+        const membersWrap = document.createElement('div');
+        membersWrap.className = 'names';
+        membersWrap.style.display = 'flex';
+        membersWrap.style.gap = '8px';
+        membersWrap.style.flexWrap = 'wrap';
+
+        arr.forEach(member => {
+          const card = document.createElement('div');
+          card.className = 'member-card';
+          // attach member metadata for easy export
+          card.dataset.src = member.src || '';
+          card.dataset.id = member.id || '';
+          card.dataset.mobile = member.mobile || '';
+          card.dataset.nid = member.nid || '';
+          card.dataset.name = member.name || '';
+
+          const nameEl = document.createElement('div');
+          nameEl.style.fontWeight = '700';
+          nameEl.textContent = member.name || '(no name)';
+          const infoEl = document.createElement('div');
+          infoEl.style.fontSize = '12px';
+          infoEl.style.color = '#374151';
+          infoEl.textContent = member.src + ' — ID: ' + (member.id || '-');
+          const mobileEl = document.createElement('div');
+          mobileEl.style.fontSize = '12px';
+          mobileEl.style.color = '#6b7280';
+          mobileEl.textContent = 'Mobile: ' + (member.mobile || '-');
+          const nidEl = document.createElement('div');
+          nidEl.style.fontSize = '12px';
+          nidEl.style.color = '#6b7280';
+          nidEl.textContent = 'NID: ' + (member.nid || '-');
+
+          card.appendChild(nameEl);
+          card.appendChild(infoEl);
+          card.appendChild(mobileEl);
+          card.appendChild(nidEl);
+
+          membersWrap.appendChild(card);
         });
-    </script>
+
+        groupDiv.appendChild(membersWrap);
+        resultsEl.appendChild(groupDiv);
+      });
+
+      return true;
+    }
+
+    // Export current displayed groups and members to CSV
+    function exportCSV() {
+      const resultsEl = document.getElementById('results');
+      if (!resultsEl.firstChild) {
+        alert('No results to export');
+        return;
+      }
+
+      const rows = [];
+      // header
+      rows.push(['group_field','group_key','name','source','id','mobile','nid']);
+
+      Array.from(resultsEl.querySelectorAll('.group')).forEach(group => {
+        const key = group.dataset.key || '';
+        const field = group.dataset.field || '';
+        Array.from(group.querySelectorAll('.member-card')).forEach(card => {
+          rows.push([
+            field,
+            key,
+            card.dataset.name || '',
+            card.dataset.src || '',
+            card.dataset.id || '',
+            card.dataset.mobile || '',
+            card.dataset.nid || ''
+          ]);
+        });
+      });
+
+      if (rows.length <= 1) { alert('No rows to export'); return; }
+
+      const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'duplicate_groups.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('btn-refresh').addEventListener('click', () => { document.getElementById('results').innerHTML = ''; document.getElementById('empty').style.display = 'none'; loadAll(); });
+    document.getElementById('btn-export').addEventListener('click', exportCSV);
+
+    // initial load
+    loadAll();
+  </script>
 </body>
 </html>
