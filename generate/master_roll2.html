@@ -228,24 +228,37 @@
                 throw new Error('Supabase client not initialized');
             }
 
-            // Fetch all assignments
-            const { data: assignments, error: assignError } = await window.supabaseClient
-                .from('centre_assignments')
-                .select('*')
-                .limit(100000); // Increased limit to ensure all assignments are fetched
+            // Fetch data in pages to avoid the default 1000-row cap
+            async function fetchAllRows(table, selectColumns, orderColumn) {
+                const pageSize = 1000;
+                let from = 0;
+                let allRows = [];
+                while (true) {
+                    let query = window.supabaseClient
+                        .from(table)
+                        .select(selectColumns)
+                        .range(from, from + pageSize - 1);
+                    if (orderColumn) {
+                        query = query.order(orderColumn, { ascending: true });
+                    }
+                    const { data, error } = await query;
+                    if (error) throw error;
+                    if (!data || data.length === 0) break;
+                    allRows = allRows.concat(data);
+                    if (data.length < pageSize) break;
+                    from += pageSize;
+                }
+                return allRows;
+            }
 
-            if (assignError) throw assignError;
+            // Fetch all assignments
+            const assignments = await fetchAllRows('centre_assignments', '*', 'vote_centre_code');
             if (!assignments || assignments.length === 0) {
-                throw new Error('কোনো অ্যাসাইনমেন্ট পাওয়া যায়নি।');
+                throw new Error('কোনো অ্যাসাইনমেন্ট পাওয়া যায়নি।');
             }
 
             // Fetch centre details
-            const { data: centres, error: centreError } = await window.supabaseClient
-                .from('vote_centre')
-                .select('*')
-                .limit(100000); // Increased limit for centres
-
-            if (centreError) throw centreError;
+            const centres = await fetchAllRows('vote_centre', '*', 'vote_centre_code');
 
             const centreDetailsMap = new Map(centres.map(c => [String(c.vote_centre_code), c]));
 
@@ -254,16 +267,33 @@
             const assPresidingIds = assignments.filter(a => a.officer_type === 'ass_presiding').map(a => a.officer_iid);
             const pollingIds = assignments.filter(a => a.officer_type === 'polling').map(a => a.officer_iid);
 
-            const [pRes, apRes, poRes] = await Promise.all([
-                presidingIds.length ? window.supabaseClient.from('presiding_list').select('presiding_iid, presiding_name, mobile_number, address').in('presiding_iid', presidingIds) : { data: [] },
-                assPresidingIds.length ? window.supabaseClient.from('ass_presiding_list').select('ass_presiding_iid, ass_presiding_name, mobile_number, address').in('ass_presiding_iid', assPresidingIds) : { data: [] },
-                pollingIds.length ? window.supabaseClient.from('polling_list').select('polling_iid, polling_name, mobile_number, address').in('polling_iid', pollingIds) : { data: [] }
+            // Helper function to fetch data in chunks (Supabase .in() has a limit around 1000)
+            async function fetchInChunks(table, idColumn, ids) {
+                if (!ids.length) return [];
+                const chunkSize = 1000;
+                const results = [];
+                for (let i = 0; i < ids.length; i += chunkSize) {
+                    const chunk = ids.slice(i, i + chunkSize);
+                    const { data, error } = await window.supabaseClient
+                        .from(table)
+                        .select('*')
+                        .in(idColumn, chunk);
+                    if (error) throw error;
+                    results.push(...(data || []));
+                }
+                return results;
+            }
+
+            const [pData, apData, poData] = await Promise.all([
+                fetchInChunks('presiding_list', 'presiding_iid', presidingIds),
+                fetchInChunks('ass_presiding_list', 'ass_presiding_iid', assPresidingIds),
+                fetchInChunks('polling_list', 'polling_iid', pollingIds)
             ]);
 
             const officerDetails = {
-                presiding: new Map(pRes.data.map(o => [o.presiding_iid, o])),
-                ass_presiding: new Map(apRes.data.map(o => [o.ass_presiding_iid, o])),
-                polling: new Map(poRes.data.map(o => [o.polling_iid, o]))
+                presiding: new Map(pData.map(o => [String(o.presiding_iid), o])),
+                ass_presiding: new Map(apData.map(o => [String(o.ass_presiding_iid), o])),
+                polling: new Map(poData.map(o => [String(o.polling_iid), o]))
             };
 
             // Debug counts
@@ -294,10 +324,11 @@
                     });
                 }
                 const bundle = groups.get(code);
-                const details = officerDetails[a.officer_type].get(a.officer_iid);
+                const typeMap = officerDetails[a.officer_type];
+                const details = typeMap ? typeMap.get(String(a.officer_iid)) : null;
                 bundle.officers.push({
                     ...a,
-                    name: details ? (details.presiding_name || details.ass_presiding_name || details.polling_name) : a.officer_name,
+                    name: details ? (details.presiding_name || details.ass_presiding_name || details.polling_name) : (a.officer_name || a.name || ''),
                     mobile: details ? details.mobile_number : '',
                     workplace: details ? details.address : '',
                     designation_original: a.officer_designation
