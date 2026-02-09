@@ -147,7 +147,7 @@
                         <td width="5%">বেষ্টনী (১২০০)</td>
                         <td width="5%">মনিহারি (১৫০০)</td>
                         <td rowspan="2" width="7%">মোট টাকার পরিমাণ</td>
-                        <td colspan="3" width="12%">কর্তন</td>
+                        <td colspan="4" width="12%">কর্তন</td>
                         <td rowspan="2" width="5%">মোট কর্তন</td>
                         <td rowspan="2" width="7%">মোট প্রদত্ত টাকা</td>
                         <td rowspan="2" width="8%">স্বাক্ষর</td>
@@ -161,6 +161,7 @@
                         <td>৬</td>
                         <td>উৎসে কর ১০% (১,২,৩,৪)</td>
                         <td>বেষ্টনী ভ্যাট ৫% + আয়কর ১০% (১৫%)</td>
+                        <td>মনিহারি (ভ্যাট ১০%, আয়কর ৫%) ১৫%</td>
                         <td>রেভিনিউ</td>
                     </tr>
                 </thead>
@@ -179,6 +180,7 @@
                         <td>{{total_gross}}</td>
                         <td>{{total_tax}}</td>
                         <td>{{total_vat}}</td>
+                        <td>{{total_monihari_vat}}</td>
                         <td>{{total_rev}}</td>
                         <td>{{total_deduction}}</td>
                         <td>{{total_net}}</td>
@@ -227,7 +229,7 @@
                     const container = document.getElementById('app');
                     let rowsHtml = '';
                     let sumPrv = 0, sumAsst = 0, sumPol = 0, sumTravel = 0, sumBestni = 0, sumMonihari = 0;
-                    let sumGross = 0, sumTax = 0, sumVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
+                    let sumGross = 0, sumTax = 0, sumVat = 0, sumMonihariVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
 
                     data.forEach((d) => {
                         const res = this.calculate(d);
@@ -243,6 +245,7 @@
                         sumGross += res.gross;
                         sumTax += res.tax10;
                         sumVat += res.vatIt;
+                        sumMonihariVat += res.monihariVat;
                         sumRev += res.revenue;
                         sumDeduction += res.deduction;
                         sumNet += res.net;
@@ -262,6 +265,7 @@
                                 <td class="fw-bold">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
                                 <td>${this.toBn(res.tax10.toLocaleString('bn-BD'))}</td>
                                 <td>${this.toBn(res.vatIt.toLocaleString('bn-BD'))}</td>
+                                <td>${this.toBn(res.monihariVat.toLocaleString('bn-BD'))}</td>
                                 <td>${this.toBn(res.revenue.toLocaleString('bn-BD'))}</td>
                                 <td>${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
                                 <td class="fw-bold">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
@@ -281,6 +285,7 @@
                         .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
                         .replace('{{total_tax}}', this.toBn(sumTax.toLocaleString('bn-BD')))
                         .replace('{{total_vat}}', this.toBn(sumVat.toLocaleString('bn-BD')))
+                        .replace('{{total_monihari_vat}}', this.toBn(sumMonihariVat.toLocaleString('bn-BD')))
                         .replace('{{total_rev}}', this.toBn(sumRev.toLocaleString('bn-BD')))
                         .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
                         .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
@@ -313,9 +318,10 @@
                 const grossTotal = honorariumTotal + travelTotal + bestniTotal + monihariTotal;
                 const tax10 = Math.round((honorariumTotal + travelTotal) * 0.10);
                 const vatIt = Math.round(bestniTotal * 0.15);
-                const revenue = 30 + (totalOfficer - 1) * 20;
+                const monihariVat = Math.round(monihariTotal * 0.15);
+                const revenue = (totalOfficer + 2) * 10;
 
-                const totalDeduction = tax10 + vatIt + revenue;
+                const totalDeduction = tax10 + vatIt + monihariVat + revenue;
                 const netTotal = grossTotal - totalDeduction;
 
                 return {
@@ -332,6 +338,7 @@
                     monihariTotal,
                     tax10,
                     vatIt,
+                    monihariVat,
                     revenue
                 };
             }
