@@ -86,7 +86,8 @@
         pol.forEach(r => allOfficers.push({ src: 'polling', id: r.polling_iid, name: (r.polling_name || '').trim(), mobile: (r.mobile_number || '').trim(), nid: (r.Nid_number || '').trim() }));
 
         document.getElementById('loading').style.display = 'none';
-        alert('Data updated — total ' + allOfficers.length + ' records');
+        // Data updated (no popup shown)
+        // console.log('Data updated — total ' + allOfficers.length + ' records');
 
         // Automatically show duplicates for both NID and Mobile
         const foundNid = findDuplicatesBy('nid');
