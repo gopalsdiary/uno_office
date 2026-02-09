@@ -232,7 +232,7 @@
             const { data: assignments, error: assignError } = await window.supabaseClient
                 .from('centre_assignments')
                 .select('*')
-                .limit(10000); // Fetch all records (default is 1000)
+                .limit(100000); // Increased limit to ensure all assignments are fetched
 
             if (assignError) throw assignError;
             if (!assignments || assignments.length === 0) {
@@ -243,7 +243,7 @@
             const { data: centres, error: centreError } = await window.supabaseClient
                 .from('vote_centre')
                 .select('*')
-                .limit(5000);
+                .limit(100000); // Increased limit for centres
 
             if (centreError) throw centreError;
 
@@ -322,31 +322,37 @@
                 const { centre, officers } = bundle;
                 const totalBooths = (Number(centre.voter_both_male) || 0) + (Number(centre.voter_both_female) || 0);
 
+                // Calculate total net amount for the center
+                const totalNet = officers.reduce((sum, off) => {
+                    let allowance = 0;
+                    if (off.officer_type === 'presiding') allowance = 8000;
+                    else if (off.officer_type === 'ass_presiding') allowance = 6000;
+                    else if (off.officer_type === 'polling') allowance = 4000;
+                    const tax = allowance * 0.1;
+                    const travelAllowance = 1000;
+                    return sum + ((allowance - tax) + travelAllowance);
+                }, 0);
+
                 html += `
                     <div class="page ${index < allData.length - 1 ? 'page-break' : ''}">
+                        <div style="font-size: 12pt; margin-bottom: 20px; font-family: 'NikoshBAN', sans-serif;">
+                            <div style="text-align: right; margin-bottom: 5px;">ভাউচার নং-........................................</div>
+                            <div style="text-align: center; text-decoration: underline; font-weight: bold; margin-bottom: 15px; font-size: 14pt;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ২০২৬ উপলক্ষে অর্থ পরিশোধের জন্য ভাউচার</div>
+                            
+                            <div style="line-height: 1.5;">
+                                <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
+                                <div>২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
+                                <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
+                                <div>৪। অর্থের পরিমাণ: ${toBengaliNumber(totalNet)}/- (কথায়- ${convertNumberToBanglaWords(totalNet)} টাকা মাত্র)</div>
+                                <div style="text-align: justify;">৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ: ভোটকেন্দ্রে ভোট গ্রহণের জন্য নিয়োজিত কর্মকর্তাদের সম্মানী ভাতা বাবদ (প্রিজাইডিং অফিসার- ৪০০০×২=৮,০০০; সহকারী প্রিজাইডিং অফিসার-৩০০০×২=৬,০০০ ; পোলিং অফিসার ২০০০×২=৪,০০০ টাকা হারে এবং প্রতিজন ১০০০ টাকা হারে যাতায়াত ভাতা।)</div>
+                            </div>
+                        </div>
+
                         <table>
                             <thead>
-                                <tr style="border: none;">
-                                    <th colspan="9" style="border: none; padding: 0;">
-                                        <div class="header-text">
-                                            <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬</h1>
-                                            <h2>প্রিজাইডিং অফিসার, সহকারি প্রিজাইডিং অফিসার ও পোলিং অফিসারদের যাতায়াত ভাতা প্রদানের মাস্টাররোল</h2>
-                                            <h2>(প্রিজাইডিং অফিসার ৮০০০/- সহকারী প্রিজাইডিং ৬০০০/- পোলিং ৪০০০/- হারে দুই দিন)</h2>
-                                        </div>
-
-                                        <div class="info-row">
-                                            <span>জেলাঃ ফেনী</span>
-                                            <span>কেন্দ্র কোডঃ ${toBengaliNumber(centre.vote_centre_code)}</span>
-                                        </div>
-
-                                        <table style="width: 100%; margin-bottom: 10px;">
-                                            <tr>
-                                                <td style="width: 25%;">ভোট কেন্দ্রের নাম ও নম্বর</td>
-                                                <td class="text-left" style="width: 45%;"><strong>${toBengaliNumber(centre.vote_centre_name || '')}</strong></td>
-                                                <td style="width: 15%;">বুথ সংখ্যা</td>
-                                                <td style="width: 15%;"><strong>${toBengaliNumber(totalBooths)}</strong></td>
-                                            </tr>
-                                        </table>
+                                <tr>
+                                    <th colspan="9" style="text-align: right; padding: 5px; border: none; font-size: 11pt;">
+                                        কেন্দ্র নং - ${toBengaliNumber(centre.vote_centre_code)}
                                     </th>
                                 </tr>
                                 <tr>
@@ -386,7 +392,7 @@
                         <tr>
                             <td>${toBengaliNumber(i + 1)}</td>
                             <td class="text-left name-cell">
-                                <strong>${toBengaliNumber(off.name || '')}</strong>
+                                ${toBengaliNumber(off.name || '')}
                             </td>
                             <td>${typeBn}</td>
                             <td>${toBengaliNumber(allowance)}/-</td>
@@ -410,6 +416,142 @@
             });
 
             container.innerHTML = html;
+        }
+
+        function convertNumberToBanglaWords(amount) {
+            const digits = ['শূন্য', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়'];
+            const words = {
+                0: '',
+                1: 'এক',
+                2: 'দুই',
+                3: 'তিন',
+                4: 'চার',
+                5: 'পাঁচ',
+                6: 'ছয়',
+                7: 'সাত',
+                8: 'আট',
+                9: 'নয়',
+                10: 'দশ',
+                11: 'এগারো',
+                12: 'বারো',
+                13: 'তেরো',
+                14: 'চৌদ্দ',
+                15: 'পনেরো',
+                16: 'ষোল',
+                17: 'সতেরো',
+                18: 'আঠারো',
+                19: 'ঊনিশ',
+                20: 'বিশ',
+                21: 'একুশ',
+                22: 'বাইশ',
+                23: 'তেইশ',
+                24: 'চব্বিশ',
+                25: 'পঁচিশ',
+                26: 'ছাব্বিশ',
+                27: 'াতাশ',
+                28: 'আঠাশ',
+                29: 'ঊনত্রিশ',
+                30: 'ত্রিশ',
+                31: 'একত্রিশ',
+                32: 'বত্রিশ',
+                33: 'তেত্রিশ',
+                34: 'চৌত্রিশ',
+                35: 'পয়ত্রিশ',
+                36: 'ছত্রিশ',
+                37: 'সাঁইত্রিশ',
+                38: 'আটত্রিশ',
+                39: 'ঊনচল্লিশ',
+                40: 'চল্লিশ',
+                41: 'একচল্লিশ',
+                42: 'বিয়াল্লিশ',
+                43: 'তেতাল্লিশ',
+                44: 'চুয়াল্লিশ',
+                45: 'পয়তাল্লিশ',
+                46: 'ছেচল্লিশ',
+                47: 'সাতচল্লিশ',
+                48: 'আটচল্লিশ',
+                49: 'ঊনপঞ্চাশ',
+                50: 'পঞ্চাশ',
+                51: 'একান্ন',
+                52: 'বায়ান্ন',
+                53: 'তিপ্পান্ন',
+                54: 'চুয়ান্ন',
+                55: 'পঞ্চান্ন',
+                56: 'ছাপ্পান্ন',
+                57: 'সাতান্ন',
+                58: 'আটান্ন',
+                59: 'ঊনষাট',
+                60: 'ষাট',
+                61: 'একষট্টি',
+                62: 'বাষট্টি',
+                63: 'তেষট্টি',
+                64: 'চৌষট্টি',
+                65: 'পয়ষট্টি',
+                66: 'ছেষট্টি',
+                67: 'সাতষট্টি',
+                68: 'আটষট্টি',
+                69: 'ঊনসত্তর',
+                70: 'সত্তর',
+                71: 'একাত্তর',
+                72: 'বাহাত্তর',
+                73: 'তিয়াত্তর',
+                74: 'চুয়াত্তর',
+                75: 'পঁচাত্তর',
+                76: 'ছিয়াত্তর',
+                77: 'সাতাত্তর',
+                78: 'আটাত্তর',
+                79: 'ঊনআশি',
+                80: 'আশি',
+                81: 'একাশি',
+                82: 'বিরাশি',
+                83: 'তিরাশি',
+                84: 'চুরাশি',
+                85: 'পঁচাশি',
+                86: 'ছিয়াশি',
+                87: 'সাতাশি',
+                88: 'আটাশি',
+                89: 'ঊননব্বই',
+                90: 'নব্বই',
+                91: 'একানব্বই',
+                92: 'বিরানব্বই',
+                93: 'তিরানব্বই',
+                94: 'চুরানব্বই',
+                95: 'পঁচানব্বই',
+                96: 'ছিয়ানব্বই',
+                97: 'সাতানব্বই',
+                98: 'আটানব্বই',
+                99: 'নিরানব্বই'
+            };
+
+            const convertLessThan100 = (n) => {
+                return words[Number(n)];
+            };
+
+            const convert = (n) => {
+                n = Number(n);
+                if (n === 0) return '';
+                if (n < 100) return convertLessThan100(n);
+                if (n < 1000) {
+                    const hundreds = Math.floor(n / 100);
+                    const remainder = n % 100;
+                    return (hundreds ? words[hundreds] + ' শত ' : '') + (remainder ? convertLessThan100(remainder) : '');
+                }
+                if (n < 100000) {
+                    const thousands = Math.floor(n / 1000);
+                    const remainder = n % 1000;
+                    return (thousands ? convert(thousands) + ' হাজার ' : '') + (remainder ? convert(remainder) : '');
+                }
+                if (n < 10000000) {
+                    const lakhs = Math.floor(n / 100000);
+                    const remainder = n % 100000;
+                    return (lakhs ? convert(lakhs) + ' লক্ষ ' : '') + (remainder ? convert(remainder) : '');
+                }
+                const crores = Math.floor(n / 10000000);
+                const remainder = n % 10000000;
+                return (crores ? convert(crores) + ' কোটি ' : '') + (remainder ? convert(remainder) : '');
+            };
+
+            return convert(amount).trim();
         }
     </script>
 </body>
