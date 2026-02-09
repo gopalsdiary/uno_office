@@ -266,11 +266,28 @@
                 polling: new Map(poRes.data.map(o => [o.polling_iid, o]))
             };
 
-            // Group by centre
+            // Debug counts
+            console.log('Loaded centres:', centres ? centres.length : 0, 'assignments:', assignments ? assignments.length : 0);
+
+            // Initialize groups from all centres so centres without assignments are also shown
             const groups = new Map();
+            centres.forEach(c => {
+                const code = String(c.vote_centre_code);
+                groups.set(code, {
+                    centre: c,
+                    officers: []
+                });
+            });
+
+            // Add assignments into the appropriate centre group
             assignments.forEach(a => {
-                const code = String(a.vote_centre_code);
+                const code = String(a.vote_centre_code || '');
+                if (!code) {
+                    console.warn('Assignment without vote_centre_code:', a);
+                    return;
+                }
                 if (!groups.has(code)) {
+                    // If centre isn't in centres list for some reason, create a fallback entry
                     groups.set(code, {
                         centre: centreDetailsMap.get(code) || { vote_centre_code: code, vote_centre_name: 'N/A' },
                         officers: []
@@ -287,6 +304,10 @@
                 });
             });
 
+            // Log centres with no assignments (useful for debugging)
+            const centresWithNoAssignments = Array.from(groups.values()).filter(g => g.officers.length === 0).map(g => g.centre.vote_centre_code);
+            console.log('Centres with no assignments:', centresWithNoAssignments.length, centresWithNoAssignments.slice(0, 50));
+
             // Sort officers in each centre: Presiding, then Assistant Presiding, then Polling
             groups.forEach(bundle => {
                 bundle.officers.sort((a, b) => {
@@ -301,7 +322,8 @@
                 });
             });
 
-            return Array.from(groups.values()).sort((a, b) => {
+            const groupsArray = Array.from(groups.values());
+            return groupsArray.sort((a, b) => {
                 const codeA = parseInt(a.centre.vote_centre_code) || 0;
                 const codeB = parseInt(b.centre.vote_centre_code) || 0;
                 return codeA - codeB;
