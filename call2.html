@@ -6,7 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>প্রিজাইডিং অফিসার কল লিস্ট</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="authentication.js"></script>
+    <script>
+      // Ensure a Supabase client exists for public pages (uses anon key)
+      if (!window.supabaseClient) {
+        window.SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+        } else {
+          console.warn('Supabase SDK not available yet; page may fail to initialize Supabase.');
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
@@ -386,7 +397,6 @@
             },
 
             async init() {
-                checkAuth();
                 await this.loadData();
             },
 
