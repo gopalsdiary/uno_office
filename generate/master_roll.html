@@ -264,11 +264,28 @@
                 polling: new Map(poRes.data.map(o => [o.polling_iid, o]))
             };
 
-            // Group by centre
+            // Debug counts
+            console.log('Loaded centres:', centres ? centres.length : 0, 'assignments:', assignments ? assignments.length : 0);
+
+            // Initialize groups from all centres so centres without assignments are also shown
             const groups = new Map();
+            centres.forEach(c => {
+                const code = String(c.vote_centre_code);
+                groups.set(code, {
+                    centre: c,
+                    officers: []
+                });
+            });
+
+            // Add assignments into the appropriate centre group
             assignments.forEach(a => {
-                const code = String(a.vote_centre_code);
+                const code = String(a.vote_centre_code || '');
+                if (!code) {
+                    console.warn('Assignment without vote_centre_code:', a);
+                    return;
+                }
                 if (!groups.has(code)) {
+                    // If centre isn't in centres list for some reason, create a fallback entry
                     groups.set(code, {
                         centre: centreDetailsMap.get(code) || { vote_centre_code: code, vote_centre_name: 'N/A' },
                         officers: []
@@ -285,6 +302,10 @@
                 });
             });
 
+            // Log centres with no assignments (useful for debugging)
+            const centresWithNoAssignments = Array.from(groups.values()).filter(g => g.officers.length === 0).map(g => g.centre.vote_centre_code);
+            console.log('Centres with no assignments:', centresWithNoAssignments.length, centresWithNoAssignments.slice(0, 50));
+
             // Sort officers in each centre: Presiding, then Assistant Presiding, then Polling
             groups.forEach(bundle => {
                 bundle.officers.sort((a, b) => {
@@ -299,7 +320,8 @@
                 });
             });
 
-            return Array.from(groups.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+            const groupsArray = Array.from(groups.values());
+            return groupsArray.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
         }
 
         function toBengaliNumber(n) {
@@ -331,7 +353,7 @@
                                 <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
                                 <div>২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
                                 <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
-                                <div style="display: flex; gap: 40px;">
+                                <div style="display: flex; gap: 40px; font-weight: bold;">
                                     <div>৪। অর্থের পরিমাণ: ${toBengaliNumber(managementAmount.toLocaleString('bn-BD'))}/-</div>
                                     <div>(কথায়- ${convertNumberToBanglaWords(managementAmount)} টাকা মাত্র)</div>
                                 </div>
@@ -371,7 +393,7 @@
                                 <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
                                 <div>২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
                                 <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
-                                <div>৪। অর্থের পরিমাণ: ১৫০০/- (এক হাজার পাঁচশত টাকা মাত্র)</div>
+                                <div style="font-weight: bold;">৪। অর্থের পরিমাণ: ১৫০০/- (এক হাজার পাঁচশত টাকা মাত্র)</div>
                                 <div style="text-align: justify; margin-top: 10px;">
                                     ৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ: প্রিজাইডিং অফিসার কর্তৃক ইমারজেন্সী (চার্জার) লাইট বাবদ, ক্যালকুলেটর, স্ট্যাপলার, স্ট্যাপলার পিন ইত্যাদি সংগ্রহ বাবদ {প্রতি কেন্দ্রের জন্য গড়ে ১,৫০০/- (একহাজার পাঁচশত) টাকা হারে} (অন্যান্য মনিহারি): ১৫০০/- 
                                 </div>
