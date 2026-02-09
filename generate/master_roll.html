@@ -142,6 +142,11 @@
             color: red;
         }
 
+        @page {
+            size: A4;
+            margin: 0.2in;
+        }
+
         @media print {
             body {
                 background: white;
@@ -163,24 +168,23 @@
                 page-break-after: always;
             }
 
-            .signature-cell {
-                width: 3cm !important;
-                height: 2cm !important;
-            }
-
-            .revenue-cell {
-                width: 2.5cm !important;
-                height: 2cm !important;
-            }
-
-            table {
-                page-break-inside: auto;
-            }
-
-            tr {
+            .voucher {
                 page-break-inside: avoid;
-                page-break-after: auto;
             }
+        }
+
+        .separator {
+            border-top: 2px dashed #000;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .separator:after {
+            content: '✂';
+            position: absolute;
+            top: -12px;
+            left: 0;
+            font-size: 16pt;
         }
     </style>
 </head>
@@ -311,75 +315,126 @@
             allData.forEach((bundle, index) => {
                 const { centre, officers } = bundle;
                 const totalBooths = (Number(centre.voter_both_male) || 0) + (Number(centre.voter_both_female) || 0);
+                const managementAmount = totalBooths * 1200;
+                const stationeryAmount = 1500;
 
                 html += `
-                    <div class="page ${index < allData.length - 1 ? 'page-break' : ''}">
-                        <div class="header-text">
-                            <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬</h1>
-                            <h2>প্রিজাইডিং অফিসার, সহকারি প্রিজাইডিং অফিসার ও পোলিং অফিসারদের যাতায়াত ভাতা প্রদানের মাস্টাররোল</h2>
-                            <h2>(জনপ্রতি ১০০০/- হারে)</h2>
+                    <div class="page ${index < allData.length - 1 ? 'page-break' : ''}" style="padding: 10px; font-family: 'Nikosh', sans-serif; height: 280mm; box-sizing: border-box; display: block; position: relative;">
+                        <!-- Voucher 1: Management Expenses -->
+                        <div class="voucher" style="height: 130mm; position: relative; box-sizing: border-box; padding-top: 10px;">
+                            <div style="text-align: right; margin-bottom: 2px; font-size: 10pt;">ভাউচার নং-........................................</div>
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="font-size: 15pt; text-decoration: underline; display: inline-block; margin: 0;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ২০২৬ উপলক্ষে অর্থ পরিশোধের জন্য ভাউচার</h1>
+                            </div>
+                            
+                            <div style="font-size: 13pt; line-height: 1.6;">
+                                <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
+                                <div>২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
+                                <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
+                                <div style="display: flex; gap: 40px;">
+                                    <div>৪। অর্থের পরিমাণ: ${toBengaliNumber(managementAmount.toLocaleString('bn-BD'))}/-</div>
+                                    <div>(কথায়- ${convertNumberToBanglaWords(managementAmount)} টাকা মাত্র)</div>
+                                </div>
+                                <div style="font-size: 9.5pt; margin-top: -5px; padding-left: 105px;">
+                                    <span>(অংকে)</span>
+                                    <span style="margin-left: 125px;">(কথায়)</span>
+                                </div>
+                                <div style="text-align: justify; margin-top: 10px;">
+                                    ৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ: ভোটকেন্দ্রের বেষ্টনী নির্মাণ/ভোটকক্ষ প্রস্তুতকরণ, কেন্দ্রের সংস্কার, ভোট কক্ষে ব্যালট পেপার মার্কিং এর জন্য মার্কিং প্রেস/গোপন কক্ষ নির্মাণ বাবদ প্রতি ভোটকক্ষের জন্য ১২০০/- হারে(ব্যবস্থাপনা ব্যায়): ${toBengaliNumber(totalBooths)} * ১২০০ = ${toBengaliNumber(managementAmount.toLocaleString('bn-BD'))}/-
+                                </div>
+                            </div>
+
+                            <div style="position: absolute; bottom: 20px; left: 0; right: 0; overflow: hidden; font-size: 11pt;">
+                                <div style="float: left; width: 45%; margin-top: 40px;">
+                                    <p style="border-top: 1px solid black; display: inline-block; padding-top: 5px;">অর্থ প্রদানকারীর স্বাক্ষর ও তারিখ<br>(নাম ও পদবী সম্বলিত স্বাক্ষর)</p>
+                                </div>
+                                <div style="float: right; width: 50%; text-align: left;">
+                                    <p style="margin-left: 20px; margin-bottom: 5px;">অর্থ গ্রহণকারীর স্বাক্ষর ও তারিখ:</p>
+                                    <p>নাম:................................................................</p>
+                                    <p>পিতার নাম:.........................................................</p>
+                                    <p>পদবী: ..............................................................</p>
+                                    <p>পূর্ণ ঠিকানা:...........................................................</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="info-row">
-                            <span>জেলাঃ ফেনী</span>
-                            <span>কেন্দ্র কোডঃ ${toBengaliNumber(centre.vote_centre_code)}</span>
-                        </div>
+                        <div class="separator" style="margin: 5mm 0;"></div>
 
-                        <table>
-                            <tr>
-                                <td style="width: 25%;">ভোট কেন্দ্রের নাম ও নম্বর</td>
-                                <td class="text-left" style="width: 45%;"><strong>${toBengaliNumber(centre.vote_centre_name || '')}</strong></td>
-                                <td style="width: 15%;">বুথ সংখ্যা</td>
-                                <td style="width: 15%;"><strong>${toBengaliNumber(totalBooths)}</strong></td>
-                            </tr>
-                        </table>
+                        <!-- Voucher 2: Stationery Expenses -->
+                        <div class="voucher" style="height: 130mm; position: relative; box-sizing: border-box; padding-top: 10px;">
+                            <div style="text-align: right; margin-bottom: 2px; font-size: 10pt;">ভাউচার নং-........................................</div>
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="font-size: 15pt; text-decoration: underline; display: inline-block; margin: 0;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ২০২৬ উপলক্ষে অর্থ পরিশোধের জন্য ভাউচার</h1>
+                            </div>
+                            
+                            <div style="font-size: 13pt; line-height: 1.6;">
+                                <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
+                                <div>২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
+                                <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
+                                <div>৪। অর্থের পরিমাণ: ১৫০০/- (এক হাজার পাঁচশত টাকা মাত্র)</div>
+                                <div style="text-align: justify; margin-top: 10px;">
+                                    ৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ: প্রিজাইডিং অফিসার কর্তৃক ইমারজেন্সী (চার্জার) লাইট বাবদ, ক্যালকুলেটর, স্ট্যাপলার, স্ট্যাপলার পিন ইত্যাদি সংগ্রহ বাবদ {প্রতি কেন্দ্রের জন্য গড়ে ১,৫০০/- (একহাজার পাঁচশত) টাকা হারে} (অন্যান্য মনিহারি): ১৫০০/- 
+                                </div>
+                            </div>
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="sl-cell">ক্রমিক নং</th>
-                                    <th>নাম, পদবী, কর্মস্থল ও মোবাইল নম্বর</th>
-                                    <th class="designation-cell">পদবী</th>
-                                    <th class="amount-cell">প্রদত্ত অর্থের পরিমান</th>
-                                    <th class="signature-cell">গ্রহণকারীর স্বাক্ষর</th>
-                                    <th class="revenue-cell">রেভিনিউ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-
-                officers.forEach((off, i) => {
-                    let typeBn = '';
-                    if (off.officer_type === 'presiding') typeBn = 'প্রিজাইডিং';
-                    else if (off.officer_type === 'ass_presiding') typeBn = 'সহকারী প্রিজাইডিং';
-                    else if (off.officer_type === 'polling') typeBn = 'পোলিং';
-
-                    html += `
-                        <tr>
-                            <td>${toBengaliNumber(i + 1)}</td>
-                            <td class="text-left">
-                                <strong>${toBengaliNumber(off.name || '')}</strong>
-                            </td>
-                            <td>${typeBn}</td>
-                            <td>১০০০/-</td>
-                            <td class="signature-cell"></td>
-                            <td class="revenue-cell"></td>
-                        </tr>
-                    `;
-                });
-
-                html += `
-                            </tbody>
-                        </table>
-                        <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 30px;">
-                             <span>কর্মকর্তার স্বাক্ষর ও সীল</span>
-                             <span>উপজেলা নির্বাচন অফিসার</span>
+                            <div style="position: absolute; bottom: 20px; left: 0; right: 0; overflow: hidden; font-size: 11pt;">
+                                <div style="float: left; width: 45%; margin-top: 40px;">
+                                    <p style="border-top: 1px solid black; display: inline-block; padding-top: 5px;">অর্থ প্রদানকারীর স্বাক্ষর ও তারিখ<br>(নাম ও পদবী সম্বলিত স্বাক্ষর)</p>
+                                </div>
+                                <div style="float: right; width: 50%; text-align: left;">
+                                    <p style="margin-left: 20px; margin-bottom: 5px;">অর্থ গ্রহণকারীর স্বাক্ষর ও তারিখ:</p>
+                                    <p>নাম:................................................................</p>
+                                    <p>পিতার নাম:.........................................................</p>
+                                    <p>পদবী: ..............................................................</p>
+                                    <p>পূর্ণ ঠিকানা:...........................................................</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
             });
 
             container.innerHTML = html;
+        }
+
+        function convertNumberToBanglaWords(amount) {
+            const words = {
+                0: '', 1: 'এক', 2: 'দুই', 3: 'তিন', 4: 'চার', 5: 'পাঁচ', 6: 'ছয়', 7: 'সাত', 8: 'আট', 9: 'নয়', 10: 'দশ',
+                11: 'এগারো', 12: 'বারো', 13: 'তেরো', 14: 'চৌদ্দ', 15: 'পনেরো', 16: 'ষোল', 17: 'সতেরো', 18: 'আঠারো', 19: 'ঊনিশ', 20: 'বিশ',
+                21: 'একুশ', 22: 'বাইশ', 23: 'তেইশ', 24: 'চব্বিশ', 25: 'পঁচিশ', 26: 'ছাব্বিশ', 27: 'াতাশ', 28: 'আঠাশ', 29: 'ঊনত্রিশ', 30: 'ত্রিশ',
+                31: 'একত্রিশ', 32: 'বত্রিশ', 33: 'তেত্রিশ', 34: 'চৌত্রিশ', 35: 'পয়ত্রিশ', 36: 'ছত্রিশ', 37: 'সাঁইত্রিশ', 38: 'আটত্রিশ', 39: 'ঊনচল্লিশ', 40: 'চল্লিশ',
+                41: 'একচল্লিশ', 42: 'বিয়াল্লিশ', 43: 'তেতাল্লিশ', 44: 'চুয়াল্লিশ', 45: 'পয়তাল্লিশ', 46: 'ছেচল্লিশ', 47: 'সাতচল্লিশ', 48: 'আটচল্লিশ', 49: 'ঊনপঞ্চাশ', 50: 'পঞ্চাশ',
+                51: 'একান্ন', 52: 'বায়ান্ন', 53: 'তিপ্পান্ন', 54: 'চুয়ান্ন', 55: 'পঞ্চান্ন', 56: 'ছাপ্পান্ন', 57: 'সাতান্ন', 58: 'আটান্ন', 59: 'ঊনষাট', 60: 'ষাট',
+                61: 'একষট্টি', 62: 'বাষট্টি', 63: 'তেষট্টি', 64: 'চৌষট্টি', 65: 'পয়ষট্টি', 66: 'ছেষট্টি', 67: 'সাতষট্টি', 68: 'আটষট্টি', 69: 'ঊনসত্তর', 70: 'সত্তর',
+                71: 'একাত্তর', 72: 'বাহাত্তর', 73: 'তিয়াত্তর', 74: 'চুয়াত্তর', 75: 'পঁচাত্তর', 76: 'ছিয়াত্তর', 77: 'সাতাত্তর', 78: 'আটাত্তর', 79: 'ঊনআশি', 80: 'আশি',
+                81: 'একাশি', 82: 'বিরাশি', 83: 'তিরাশি', 84: 'চুরাশি', 85: 'পঁচাশি', 86: 'ছিয়াশি', 87: 'সাতাশি', 88: 'আটাশি', 89: 'ঊননব্বই', 90: 'নব্বই',
+                91: 'একানব্বই', 92: 'বিরানব্বই', 93: 'তিরানব্বই', 94: 'চুরানব্বই', 95: 'পঁচানব্বই', 96: 'ছিয়ানব্বই', 97: 'সাতানব্বই', 98: 'আটানব্বই', 99: 'নিরানব্বই'
+            };
+
+            const convert = (n) => {
+                n = Number(n);
+                if (n === 0) return '';
+                if (n < 100) return words[n];
+                if (n < 1000) {
+                    const hundreds = Math.floor(n / 100);
+                    const remainder = n % 100;
+                    return (hundreds ? words[hundreds] + ' শত ' : '') + (remainder ? convert(remainder) : '');
+                }
+                if (n < 100000) {
+                    const thousands = Math.floor(n / 1000);
+                    const remainder = n % 1000;
+                    return (thousands ? convert(thousands) + ' হাজার ' : '') + (remainder ? convert(remainder) : '');
+                }
+                if (n < 10000000) {
+                    const lakhs = Math.floor(n / 100000);
+                    const remainder = n % 100000;
+                    return (lakhs ? convert(lakhs) + ' লক্ষ ' : '') + (remainder ? convert(remainder) : '');
+                }
+                const crores = Math.floor(n / 10000000);
+                const remainder = n % 10000000;
+                return (crores ? convert(crores) + ' কোটি ' : '') + (remainder ? convert(remainder) : '');
+            };
+            return convert(amount).trim();
         }
     </script>
 </body>
