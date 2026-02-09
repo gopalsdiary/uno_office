@@ -140,29 +140,21 @@
                         <td rowspan="2" width="10%">প্রিজাইডিং অফিসারের নাম</td>
                         <td rowspan="2" width="15%">ভোটকেন্দ্রের নাম</td>
                         <td rowspan="2" width="2%">কক্ষ</td>
-                        <td width="5%">প্রিজাইডিং (৮০০০x১ হারে)</td>
-                        <td width="5%">সহকারী প্রিজাইডিং (৬০০০*বুথ)</td>
-                        <td width="5%">পোলিং (৪০০০*২*বুথ)</td>
-                        <td width="5%">যাতায়াত (১০০০*জন)</td>
-                        <td width="5%">বেষ্টনী (১২০০)</td>
-                        <td width="5%">মনিহারি (১৫০০)</td>
-                        <td rowspan="2" width="7%">মোট টাকার পরিমাণ</td>
-                        <td colspan="4" width="12%">কর্তন</td>
-                        <td rowspan="2" width="5%">মোট কর্তন</td>
-                        <td rowspan="2" width="7%">মোট প্রদত্ত টাকা</td>
+                        <td rowspan="2" width="8%">মোট প্রদত্ত টাকা</td>
+                        <td colspan="10" width="30%">নোটের বিবরণ (টি)</td>
                         <td rowspan="2" width="8%">স্বাক্ষর</td>
                     </tr>
                     <tr class="bg-gray text-center fw-bold" style="font-size: 7pt;">
-                        <td>১</td>
-                        <td>২</td>
-                        <td>৩</td>
-                        <td>৪</td>
+                        <td>১০০০</td>
+                        <td>৫০০</td>
+                        <td>২০০</td>
+                        <td>১০০</td>
+                        <td>৫০</td>
+                        <td>২০</td>
+                        <td>১০</td>
                         <td>৫</td>
-                        <td>৬</td>
-                        <td>উৎসে কর ১০% (১,২,৩)</td>
-                        <td>বেষ্টনী ভ্যাট ৫% + আয়কর ১০% (১৫%)</td>
-                        <td>মনিহারি (ভ্যাট ১০%, আয়কর ৫%) ১৫%</td>
-                        <td>রেভিনিউ</td>
+                        <td>২</td>
+                        <td>১</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -171,19 +163,17 @@
                 <tfoot>
                     <tr class="fw-bold bg-gray text-center">
                         <td colspan="4" class="text-right">সর্বমোট:</td>
-                        <td>{{total_prv}}</td>
-                        <td>{{total_asst}}</td>
-                        <td>{{total_pol}}</td>
-                        <td>{{total_travel}}</td>
-                        <td>{{total_bestni}}</td>
-                        <td>{{total_monihari}}</td>
-                        <td>{{total_gross}}</td>
-                        <td>{{total_tax}}</td>
-                        <td>{{total_vat}}</td>
-                        <td>{{total_monihari_vat}}</td>
-                        <td>{{total_rev}}</td>
-                        <td>{{total_deduction}}</td>
                         <td>{{total_net}}</td>
+                        <td>{{total_n1000}}</td>
+                        <td>{{total_n500}}</td>
+                        <td>{{total_n200}}</td>
+                        <td>{{total_n100}}</td>
+                        <td>{{total_n50}}</td>
+                        <td>{{total_n20}}</td>
+                        <td>{{total_n10}}</td>
+                        <td>{{total_n5}}</td>
+                        <td>{{total_n2}}</td>
+                        <td>{{total_n1}}</td>
                         <td></td>
                     </tr>
                 </tfoot>
@@ -230,6 +220,7 @@
                     let rowsHtml = '';
                     let sumPrv = 0, sumAsst = 0, sumPol = 0, sumTravel = 0, sumBestni = 0, sumMonihari = 0;
                     let sumGross = 0, sumTax = 0, sumVat = 0, sumMonihariVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
+                    let sumN1000 = 0, sumN500 = 0, sumN200 = 0, sumN100 = 0, sumN50 = 0, sumN20 = 0, sumN10 = 0, sumN5 = 0, sumN2 = 0, sumN1 = 0;
 
                     data.forEach((d) => {
                         const res = this.calculate(d);
@@ -250,25 +241,34 @@
                         sumDeduction += res.deduction;
                         sumNet += res.net;
 
+                        sumN1000 += res.notes[1000] || 0;
+                        sumN500 += res.notes[500] || 0;
+                        sumN200 += res.notes[200] || 0;
+                        sumN100 += res.notes[100] || 0;
+                        sumN50 += res.notes[50] || 0;
+                        sumN20 += res.notes[20] || 0;
+                        sumN10 += res.notes[10] || 0;
+                        sumN5 += res.notes[5] || 0;
+                        sumN2 += res.notes[2] || 0;
+                        sumN1 += res.notes[1] || 0;
+
                         rowsHtml += `
                             <tr class="text-center">
                                 <td>${this.toBn(d.vote_centre_code)}</td>
                                 <td class="text-left">${presidingName}</td>
                                 <td class="text-left">${d.vote_centre_name}</td>
                                 <td>${this.toBn(res.vbt)}</td>
-                                <td>${this.toBn((8000).toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.assistantTotal.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.pollingTotal.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.travelTotal.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.bestniTotal.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.monihariTotal.toLocaleString('bn-BD'))}</td>
-                                <td class="fw-bold">${this.toBn(res.gross.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.tax10.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.vatIt.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.monihariVat.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.revenue.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.deduction.toLocaleString('bn-BD'))}</td>
                                 <td class="fw-bold">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
+                                <td>${this.toBn(res.notes[1000] || 0)}</td>
+                                <td>${this.toBn(res.notes[500] || 0)}</td>
+                                <td>${this.toBn(res.notes[200] || 0)}</td>
+                                <td>${this.toBn(res.notes[100] || 0)}</td>
+                                <td>${this.toBn(res.notes[50] || 0)}</td>
+                                <td>${this.toBn(res.notes[20] || 0)}</td>
+                                <td>${this.toBn(res.notes[10] || 0)}</td>
+                                <td>${this.toBn(res.notes[5] || 0)}</td>
+                                <td>${this.toBn(res.notes[2] || 0)}</td>
+                                <td>${this.toBn(res.notes[1] || 0)}</td>
                                 <td></td>
                             </tr>
                         `;
@@ -276,19 +276,17 @@
 
                     let sTmp = document.getElementById('summary-template').innerHTML;
                     sTmp = sTmp.replace('{{rows}}', rowsHtml)
-                        .replace('{{total_prv}}', this.toBn(sumPrv.toLocaleString('bn-BD')))
-                        .replace('{{total_asst}}', this.toBn(sumAsst.toLocaleString('bn-BD')))
-                        .replace('{{total_pol}}', this.toBn(sumPol.toLocaleString('bn-BD')))
-                        .replace('{{total_travel}}', this.toBn(sumTravel.toLocaleString('bn-BD')))
-                        .replace('{{total_bestni}}', this.toBn(sumBestni.toLocaleString('bn-BD')))
-                        .replace('{{total_monihari}}', this.toBn(sumMonihari.toLocaleString('bn-BD')))
-                        .replace('{{total_gross}}', this.toBn(sumGross.toLocaleString('bn-BD')))
-                        .replace('{{total_tax}}', this.toBn(sumTax.toLocaleString('bn-BD')))
-                        .replace('{{total_vat}}', this.toBn(sumVat.toLocaleString('bn-BD')))
-                        .replace('{{total_monihari_vat}}', this.toBn(sumMonihariVat.toLocaleString('bn-BD')))
-                        .replace('{{total_rev}}', this.toBn(sumRev.toLocaleString('bn-BD')))
-                        .replace('{{total_deduction}}', this.toBn(sumDeduction.toLocaleString('bn-BD')))
-                        .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
+                        .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')))
+                        .replace('{{total_n1000}}', this.toBn(sumN1000.toLocaleString('bn-BD')))
+                        .replace('{{total_n500}}', this.toBn(sumN500.toLocaleString('bn-BD')))
+                        .replace('{{total_n200}}', this.toBn(sumN200.toLocaleString('bn-BD')))
+                        .replace('{{total_n100}}', this.toBn(sumN100.toLocaleString('bn-BD')))
+                        .replace('{{total_n50}}', this.toBn(sumN50.toLocaleString('bn-BD')))
+                        .replace('{{total_n20}}', this.toBn(sumN20.toLocaleString('bn-BD')))
+                        .replace('{{total_n10}}', this.toBn(sumN10.toLocaleString('bn-BD')))
+                        .replace('{{total_n5}}', this.toBn(sumN5.toLocaleString('bn-BD')))
+                        .replace('{{total_n2}}', this.toBn(sumN2.toLocaleString('bn-BD')))
+                        .replace('{{total_n1}}', this.toBn(sumN1.toLocaleString('bn-BD')));
 
                     const sEl = document.createElement('div');
                     sEl.innerHTML = sTmp;
@@ -339,8 +337,46 @@
                     tax10,
                     vatIt,
                     monihariVat,
-                    revenue
+                    revenue,
+                    notes: this.getDenominations(netTotal)
                 };
+            },
+
+            getDenominations(amount) {
+                let remaining = amount;
+                const denoms = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+                const result = {};
+
+                // 1. Mandatory 12,000 taka in 500 notes (24 notes)
+                if (remaining >= 12000) {
+                    result[500] = 24;
+                    remaining -= 12000;
+                } else {
+                    result[500] = 0;
+                }
+
+                // 2. Round with 1000 taka notes
+                if (remaining >= 1000) {
+                    result[1000] = Math.floor(remaining / 1000);
+                    remaining %= 1000;
+                } else {
+                    result[1000] = 0;
+                }
+
+                // 3. Distribute rest with denominations
+                denoms.slice(2).forEach(d => {
+                    if (remaining >= d) {
+                        result[d] = Math.floor(remaining / d);
+                        remaining %= d;
+                    } else {
+                        result[d] = 0;
+                    }
+                });
+
+                // Also add remaining 500s if any left after mandatory and 1000s (though unlikely with current rules)
+                // Actually the rule says "rest with change", so we strictly follow the denom order.
+
+                return result;
             }
         };
         document.addEventListener('DOMContentLoaded', () => App.init());

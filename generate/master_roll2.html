@@ -74,7 +74,7 @@
             padding: 4px;
             text-align: center;
             vertical-align: middle;
-            font-size: 11pt;
+            font-size: 10pt;
             line-height: 1.2;
         }
 
@@ -129,6 +129,11 @@
 
         .designation-cell {
             width: 120px;
+        }
+
+        .name-cell {
+            width: 4.2cm;
+            min-width: 4.2cm;
         }
 
         .loading {
@@ -227,7 +232,7 @@
             const { data: assignments, error: assignError } = await window.supabaseClient
                 .from('centre_assignments')
                 .select('*')
-                .order('vote_centre_code', { ascending: true });
+                .limit(10000); // Fetch all records (default is 1000)
 
             if (assignError) throw assignError;
             if (!assignments || assignments.length === 0) {
@@ -237,7 +242,8 @@
             // Fetch centre details
             const { data: centres, error: centreError } = await window.supabaseClient
                 .from('vote_centre')
-                .select('*');
+                .select('*')
+                .limit(5000);
 
             if (centreError) throw centreError;
 
@@ -295,7 +301,11 @@
                 });
             });
 
-            return Array.from(groups.values()).sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+            return Array.from(groups.values()).sort((a, b) => {
+                const codeA = parseInt(a.centre.vote_centre_code) || 0;
+                const codeB = parseInt(b.centre.vote_centre_code) || 0;
+                return codeA - codeB;
+            });
         }
 
         function toBengaliNumber(n) {
@@ -314,31 +324,34 @@
 
                 html += `
                     <div class="page ${index < allData.length - 1 ? 'page-break' : ''}">
-                        <div class="header-text">
-                            <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬</h1>
-                            <h2>প্রিজাইডিং অফিসার, সহকারি প্রিজাইডিং অফিসার ও পোলিং অফিসারদের যাতায়াত ভাতা প্রদানের মাস্টাররোল</h2>
-                            <h2>(প্রিজাইডিং অফিসার ৮০০০/- সহকারী প্রিজাইডিং ৬০০০/- পোলিং ৪০০০/- হারে দুই দিন)</h2>
-                        </div>
-
-                        <div class="info-row">
-                            <span>জেলাঃ ফেনী</span>
-                            <span>কেন্দ্র কোডঃ ${toBengaliNumber(centre.vote_centre_code)}</span>
-                        </div>
-
-                        <table>
-                            <tr>
-                                <td style="width: 25%;">ভোট কেন্দ্রের নাম ও নম্বর</td>
-                                <td class="text-left" style="width: 45%;"><strong>${toBengaliNumber(centre.vote_centre_name || '')}</strong></td>
-                                <td style="width: 15%;">বুথ সংখ্যা</td>
-                                <td style="width: 15%;"><strong>${toBengaliNumber(totalBooths)}</strong></td>
-                            </tr>
-                        </table>
-
                         <table>
                             <thead>
+                                <tr style="border: none;">
+                                    <th colspan="9" style="border: none; padding: 0;">
+                                        <div class="header-text">
+                                            <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন-২০২৬</h1>
+                                            <h2>প্রিজাইডিং অফিসার, সহকারি প্রিজাইডিং অফিসার ও পোলিং অফিসারদের যাতায়াত ভাতা প্রদানের মাস্টাররোল</h2>
+                                            <h2>(প্রিজাইডিং অফিসার ৮০০০/- সহকারী প্রিজাইডিং ৬০০০/- পোলিং ৪০০০/- হারে দুই দিন)</h2>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span>জেলাঃ ফেনী</span>
+                                            <span>কেন্দ্র কোডঃ ${toBengaliNumber(centre.vote_centre_code)}</span>
+                                        </div>
+
+                                        <table style="width: 100%; margin-bottom: 10px;">
+                                            <tr>
+                                                <td style="width: 25%;">ভোট কেন্দ্রের নাম ও নম্বর</td>
+                                                <td class="text-left" style="width: 45%;"><strong>${toBengaliNumber(centre.vote_centre_name || '')}</strong></td>
+                                                <td style="width: 15%;">বুথ সংখ্যা</td>
+                                                <td style="width: 15%;"><strong>${toBengaliNumber(totalBooths)}</strong></td>
+                                            </tr>
+                                        </table>
+                                    </th>
+                                </tr>
                                 <tr>
                                     <th class="sl-cell">ক্রমিক নং</th>
-                                    <th>নাম ও মোবাইল নম্বর</th>
+                                    <th class="name-cell">নাম ও মোবাইল নম্বর</th>
                                     <th class="designation-cell">পদবী</th>
                                     <th class="amount-cell">প্রদত্ত অর্থের পরিমান</th>
                                     <th class="amount-cell">উৎস কর কর্তন ১০%</th>
@@ -372,7 +385,7 @@
                     html += `
                         <tr>
                             <td>${toBengaliNumber(i + 1)}</td>
-                            <td class="text-left">
+                            <td class="text-left name-cell">
                                 <strong>${toBengaliNumber(off.name || '')}</strong>
                             </td>
                             <td>${typeBn}</td>
