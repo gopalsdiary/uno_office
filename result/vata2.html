@@ -88,6 +88,11 @@
             font-size: 10pt;
         }
 
+        .note-cell {
+            font-size: 16pt !important;
+            font-weight: bold;
+        }
+
         @page {
             size: 14in 8.5in;
             margin: 0.1in;
@@ -141,20 +146,11 @@
                         <td rowspan="2" width="15%">ভোটকেন্দ্রের নাম</td>
                         <td rowspan="2" width="2%">কক্ষ</td>
                         <td rowspan="2" width="8%">মোট প্রদত্ত টাকা</td>
-                        <td colspan="10" width="30%">নোটের বিবরণ (টি)</td>
+                        {{header_denoms_group}}
                         <td rowspan="2" width="8%">স্বাক্ষর</td>
                     </tr>
-                    <tr class="bg-gray text-center fw-bold" style="font-size: 7pt;">
-                        <td>১০০০</td>
-                        <td>৫০০</td>
-                        <td>২০০</td>
-                        <td>১০০</td>
-                        <td>৫০</td>
-                        <td>২০</td>
-                        <td>১০</td>
-                        <td>৫</td>
-                        <td>২</td>
-                        <td>১</td>
+                    <tr class="bg-gray text-center fw-bold">
+                        {{header_denoms}}
                     </tr>
                 </thead>
                 <tbody>
@@ -164,16 +160,7 @@
                     <tr class="fw-bold bg-gray text-center">
                         <td colspan="4" class="text-right">সর্বমোট:</td>
                         <td>{{total_net}}</td>
-                        <td>{{total_n1000}}</td>
-                        <td>{{total_n500}}</td>
-                        <td>{{total_n200}}</td>
-                        <td>{{total_n100}}</td>
-                        <td>{{total_n50}}</td>
-                        <td>{{total_n20}}</td>
-                        <td>{{total_n10}}</td>
-                        <td>{{total_n5}}</td>
-                        <td>{{total_n2}}</td>
-                        <td>{{total_n1}}</td>
+                        {{footer_denoms}}
                         <td></td>
                     </tr>
                 </tfoot>
@@ -216,41 +203,35 @@
                     const data = centersRes.data.sort((a, b) => (Number(a.vote_centre_code) || 0) - (Number(b.vote_centre_code) || 0));
                     const assignments = assignmentsRes.data;
 
+                    const allCalculated = data.map(d => {
+                        const res = this.calculate(d);
+                        const presidingName = assignments.find(a => String(a.vote_centre_code) === String(d.vote_centre_code))?.officer_name || '';
+                        return { d, res, presidingName };
+                    });
+
+                    // Determine active denominations (those with > 0 total)
+                    const denoms = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+                    const activeDenoms = denoms.filter(denom =>
+                        allCalculated.some(item => (item.res.notes[denom] || 0) > 0)
+                    );
+
                     const container = document.getElementById('app');
                     let rowsHtml = '';
-                    let sumPrv = 0, sumAsst = 0, sumPol = 0, sumTravel = 0, sumBestni = 0, sumMonihari = 0;
-                    let sumGross = 0, sumTax = 0, sumVat = 0, sumMonihariVat = 0, sumRev = 0, sumDeduction = 0, sumNet = 0;
-                    let sumN1000 = 0, sumN500 = 0, sumN200 = 0, sumN100 = 0, sumN50 = 0, sumN20 = 0, sumN10 = 0, sumN5 = 0, sumN2 = 0, sumN1 = 0;
+                    let sumNet = 0;
+                    let denomTotals = {};
+                    activeDenoms.forEach(d => denomTotals[d] = 0);
 
-                    data.forEach((d) => {
-                        const res = this.calculate(d);
-                        // Manual join: Find presiding officer for this centre code
-                        const presidingName = assignments.find(a => String(a.vote_centre_code) === String(d.vote_centre_code))?.officer_name || '';
-
-                        sumPrv += 8000;
-                        sumAsst += res.assistantTotal;
-                        sumPol += res.pollingTotal;
-                        sumTravel += res.travelTotal;
-                        sumBestni += res.bestniTotal;
-                        sumMonihari += res.monihariTotal;
-                        sumGross += res.gross;
-                        sumTax += res.tax10;
-                        sumVat += res.vatIt;
-                        sumMonihariVat += res.monihariVat;
-                        sumRev += res.revenue;
-                        sumDeduction += res.deduction;
+                    allCalculated.forEach(({ d, res, presidingName }) => {
                         sumNet += res.net;
+                        activeDenoms.forEach(denom => {
+                            denomTotals[denom] += (res.notes[denom] || 0);
+                        });
 
-                        sumN1000 += res.notes[1000] || 0;
-                        sumN500 += res.notes[500] || 0;
-                        sumN200 += res.notes[200] || 0;
-                        sumN100 += res.notes[100] || 0;
-                        sumN50 += res.notes[50] || 0;
-                        sumN20 += res.notes[20] || 0;
-                        sumN10 += res.notes[10] || 0;
-                        sumN5 += res.notes[5] || 0;
-                        sumN2 += res.notes[2] || 0;
-                        sumN1 += res.notes[1] || 0;
+                        let notesCols = '';
+                        activeDenoms.forEach(denom => {
+                            const count = res.notes[denom] || 0;
+                            notesCols += `<td class="note-cell">${count > 0 ? this.toBn(count) : ''}</td>`;
+                        });
 
                         rowsHtml += `
                             <tr class="text-center">
@@ -259,34 +240,22 @@
                                 <td class="text-left">${d.vote_centre_name}</td>
                                 <td>${this.toBn(res.vbt)}</td>
                                 <td class="fw-bold">${this.toBn(res.net.toLocaleString('bn-BD'))}</td>
-                                <td>${this.toBn(res.notes[1000] || 0)}</td>
-                                <td>${this.toBn(res.notes[500] || 0)}</td>
-                                <td>${this.toBn(res.notes[200] || 0)}</td>
-                                <td>${this.toBn(res.notes[100] || 0)}</td>
-                                <td>${this.toBn(res.notes[50] || 0)}</td>
-                                <td>${this.toBn(res.notes[20] || 0)}</td>
-                                <td>${this.toBn(res.notes[10] || 0)}</td>
-                                <td>${this.toBn(res.notes[5] || 0)}</td>
-                                <td>${this.toBn(res.notes[2] || 0)}</td>
-                                <td>${this.toBn(res.notes[1] || 0)}</td>
+                                ${notesCols}
                                 <td></td>
                             </tr>
                         `;
                     });
 
+                    let headerDenomsGroup = activeDenoms.length > 0 ? `<td colspan="${activeDenoms.length}" width="30%">নোটের বিবরণ (টি)</td>` : '';
+                    let headerDenoms = activeDenoms.map(d => `<td class="note-cell">${this.toBn(d)}</td>`).join('');
+                    let footerDenoms = activeDenoms.map(d => `<td class="note-cell">${denomTotals[d] > 0 ? this.toBn(denomTotals[d].toLocaleString('bn-BD')) : ''}</td>`).join('');
+
                     let sTmp = document.getElementById('summary-template').innerHTML;
                     sTmp = sTmp.replace('{{rows}}', rowsHtml)
-                        .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')))
-                        .replace('{{total_n1000}}', this.toBn(sumN1000.toLocaleString('bn-BD')))
-                        .replace('{{total_n500}}', this.toBn(sumN500.toLocaleString('bn-BD')))
-                        .replace('{{total_n200}}', this.toBn(sumN200.toLocaleString('bn-BD')))
-                        .replace('{{total_n100}}', this.toBn(sumN100.toLocaleString('bn-BD')))
-                        .replace('{{total_n50}}', this.toBn(sumN50.toLocaleString('bn-BD')))
-                        .replace('{{total_n20}}', this.toBn(sumN20.toLocaleString('bn-BD')))
-                        .replace('{{total_n10}}', this.toBn(sumN10.toLocaleString('bn-BD')))
-                        .replace('{{total_n5}}', this.toBn(sumN5.toLocaleString('bn-BD')))
-                        .replace('{{total_n2}}', this.toBn(sumN2.toLocaleString('bn-BD')))
-                        .replace('{{total_n1}}', this.toBn(sumN1.toLocaleString('bn-BD')));
+                        .replace('{{header_denoms_group}}', headerDenomsGroup)
+                        .replace('{{header_denoms}}', headerDenoms)
+                        .replace('{{footer_denoms}}', footerDenoms)
+                        .replace('{{total_net}}', this.toBn(sumNet.toLocaleString('bn-BD')));
 
                     const sEl = document.createElement('div');
                     sEl.innerHTML = sTmp;
