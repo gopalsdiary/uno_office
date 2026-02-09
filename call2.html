@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রিজাইডিং অফিসার কল লিস্ট</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="authentication.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --bg-gradient: linear-gradient(135deg, #4361ee 0%, #4cc9f0 100%);
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', 'Nikosh', sans-serif;
+            background-color: #f8f9fc;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 30px 20px 40px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: var(--header-shadow);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 15px;
+            border: none;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .area-filter {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            background: white;
+            color: #444;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+
+        .btn-refresh {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: background 0.3s;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .main-content {
+            padding: 20px;
+            max-width: 800px;
+            margin: -20px auto 0;
+            position: relative;
+            z-index: 50;
+        }
+
+        .stats {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .error-msg,
+        .status-msg {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-msg.info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            display: block;
+        }
+
+        .status-msg.success {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .status-msg.error {
+            background: #ffebee;
+            color: #b71c1c;
+            display: block;
+        }
+
+        .officer-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .officer-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease;
+            border: 1px solid #edf2f7;
+        }
+
+        .officer-card:active {
+            transform: scale(0.98);
+        }
+
+        .card-top {
+            padding: 18px 20px;
+            border-left: 6px solid var(--primary-color);
+        }
+
+        .name-line {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 6px;
+        }
+
+        .centre-line {
+            font-size: 15px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .area-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            background: #f0f4ff;
+            color: var(--primary-color);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .card-bottom {
+            background: #fafbff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .mobile-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transition: all 0.2s;
+        }
+
+        .btn-call:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(22, 163, 74, 0.4);
+        }
+
+        .btn-call:active {
+            transform: translateY(0);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: white;
+            border-radius: 20px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px 30px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .name-line {
+                font-size: 17px;
+            }
+
+            .mobile-number {
+                font-size: 16px;
+            }
+
+            .btn-call {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <p>লোড হচ্ছে...</p>
+    </div>
+
+    <div class="header">
+        <h1>📞 প্রিজাইডিং অফিসার কল লিস্ট</h1>
+        <div class="search-container">
+            <div class="input-group">
+                <input type="text" id="searchBox" class="search-box" placeholder="নাম, কেন্দ্র বা মোবাইল দিয়ে খুঁজুন..."
+                    oninput="handleSearch()">
+            </div>
+            <div class="filter-row">
+                <select id="areaFilter" class="area-filter" onchange="handleSearch()">
+                    <option value="">সব এলাকা</option>
+                </select>
+                <button class="btn-refresh" onclick="loadData()">🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div id="statusMsg" class="status-msg"></div>
+        <div id="statsCount" class="stats" style="display:none;"></div>
+        <div id="listContainer" class="officer-list"></div>
+    </div>
+
+    <script>
+        const App = {
+            allOfficers: [],
+            filtered: [],
+
+            toBn(n) {
+                const map = '০১২৩৪৫৬৭৮৯';
+                return String(n).replace(/\d/g, d => map[d]);
+            },
+
+            showLoading(show) {
+                document.getElementById('loader').style.display = show ? 'flex' : 'none';
+            },
+
+            showStatus(msg, type = 'info', persist = false) {
+                const el = document.getElementById('statusMsg');
+                el.innerText = msg;
+                el.className = `status-msg ${type}`;
+                el.style.display = 'block';
+                if (!persist && type === 'success') {
+                    setTimeout(() => el.style.display = 'none', 3000);
+                }
+            },
+
+            async fetchAll(table, idCol, select = '*') {
+                let data = [];
+                let lastId = 0;
+                let hasMore = true;
+                while (hasMore) {
+                    const { data: batch, error } = await window.supabaseClient
+                        .from(table).select(select).gt(idCol, lastId)
+                        .order(idCol, { ascending: true }).limit(1000);
+                    if (error) throw error;
+                    if (!batch || batch.length === 0) { hasMore = false; break; }
+                    data.push(...batch);
+                    lastId = batch[batch.length - 1][idCol];
+                    if (batch.length < 1000) hasMore = false;
+                }
+                return data;
+            },
+
+            async init() {
+                checkAuth();
+                await this.loadData();
+            },
+
+            async loadData() {
+                this.showLoading(true);
+                try {
+                    this.showStatus('উপাত্ত রিফ্রেশ করা হচ্ছে...', 'info', true);
+
+                    const [centres, assignments, mobileList] = await Promise.all([
+                        this.fetchAll('vote_centre', 'vote_centre_iid', 'vote_centre_iid, vote_centre_code, vote_centre_name, vote_centre_area'),
+                        window.supabaseClient.from('centre_assignments').select('vote_centre_iid, officer_iid, officer_name').eq('officer_type', 'presiding'),
+                        this.fetchAll('presiding_list', 'presiding_iid', 'presiding_iid, mobile_number')
+                    ]);
+
+                    if (assignments.error) throw assignments.error;
+
+                    const cMap = new Map(centres.map(c => [c.vote_centre_iid, c]));
+                    const mobs = new Map(mobileList.map(m => [m.presiding_iid, m.mobile_number]));
+
+                    this.allOfficers = assignments.data.map(a => {
+                        const c = cMap.get(a.vote_centre_iid) || {};
+                        return {
+                            name: a.officer_name,
+                            code: c.vote_centre_code || '---',
+                            cName: c.vote_centre_name || 'N/A',
+                            area: c.vote_centre_area || '',
+                            mobile: mobs.get(a.officer_iid) || ''
+                        };
+                    }).sort((a, b) => (parseInt(a.code) || 0) - (parseInt(b.code) || 0));
+
+                    this.filtered = [...this.allOfficers];
+
+                    // Populate area filter
+                    const areas = [...new Set(this.allOfficers.map(o => o.area).filter(Boolean))].sort();
+                    const filter = document.getElementById('areaFilter');
+                    filter.innerHTML = '<option value="">সব এলাকা</option>' + areas.map(a => `<option value="${a}">${a}</option>`).join('');
+
+                    this.render();
+                    this.showStatus('উপাত্ত লোড সম্পন্ন!', 'success');
+                } catch (e) {
+                    console.error(e);
+                    this.showStatus('লোড করতে সমস্যা হয়েছে: ' + e.message, 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            },
+
+            handleSearch() {
+                const query = document.getElementById('searchBox').value.toLowerCase();
+                const area = document.getElementById('areaFilter').value;
+
+                this.filtered = this.allOfficers.filter(o => {
+                    const matchesQuery = !query ||
+                        o.name.toLowerCase().includes(query) ||
+                        o.code.includes(query) ||
+                        o.mobile.includes(query) ||
+                        o.cName.toLowerCase().includes(query);
+                    const matchesArea = !area || o.area === area;
+                    return matchesQuery && matchesArea;
+                });
+                this.render();
+            },
+
+            render() {
+                const container = document.getElementById('listContainer');
+                const stats = document.getElementById('statsCount');
+
+                stats.innerText = `মোট: ${this.toBn(this.filtered.length)} জন অফিসার`;
+                stats.style.display = 'block';
+
+                if (this.filtered.length === 0) {
+                    container.innerHTML = '<div class="no-data">কোনো তথ্য পাওয়া যায়নি</div>';
+                    return;
+                }
+
+                container.innerHTML = this.filtered.map(o => `
+                    <div class="officer-card">
+                        <div class="card-top">
+                            <div class="name-line">কেন্দ্র: [${this.toBn(o.code)}] : ${o.name || 'N/A'}</div>
+                            <div class="centre-line">
+                                🏛️ ${o.cName} ${o.area ? `<span class="area-badge">${o.area}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="card-bottom">
+                            <div class="mobile-number">${o.mobile ? '📱 ' + o.mobile : 'নম্বর নেই'}</div>
+                            ${o.mobile ? `<a href="tel:${o.mobile}" class="btn-call">📞 কল করুন</a>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => App.init());
+        function handleSearch() { App.handleSearch(); }
+        function loadData() { App.loadData(); }
+    </script>
+</body>
+
+</html>
