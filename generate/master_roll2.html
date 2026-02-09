@@ -342,6 +342,7 @@
                                     <th class="designation-cell">পদবী</th>
                                     <th class="amount-cell">প্রদত্ত অর্থের পরিমান</th>
                                     <th class="amount-cell">উৎস কর কর্তন ১০%</th>
+                                    <th class="amount-cell">যাতায়াত ভাতা</th>
                                     <th class="amount-cell">নীট টাকার পরিমান</th>
                                     <th class="signature-cell">গ্রহণকারীর স্বাক্ষর</th>
                                     <th class="revenue-cell">রেভিনিউ</th>
@@ -365,7 +366,8 @@
                     }
 
                     const tax = allowance * 0.1;
-                    const netAmount = allowance - tax;
+                    const travelAllowance = 1000;
+                    const netAmount = (allowance - tax) + travelAllowance;
 
                     html += `
                         <tr>
@@ -376,6 +378,7 @@
                             <td>${typeBn}</td>
                             <td>${toBengaliNumber(allowance)}/-</td>
                             <td>${toBengaliNumber(tax)}/-</td>
+                            <td>${toBengaliNumber(travelAllowance)}/-</td>
                             <td>${toBengaliNumber(netAmount)}/-</td>
                             <td class="signature-cell"></td>
                             <td class="revenue-cell"></td>
