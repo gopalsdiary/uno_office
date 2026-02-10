@@ -402,7 +402,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🗳️ Duty Allocation</h1>
+        <h1>🗳️ Duty Allocation (correction copy)</h1>
         
         <div class="status" id="status"></div>
         
@@ -934,7 +934,8 @@
                         centre: centre,
                         presiding: presiding,
                         assPresiding: assPresidingForCentre,
-                        polling: pollingForCentre
+                        polling: pollingForCentre,
+                        changeRecords: {} // Track officer changes
                     };
                     
                     generatedData.push(assignment);
@@ -1188,6 +1189,37 @@
         function updateOfficer(centreIndex, officerType, position, newId) {
             const assignment = generatedData[centreIndex];
             if (!assignment) return;
+            
+            // Initialize changeRecords if not exists
+            if (!assignment.changeRecords) {
+                assignment.changeRecords = {};
+            }
+            
+            // Helper to get position label in Bengali
+            function getPositionLabel(officerType, position) {
+                if (officerType === 'presiding') {
+                    return 'প্রিজাইডিং';
+                } else if (officerType === 'ass_presiding') {
+                    return `${position + 1} নং সহকারী প্রিজাইডিং`;
+                } else if (officerType === 'polling') {
+                    const boothNum = Math.floor(position / 2) + 1;
+                    const personNum = (position % 2) + 1;
+                    return `${boothNum} নং পোলিং`;
+                }
+                return '';
+            }
+            
+            // Helper to get officer name
+            function getCurrentOfficerName(officerType, position) {
+                if (officerType === 'presiding' && assignment.presiding) {
+                    return assignment.presiding.presiding_name || '';
+                } else if (officerType === 'ass_presiding' && assignment.assPresiding[position]) {
+                    return assignment.assPresiding[position].ass_presiding_name || '';
+                } else if (officerType === 'polling' && assignment.polling[position]) {
+                    return assignment.polling[position].polling_name || '';
+                }
+                return '';
+            }
 
             function normalizeAssPresidingPositions() {
                 assignment.assPresiding = assignment.assPresiding.map((item, idx) => {
@@ -1211,20 +1243,29 @@
             }
 
             if (officerType === 'presiding') {
+                const oldOfficerName = getCurrentOfficerName('presiding', 0);
                 if (newId === '') {
                     assignment.presiding = null;
                 } else {
                     const officer = presidingPool.find(o => String(o.presiding_iid) === String(newId));
                     if (officer) {
+                        const newOfficerName = officer.presiding_name || officer.name;
+                        // Record change only if there was a previous officer and it's different
+                        if (oldOfficerName && oldOfficerName !== newOfficerName) {
+                            const changeKey = `presiding-0`;
+                            const positionLabel = getPositionLabel('presiding', 0);
+                            assignment.changeRecords[changeKey] = `(${positionLabel} - ${oldOfficerName} এর পরিবর্তে ${newOfficerName} কে নিয়োগ প্রদান করা হলো।)`;
+                        }
                         assignment.presiding = {
                             presiding_iid: officer.presiding_iid,
-                            presiding_name: officer.presiding_name || officer.name,
+                            presiding_name: newOfficerName,
                             designation: officer.designation,
                             gender: officer.gender
                         };
                     }
                 }
             } else if (officerType === 'ass_presiding') {
+                const oldOfficerName = getCurrentOfficerName('ass_presiding', position);
                 if (newId === '') {
                     if (position >= 0) {
                         assignment.assPresiding[position] = null; // keep row but blank
@@ -1238,9 +1279,16 @@
                     } else {
                         const officer = assPresidingPool.find(o => String(o.ass_presiding_iid) === String(newId));
                         if (officer) {
+                            const newOfficerName = officer.ass_presiding_name || officer.name;
+                            // Record change only if there was a previous officer and it's different
+                            if (oldOfficerName && oldOfficerName !== newOfficerName) {
+                                const changeKey = `ass_presiding-${position}`;
+                                const positionLabel = getPositionLabel('ass_presiding', position);
+                                assignment.changeRecords[changeKey] = `(${positionLabel} - ${oldOfficerName} এর পরিবর্তে ${newOfficerName} কে নিয়োগ প্রদান করা হলো।)`;
+                            }
                             const newOfficer = {
                                 ass_presiding_iid: officer.ass_presiding_iid,
-                                ass_presiding_name: officer.ass_presiding_name || officer.name,
+                                ass_presiding_name: newOfficerName,
                                 designation: officer.designation,
                                 gender: officer.gender,
                                 booth_number: position + 1
@@ -1255,6 +1303,7 @@
                     normalizeAssPresidingPositions();
                 }
             } else if (officerType === 'polling') {
+                const oldOfficerName = getCurrentOfficerName('polling', position);
                 if (newId === '') {
                     if (position >= 0) {
                         assignment.polling[position] = null; // keep slot but blank
@@ -1270,9 +1319,16 @@
                         if (officer) {
                             const boothNum = Math.floor(position / 2) + 1;
                             const personNum = (position % 2) + 1;
+                            const newOfficerName = officer.polling_name || officer.name;
+                            // Record change only if there was a previous officer and it's different
+                            if (oldOfficerName && oldOfficerName !== newOfficerName) {
+                                const changeKey = `polling-${position}`;
+                                const positionLabel = getPositionLabel('polling', position);
+                                assignment.changeRecords[changeKey] = `(${positionLabel} - ${oldOfficerName} এর পরিবর্তে ${newOfficerName} কে নিয়োগ প্রদান করা হলো।)`;
+                            }
                             const newOfficer = {
                                 polling_iid: officer.polling_iid,
-                                polling_name: officer.polling_name || officer.name,
+                                polling_name: newOfficerName,
                                 designation: officer.designation,
                                 gender: officer.gender,
                                 booth_number: boothNum,
@@ -1960,6 +2016,8 @@
                     
                     // Presiding assignment (skip if none selected)
                     if (assignment.presiding && assignment.presiding.presiding_iid) {
+                        const changeKey = `presiding-0`;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -1969,6 +2027,7 @@
                             officer_designation: assignment.presiding.designation,
                             booth_number: null,
                             assign_code: `${centreId}`,
+                            change_record: changeRecord,
                             created_at: new Date().toISOString()
                         });
                     }
@@ -1978,6 +2037,8 @@
                         const assPres = assignment.assPresiding[i];
                         if (!assPres) continue;
                         const boothNum = i + 1;
+                        const changeKey = `ass_presiding-${i}`;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -1988,6 +2049,7 @@
                             officer_gender: assPres.gender,
                             booth_number: boothNum,
                             assign_code: `${centreId}-${boothNum}`,
+                            change_record: changeRecord,
                             created_at: new Date().toISOString()
                         });
                     }
@@ -1998,6 +2060,8 @@
                         if (!poll) continue;
                         const boothNum = Math.floor(i / 2) + 1;
                         const personNum = (i % 2) + 1;
+                        const changeKey = `polling-${i}`;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -2009,6 +2073,7 @@
                             booth_number: boothNum,
                             person_number: personNum,
                             assign_code: `${centreId}-${boothNum}-${personNum}`,
+                            change_record: changeRecord,
                             created_at: new Date().toISOString()
                         });
                     }

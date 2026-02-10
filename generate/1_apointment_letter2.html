@@ -181,7 +181,7 @@
             </tr>
         </table>
         <p class="western center bold size-13" style="margin: 10px 0;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন উপলক্ষে প্রিজাইডিং
-            অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র <span style="font-weight:bold; font-size:105%;">(সংশোধিত)</span></p>
+            অফিসার, সহকারী প্রিজাইডিং অফিসার এবং পোলিং অফিসারদের নিয়োগপত্র</p>
         <p class="western" align="center" style="margin-bottom: 0in"><br />
 
         </p>
@@ -341,10 +341,41 @@
             <!-- Dynamic rows will be inserted here by JS -->
         </table>
         <p class="western" style="margin:4px 0 2px 0"></p>
-        
-        <!-- Change record section -->
-        <div id="changeRecordSection" style="margin: 10px 0;"></div>
-        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 2px;" class="size-11">
+            <tr>
+                <td
+                    style="border: 1px dashed #000; padding: 5px; width: 32%; text-align: center; vertical-align: middle;">
+                    <p class="bold">নির্বাচনি দ্রব্যাদি বিতরণের স্থান, তারিখ ও সময়</p>
+                </td>
+                <td
+                    style="border: 1px dashed #000; padding: 5px; width: 40%; text-align: center; vertical-align: middle;">
+                    <p class="bold">নির্বাচনি মালামাল ও নির্বাচনি ফলাফল গ্রহণের স্থান</p>
+                </td>
+                <td
+                    style="border: 1px dashed #000; padding: 5px; width: 28%; text-align: center; vertical-align: middle;">
+                    <p class="bold">ভোটগ্রহণের তারিখ ও সময়</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: 1px dashed #000; padding: 5px; vertical-align: top;">
+                    <p><span class="bold" style="color: red;">স্থানঃ</span> উপজেলা পরিষদের অডিটরিয়াম, ফেনী সদর, ফেনী।
+                    </p>
+                    <p><span class="bold" style="color: red;">তারিখ:</span> ১১/০২/২০২৬ খ্রিঃ (বুধবার)</p>
+                    <p><span class="bold" style="color: red;">সময়:</span> সকাল ১১.০০ ঘটিকা।</p>
+                </td>
+                <td style="border: 1px dashed #000; padding: 5px; vertical-align: top;">
+                    <p>১। <span class="bold" style="color: red;">মালামাল গ্রহণ:</span> উপজেলা পরিষদের অডিটরিয়াম, ফেনী
+                        সদর, ফেনী।</p>
+                    <p>২। <span class="bold" style="color: red;">ফলাফল গ্রহণ:</span> উপজেলা পরিষদের অডিটরিয়াম, ফেনী সদর,
+                        ফেনী।</p>
+                </td>
+                <td style="border: 1px dashed #000; padding: 5px; vertical-align: top; text-align: center;">
+                    <p class="bold" style="color: red;">১২/০২/২০২৬ (বৃহস্পতিবার)</p>
+                    <p class="bold" style="color: red;">সকাল ৭.৩০ ঘটিকা হইতে বিকাল ৪.৩০ ঘটিকা পর্যন্ত বিরতিহীন ভাবে
+                        অনুষ্ঠিত হবে।</p>
+                </td>
+            </tr>
+        </table>
         <p class="western" style="margin-bottom: 0in"><br />
 
         </p>
@@ -508,8 +539,7 @@
                                 presiding_iid: assignment.officer_iid,
                                 presiding_name: assignment.officer_name,
                                 designation: assignment.officer_designation,
-                                gender: assignment.officer_gender,
-                                change_record: assignment.change_record || null
+                                gender: assignment.officer_gender
                             };
                         } else if (assignment.officer_type === 'ass_presiding') {
                             assPresiding.push({
@@ -517,8 +547,7 @@
                                 ass_presiding_name: assignment.officer_name,
                                 designation: assignment.officer_designation,
                                 gender: assignment.officer_gender,
-                                booth_number: assignment.booth_number,
-                                change_record: assignment.change_record || null
+                                booth_number: assignment.booth_number
                             });
                         } else if (assignment.officer_type === 'polling') {
                             polling.push({
@@ -527,8 +556,7 @@
                                 designation: assignment.officer_designation,
                                 gender: assignment.officer_gender,
                                 booth_number: assignment.booth_number,
-                                person_number: assignment.person_number,
-                                change_record: assignment.change_record || null
+                                person_number: assignment.person_number
                             });
                         }
                     }
@@ -730,47 +758,6 @@
                 }
             }
 
-            function renderChangeRecords(data) {
-                const container = document.getElementById('changeRecordSection');
-                if (!container) return;
-                
-                const changeRecords = [];
-                
-                // Collect all change records
-                if (data.presiding && data.presiding.change_record) {
-                    changeRecords.push(data.presiding.change_record);
-                }
-                
-                if (data.assPresiding && data.assPresiding.length > 0) {
-                    data.assPresiding.forEach(officer => {
-                        if (officer && officer.change_record) {
-                            changeRecords.push(officer.change_record);
-                        }
-                    });
-                }
-                
-                if (data.polling && data.polling.length > 0) {
-                    data.polling.forEach(officer => {
-                        if (officer && officer.change_record) {
-                            changeRecords.push(officer.change_record);
-                        }
-                    });
-                }
-                
-                // Render change records if any exist
-                if (changeRecords.length > 0) {
-                    const html = `
-                        <div style="background-color: #fffbf0; border: 1px solid #e0d5b7; border-radius: 4px; padding: 10px; margin: 10px 0;">
-                            <p class="bold" style="margin: 0 0 5px 0; color: #856404;">পরিবর্তিত তথ্য:</p>
-                            ${changeRecords.map(record => `<p style="margin: 3px 0; color: #856404; font-size: 11pt;">${record}</p>`).join('')}
-                        </div>
-                    `;
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '';
-                }
-            }
-
             window.addEventListener('DOMContentLoaded', async () => {
                 checkAuth();
 
@@ -785,7 +772,6 @@
                     renderCentreInfo(freshData.centre);
                     populateAreaRows(freshData.centre);
                     renderOfficerTable(freshData);
-                    renderChangeRecords(freshData);
                     
                     // Convert all English numbers to Bengali after data is loaded
                     setTimeout(() => {
