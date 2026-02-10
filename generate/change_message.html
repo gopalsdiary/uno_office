@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centre Assignments Change Record</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="../authentication.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      min-width: 200px;
+    }
+
+    body {
+      font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 32px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #667eea;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: bold;
+    }
+
+    td {
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+
+    .btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .btn-save {
+      background: #28a745;
+    }
+
+    .btn-save:hover {
+      background: #218838;
+    }
+
+    .search-box {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .status-msg {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: white;
+      display: none;
+      z-index: 1000;
+    }
+
+    .success {
+      background: #28a745;
+    }
+
+    .error {
+      background: #dc3545;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .page-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 5px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .page-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>পরিবর্তন রেকর্ড (Change Record)</h1>
+
+    <div class="controls">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="searchInput" class="search-box" style="width: 250px;" placeholder="Search all fields..."
+          onkeyup="filterTable()">
+        <input type="text" id="centreCodeInput" class="search-box" style="width: 200px;"
+          placeholder="Filter Centre Code..." onkeyup="filterTable()">
+        <select id="officerTypeFilter" onchange="filterTable()">
+          <option value="">All Officer Types</option>
+          <option value="presiding">Presiding</option>
+          <option value="ass_presiding">Assistant Presiding</option>
+          <option value="polling">Polling</option>
+        </select>
+      </div>
+      <div>
+        <span id="recordCount">Loading...</span>
+      </div>
+    </div>
+
+    <table id="assignmentsTable">
+      <thead>
+        <tr>
+          <th style="width: 100px;">Assignment ID</th>
+          <th style="width: 120px;">Centre Code</th>
+          <th style="width: 150px;">Officer Type</th>
+          <th style="width: 100px;">Officer IID</th>
+          <th style="width: 300px;">Officer Name</th>
+          <th>Change Record</th>
+          <th style="width: 100px;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- Rows will be populated here -->
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button id="prevBtn" class="page-btn" onclick="prevPage()">Previous</button>
+      <span id="pageInfo" style="align-self: center;">Page 1</span>
+      <button id="nextBtn" class="page-btn" onclick="nextPage()">Next</button>
+    </div>
+  </div>
+
+  <div id="statusMsg" class="status-msg"></div>
+
+  <script>
+    let allData = [];
+    let currentPage = 1;
+    const rowsPerPage = 100;
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Setup Supabase first
+      if (typeof checkAuth === 'function') {
+        checkAuth();
+      } else if (typeof window.supabaseClient === 'undefined') {
+        console.error("Supabase client not found. Ensure authentication.js is loaded correctly.");
+      }
+
+      await loadData();
+    });
+
+    async function loadData() {
+      try {
+        showStatus('Loading all data...', 'success');
+        setLoading(true);
+
+        let allRows = [];
+        let from = 0;
+        const step = 1000;
+        let more = true;
+
+        while (more) {
+          const { data, error } = await window.supabaseClient
+            .from('centre_assignments')
+            .select('assignment_id, vote_centre_code, officer_type, officer_iid, officer_name, change_record')
+            .order('assignment_id', { ascending: true })
+            .range(from, from + step - 1);
+
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            allRows = allRows.concat(data);
+            from += step;
+            if (data.length < step) more = false;
+          } else {
+            more = false;
+          }
+        }
+
+        allData = allRows;
+        renderTable();
+        showStatus(`Data loaded successfully (${allData.length} records)`, 'success');
+        setTimeout(hideStatus, 2000);
+      } catch (err) {
+        console.error('Error loading data:', err);
+        showStatus('Error loading data: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function getFilteredData() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const centreFilter = document.getElementById('centreCodeInput').value.toLowerCase();
+      const typeFilter = document.getElementById('officerTypeFilter').value.toLowerCase();
+
+      return allData.filter(item => {
+        const id = String(item.assignment_id).toLowerCase();
+        const code = String(item.vote_centre_code || '').toLowerCase();
+        const type = String(item.officer_type || '').toLowerCase();
+        const iid = String(item.officer_iid || '').toLowerCase();
+        const name = String(item.officer_name || '').toLowerCase();
+        const record = String(item.change_record || '').toLowerCase();
+
+        const matchesSearch = id.includes(searchText) || code.includes(searchText) || type.includes(searchText) || iid.includes(searchText) || name.includes(searchText) || record.includes(searchText);
+        const matchesCentre = centreFilter === '' || code.includes(centreFilter);
+        const matchesType = typeFilter === '' || type === typeFilter;
+
+        return matchesSearch && matchesCentre && matchesType;
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      const filteredData = getFilteredData();
+      document.getElementById('recordCount').innerText = `Records: ${filteredData.length}`;
+
+      // Adjust currentPage if out of bounds after filtering
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+      if (currentPage > totalPages) currentPage = 1;
+
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = filteredData.slice(start, end);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found</td></tr>';
+      } else {
+        pageData.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+                        <td>${row.assignment_id}</td>
+                        <td>${row.vote_centre_code || ''}</td>
+                        <td>${row.officer_type || ''}</td>
+                        <td>${row.officer_iid || ''}</td>
+                        <td>
+                            <input type="text" value="${row.officer_name || ''}" id="name-${row.assignment_id}" style="width: 100%;">
+                        </td>
+                        <td>
+                            <input type="text" value="${row.change_record || ''}" id="record-${row.assignment_id}" style="width: 100%;">
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn btn-save" onclick="updateRecord(${row.assignment_id})">Save</button>
+                        </td>
+                    `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      updatePaginationControls(totalPages);
+    }
+
+    function filterTable() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    async function updateRecord(id) {
+      const nameInput = document.getElementById(`name-${id}`);
+      const recordInput = document.getElementById(`record-${id}`);
+
+      const newName = nameInput.value;
+      const newRecord = recordInput.value;
+
+      try {
+        showStatus('Updating...', 'success');
+
+        const { error } = await window.supabaseClient
+          .from('centre_assignments')
+          .update({
+            officer_name: newName,
+            change_record: newRecord,
+            updated_at: new Date().toISOString()
+          })
+          .eq('assignment_id', id);
+
+        if (error) throw error;
+
+        // Update local data
+        const index = allData.findIndex(item => item.assignment_id === id);
+        if (index !== -1) {
+          allData[index].officer_name = newName;
+          allData[index].change_record = newRecord;
+        }
+
+        showStatus('Record updated successfully!', 'success');
+        setTimeout(hideStatus, 3000);
+      } catch (err) {
+        console.error('Error updating record:', err);
+        showStatus('Failed to update: ' + err.message, 'error');
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      const filteredData = getFilteredData();
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    }
+
+    function updatePaginationControls(totalPages) {
+      if (!totalPages) {
+        const filteredData = getFilteredData();
+        totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+      }
+
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+      document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('statusMsg');
+      el.innerText = msg;
+      el.className = 'status-msg ' + type;
+      el.style.display = 'block';
+    }
+
+    function hideStatus() {
+      document.getElementById('statusMsg').style.display = 'none';
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading...</td></tr>';
+      }
+    }
+  </script>
+</body>
+
+</html>

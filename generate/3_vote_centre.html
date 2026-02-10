@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,23 +13,23 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
-        
+
         h1 {
             text-align: center;
             color: #333;
@@ -37,7 +38,7 @@
             border-bottom: 3px solid #667eea;
             padding-bottom: 15px;
         }
-        
+
         .controls {
             display: flex;
             justify-content: space-between;
@@ -46,7 +47,7 @@
             gap: 15px;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 12px 30px;
             font-size: 16px;
@@ -56,88 +57,88 @@
             transition: all 0.3s ease;
             font-weight: bold;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
         }
-        
+
         .btn-success:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
         }
-        
+
         .btn-print {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
         }
-        
+
         .btn-print:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
         }
-        
+
         .btn-regenerate {
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
         }
-        
+
         .btn-regenerate:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
         }
-        
+
         .btn-load {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
         }
-        
+
         .btn-load:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
-        
+
         .status {
             padding: 12px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
         }
-        
+
         .status.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
+
         .status.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
+
         .status.info {
             background: #d1ecf1;
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
-        
+
         .loading {
             display: none;
             text-align: center;
             padding: 20px;
         }
-        
+
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #667eea;
@@ -147,16 +148,21 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 10px;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .centres-container {
             margin-top: 30px;
         }
-        
+
         .centre-card {
             background: #f8f9fa;
             border-radius: 10px;
@@ -165,7 +171,7 @@
             border: 2px solid #e9ecef;
             page-break-after: always;
         }
-        
+
         .centre-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -174,7 +180,7 @@
             margin-bottom: 20px;
             text-align: center;
         }
-        
+
         .centre-header h2 {
             margin-bottom: 5px;
         }
@@ -202,22 +208,25 @@
             font-size: 13px;
             width: fit-content;
         }
+
         .inline-status.info {
             background: #d1ecf1;
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+
         .inline-status.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+
         .inline-status.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
+
         .assignment-table {
             width: 100%;
             border-collapse: collapse;
@@ -226,7 +235,7 @@
             border-radius: 8px;
             overflow: hidden;
         }
-        
+
         .assignment-table th {
             background: #667eea;
             color: white;
@@ -234,58 +243,60 @@
             text-align: center;
             font-weight: bold;
         }
-        
+
         .assignment-table td {
             padding: 8px 6px;
             border: 1px solid #dee2e6;
             vertical-align: middle;
         }
-        
+
         .assignment-table tbody tr:hover {
             background: #f8f9fa;
         }
-        
+
         .officer-name {
             font-weight: bold;
             color: #333;
             font-size: 0.9em;
             line-height: 1.3;
         }
-        
+
         .officer-designation {
             color: #666;
             font-size: 0.8em;
             line-height: 1.2;
         }
-        
+
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
-            
+
             .container {
                 box-shadow: none;
                 padding: 0;
             }
-            
-            .controls, .status, .loading {
+
+            .controls,
+            .status,
+            .loading {
                 display: none !important;
             }
-            
+
             .centre-card {
                 page-break-after: always;
                 margin-bottom: 0;
             }
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -293,13 +304,13 @@
             border-radius: 8px;
             text-align: center;
         }
-        
+
         .stat-number {
             font-size: 28px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .stat-label {
             font-size: 14px;
             opacity: 0.9;
@@ -400,14 +411,15 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🗳️ Duty Allocation (correction copy)</h1>
-        
+
         <div class="status" id="status"></div>
-        
-      
-        
+
+
+
         <div class="controls">
             <select id="areaSelect" class="centre-select" onchange="onAreaChange()">
                 <option value="">-- Select area --</option>
@@ -419,7 +431,8 @@
                 <option value="all">🔍 View all centres</option>
             </select>
 
-            <input id="centreSearch" class="centre-select" type="text" placeholder="সেন্টার সার্চ (কোড/নাম বা > ১০)" oninput="onCentreSearch()" />
+            <input id="centreSearch" class="centre-select" type="text" placeholder="সেন্টার সার্চ (কোড/নাম বা > ১০)"
+                oninput="onCentreSearch()" />
 
             <button class="btn btn-success" id="saveBtn" onclick="saveAssignments()" style="display:none;">
                 💾 Save
@@ -433,10 +446,10 @@
             <div class="spinner"></div>
             <p>Processing... please wait...</p>
         </div>
-        
-       
+
+
         <div class="stats-grid" id="statsGrid" style="display:none;"></div>
-        
+
         <div class="centres-container" id="centresContainer"></div>
     </div>
 
@@ -467,7 +480,7 @@
                 centreSelect.addEventListener('focus', ensureCentreOptionsOnOpen);
             }
         });
-        
+
         let generatedData = [];
         let selectedCentreCode = '';
         let centreSearchQuery = '';
@@ -490,11 +503,11 @@
                 renderAssignmentsAndStats();
             }, duration);
         }
-        
+
         // Helper function to get officer name (handles different column names)
         function getOfficerName(officer, type) {
             if (!officer) return 'N/A';
-            
+
             if (type === 'presiding') {
                 return officer.presiding_name || officer.name || 'N/A';
             } else if (type === 'ass_presiding') {
@@ -630,32 +643,32 @@
             });
             return opts.join('');
         }
-        
+
         // Show status message
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
             statusDiv.textContent = message;
             statusDiv.className = `status ${type}`;
             statusDiv.style.display = 'block';
-            
+
             if (type === 'success') {
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
                 }, 5000);
             }
         }
-        
+
         // Show/hide loading
         function setLoading(isLoading) {
             const loading = document.getElementById('loading');
             if (loading) loading.style.display = isLoading ? 'block' : 'none';
-            
+
             // Disable/enable buttons during loading
             const saveBtn = document.getElementById('saveBtn');
-            
+
             if (saveBtn) saveBtn.disabled = isLoading;
         }
-        
+
         // Shuffle array (Fisher-Yates algorithm)
         function shuffleArray(array) {
             const shuffled = [...array];
@@ -665,23 +678,23 @@
             }
             return shuffled;
         }
-        
+
         // Distribute by gender evenly
         function distributeByGender(people, count) {
             const male = people.filter(p => p.gender === 'Male' || p.gender === 'male');
             const female = people.filter(p => p.gender === 'Female' || p.gender === 'female');
             const unknown = people.filter(p => !p.gender || p.gender === 'Unknown' || p.gender === 'unknown');
-            
+
             const maleShuffled = shuffleArray(male);
             const femaleShuffled = shuffleArray(female);
             const unknownShuffled = shuffleArray(unknown);
-            
+
             const result = [];
             let maleIndex = 0, femaleIndex = 0, unknownIndex = 0;
-            
+
             for (let i = 0; i < count; i++) {
                 const cycle = i % 3;
-                
+
                 if (cycle === 0 && maleIndex < maleShuffled.length) {
                     result.push(maleShuffled[maleIndex++]);
                 } else if (cycle === 1 && femaleIndex < femaleShuffled.length) {
@@ -696,10 +709,10 @@
                     result.push(unknownShuffled[unknownIndex++]);
                 }
             }
-            
+
             return result;
         }
-        
+
         // Fetch all data with pagination (bypass Supabase 1000 row limit)
         async function fetchAllData(tableName, idColumnName, filterCallback = null) {
             let allData = [];
@@ -708,38 +721,38 @@
             let hasMore = true;
             let batchCount = 0;
             const maxBatches = 100;
-            
+
             console.log(`📊 Fetching all data from ${tableName}...`);
-            
-            while(hasMore && batchCount < maxBatches) {
+
+            while (hasMore && batchCount < maxBatches) {
                 batchCount++;
                 console.log(`   Batch ${batchCount}, lastId: ${lastId}`);
-                
+
                 const { data, error } = await window.supabaseClient
                     .from(tableName)
                     .select('*')
                     .gt(idColumnName, lastId)
                     .order(idColumnName, { ascending: true })
                     .limit(batchSize);
-                
+
                 if (error) {
                     console.error(`❌ Error fetching ${tableName}:`, error);
                     throw error;
                 }
-                
+
                 if (!data || data.length === 0) {
                     hasMore = false;
                     break;
                 }
-                
+
                 // Apply filter if provided
                 const filteredData = filterCallback ? data.filter(filterCallback) : data;
                 allData.push(...filteredData);
-                
+
                 lastId = data[data.length - 1][idColumnName];
                 console.log(`   Loaded ${data.length} rows, filtered to ${filteredData.length}, total: ${allData.length}`);
             }
-            
+
             console.log(`✅ ${tableName}: Total ${allData.length} records loaded in ${batchCount} batches`);
             return allData;
         }
@@ -756,40 +769,40 @@
             pollingPool = await fetchAllData('polling_list', 'polling_iid', unassignedAndAble);
             poolsLoaded = true;
         }
-        
+
         // Generate assignments
         async function generateAssignments() {
             setLoading(true);
             generatedData = [];
             document.getElementById('centresContainer').innerHTML = '';
             document.getElementById('statsGrid').style.display = 'none';
-            
+
             try {
                 console.log('🚀 Starting assignment generation...');
-                
+
                 // Check Supabase connection
                 if (!window.supabaseClient) {
                     throw new Error('Supabase client not initialized. Please check authentication.js');
                 }
-                
+
                 // Fetch all required data
                 console.log('📊 Fetching vote centres...');
                 const { data: voteCentres, error: centreError } = await window.supabaseClient
                     .from('vote_centre')
                     .select('*')
                     .order('vote_centre_code');
-                
+
                 if (centreError) {
                     console.error('❌ Vote Centre Error:', centreError);
                     throw new Error(`Vote Centre Error: ${centreError.message}`);
                 }
-                
+
                 if (!voteCentres || voteCentres.length === 0) {
                     throw new Error('No vote centre found. Please check vote_centre table.');
                 }
-                
+
                 console.log(`✅ Found ${voteCentres.length} vote centres`);
-                
+
                 // Fetch all presiding list with pagination
                 console.log('📊 Fetching presiding list with pagination...');
                 const presidingList = await fetchAllData('presiding_list', 'presiding_iid', (p) => {
@@ -797,11 +810,11 @@
                     const isAssigned = p.assign_code && p.assign_code.trim() !== '';
                     return !hasDisability && !isAssigned;
                 });
-                
+
                 if (!presidingList || presidingList.length === 0) {
                     throw new Error('No presiding officer found.');
                 }
-                
+
                 // Fetch all assistant presiding list with pagination
                 console.log('📊 Fetching assistant presiding list with pagination...');
                 const assPresidingList = await fetchAllData('ass_presiding_list', 'ass_presiding_iid', (p) => {
@@ -809,11 +822,11 @@
                     const isAssigned = p.assign_code && p.assign_code.trim() !== '';
                     return !hasDisability && !isAssigned;
                 });
-                
+
                 if (!assPresidingList || assPresidingList.length === 0) {
                     throw new Error('No assistant presiding officer found.');
                 }
-                
+
                 // Fetch all polling list with pagination
                 console.log('📊 Fetching polling list with pagination...');
                 const pollingList = await fetchAllData('polling_list', 'polling_iid', (p) => {
@@ -821,37 +834,37 @@
                     const isAssigned = p.assign_code && p.assign_code.trim() !== '';
                     return !hasDisability && !isAssigned;
                 });
-                
+
                 if (!pollingList || pollingList.length === 0) {
                     throw new Error('No polling officer found.');
                 }
-                
+
                 // Use filtered data directly
                 const presidingFiltered = presidingList;
                 const assPresidingFiltered = assPresidingList;
                 const pollingFiltered = pollingList;
-                
+
                 // Calculate required officers
                 let totalBooths = 0;
                 voteCentres.forEach(c => totalBooths += (c.voter_both_total || 0));
-                
+
                 const required = {
                     presiding: voteCentres.length,
                     assPresiding: totalBooths,
                     polling: totalBooths * 2
                 };
-                
+
                 console.log('📊 Requirements:', required);
                 console.log(`   Presiding: ${presidingFiltered.length}/${required.presiding}`);
                 console.log(`   Ass Presiding: ${assPresidingFiltered.length}/${required.assPresiding}`);
                 console.log(`   Polling: ${pollingFiltered.length}/${required.polling}`);
-                
+
                 // Check availability and calculate how many centres we can assign
                 const canAssignCentres = Math.min(
                     presidingFiltered.length,
                     voteCentres.length
                 );
-                
+
                 let warnings = [];
                 if (presidingFiltered.length < required.presiding) {
                     warnings.push(`⚠️ Presiding: ${presidingFiltered.length}/${required.presiding} (${required.presiding - presidingFiltered.length} short)`);
@@ -862,73 +875,73 @@
                 if (pollingFiltered.length < required.polling) {
                     warnings.push(`⚠️ Polling: ${pollingFiltered.length}/${required.polling} (${required.polling - pollingFiltered.length} short)`);
                 }
-                
+
                 if (warnings.length > 0) {
                     console.log('⚠️ Officer shortage detected:');
                     warnings.forEach(w => console.log(`   ${w}`));
                     showStatus(`⚠️ Not enough officers. Only ${canAssignCentres} centres will be assigned.\n${warnings.join('\n')}`, 'error');
                 }
-                
+
                 console.log(`✅ Starting assignment for ${canAssignCentres} centres...`);
-                
+
                 // Shuffle lists
                 let presidingAvailable = shuffleArray(presidingFiltered);
                 let assPresidingAvailable = shuffleArray(assPresidingFiltered);
                 let pollingAvailable = shuffleArray(pollingFiltered);
-                
+
                 let presidingIndex = 0;
                 let assPresidingIndex = 0;
                 let pollingIndex = 0;
-                
+
                 let skippedCentres = [];
                 let assignedCount = 0;
-                
+
                 // Process each vote centre
                 for (const centre of voteCentres) {
                     const boothCount = centre.voter_both_total || 0;
-                    
+
                     if (boothCount === 0) continue;
-                    
+
                     // Check if we have enough officers for this centre
                     if (presidingIndex >= presidingAvailable.length) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - no presiding officer`);
                         skippedCentres.push(`Centre ${centre.vote_centre_code} (presiding officer missing)`);
                         continue;
                     }
-                    
+
                     const assPresidingNeeded = boothCount;
                     if (assPresidingIndex + assPresidingNeeded > assPresidingAvailable.length) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough assistant presiding`);
                         skippedCentres.push(`Centre ${centre.vote_centre_code} (assistant presiding shortage)`);
                         continue;
                     }
-                    
+
                     const pollingNeeded = boothCount * 2;
                     if (pollingIndex + pollingNeeded > pollingAvailable.length) {
                         console.log(`⚠️ Skipping centre ${centre.vote_centre_code} - not enough polling`);
                         skippedCentres.push(`Centre ${centre.vote_centre_code} (polling officer shortage)`);
                         continue;
                     }
-                    
+
                     // Assign presiding officer
                     const presiding = presidingAvailable[presidingIndex++];
-                    
+
                     // Assign assistant presiding officers (gender balanced)
                     const assPresidingForCentre = distributeByGender(
                         assPresidingAvailable.slice(assPresidingIndex),
                         assPresidingNeeded
                     );
-                    
+
                     assPresidingIndex += assPresidingNeeded;
-                    
+
                     // Assign polling officers (2 per booth, gender balanced)
                     const pollingForCentre = distributeByGender(
                         pollingAvailable.slice(pollingIndex),
                         pollingNeeded
                     );
-                    
+
                     pollingIndex += pollingNeeded;
-                    
+
                     // Create assignment object
                     const assignment = {
                         centre: centre,
@@ -937,44 +950,44 @@
                         polling: pollingForCentre,
                         changeRecords: {} // Track officer changes
                     };
-                    
+
                     generatedData.push(assignment);
                     assignedCount++;
                 }
-                
+
                 console.log(`✅ Successfully assigned ${generatedData.length} centres`);
-                
+
                 if (skippedCentres.length > 0) {
                     console.log(`⚠️ Skipped ${skippedCentres.length} centres:`, skippedCentres);
                 }
-                
+
                 if (generatedData.length === 0) {
                     throw new Error('No centre was assigned. Please check officer counts.');
                 }
-                
+
                 // Display results (filtered by dropdown)
                 selectedCentreCode = 'all';
                 populateCentreDropdown();
                 populateAreaDropdown(); // populate area choices now that centres are available
                 renderAssignmentsAndStats();
-                
+
                 // Show save, regenerate and print buttons (always show regenerate for retry)
                 document.getElementById('saveBtn').style.display = 'inline-block';
                 document.getElementById('printBtn').style.display = 'inline-block';
-                
+
                 let successMsg = `✅ Assigned ${generatedData.length} centres successfully`;
                 if (skippedCentres.length > 0) {
                     successMsg += ` ⚠️ ${skippedCentres.length} centre(s) skipped (officer shortage).`;
                 } else {
                     successMsg += `.`;
                 }
-                
+
                 showStatus(successMsg, skippedCentres.length > 0 ? 'error' : 'success');
-                
+
             } catch (error) {
                 console.error('❌ Error:', error);
                 showStatus(`❌ Error: ${error.message}`, 'error');
-                
+
                 // Show detailed error in console
                 if (error.details) console.error('Details:', error.details);
                 if (error.hint) console.error('Hint:', error.hint);
@@ -982,7 +995,7 @@
                 setLoading(false);
             }
         }
-        
+
         // Get filtered data based on dropdown selection or centre search
         function getFilteredAssignments() {
             const rawQuery = (centreSearchQuery || '').trim();
@@ -1076,7 +1089,7 @@
                 areas.add(area);
             });
 
-            const sorted = Array.from(areas).sort((a,b) => a.localeCompare(b));
+            const sorted = Array.from(areas).sort((a, b) => a.localeCompare(b));
             const options = ['<option value="">-- Select area --</option>', '<option value="all">🔍 All areas</option>'];
             sorted.forEach(a => options.push(`<option value="${a}">${a}</option>`));
             areaSelect.innerHTML = options.join('');
@@ -1167,7 +1180,7 @@
         async function toggleEditMode(centreIndex) {
             const centreCard = document.getElementById(`centre-${centreIndex}`);
             if (!centreCard) return;
-            
+
             if (centreCard.classList.contains('normal-mode')) {
                 centreCard.classList.remove('normal-mode');
                 centreCard.classList.add('edit-mode');
@@ -1189,12 +1202,12 @@
         function updateOfficer(centreIndex, officerType, position, newId) {
             const assignment = generatedData[centreIndex];
             if (!assignment) return;
-            
+
             // Initialize changeRecords if not exists
             if (!assignment.changeRecords) {
                 assignment.changeRecords = {};
             }
-            
+
             // Helper to get position label in Bengali
             function getPositionLabel(officerType, position) {
                 if (officerType === 'presiding') {
@@ -1208,7 +1221,7 @@
                 }
                 return '';
             }
-            
+
             // Helper to get officer name
             function getCurrentOfficerName(officerType, position) {
                 if (officerType === 'presiding' && assignment.presiding) {
@@ -1392,7 +1405,7 @@
             const dataRaw = event.dataTransfer.getData('text/plain');
             if (!dataRaw) return;
             const data = JSON.parse(dataRaw);
-            
+
             // Ensure same centre and same officer type
             if (!data || data.centreIndex !== centreIndex) {
                 console.log('Cannot move officers between centres');
@@ -1458,13 +1471,13 @@
             let totalPresiding = 0;
             let totalAssPresiding = 0;
             let totalPolling = 0;
-            
+
             data.forEach(assignment => {
                 totalPresiding += assignment.presiding ? 1 : 0;
                 totalAssPresiding += assignment.assPresiding.filter(Boolean).length;
                 totalPolling += assignment.polling.filter(Boolean).length;
             });
-            
+
             const statsHTML = `
                 <div class="stat-card">
                     <div class="stat-number">${data.length}</div>
@@ -1483,25 +1496,25 @@
                     <div class="stat-label">Polling officers</div>
                 </div>
             `;
-            
+
             const statsGrid = document.getElementById('statsGrid');
             statsGrid.innerHTML = statsHTML;
             statsGrid.style.display = 'grid';
         }
-        
+
         // Display assignments
         function displayAssignments(data = generatedData) {
             const container = document.getElementById('centresContainer');
             let html = '';
             const sorted = [...data].sort((a, b) => (a.centre.vote_centre_code || '').localeCompare(b.centre.vote_centre_code || ''));
-            
+
             sorted.forEach((assignment, index) => {
                 const centre = assignment.centre;
                 const presiding = assignment.presiding;
                 const assPresiding = assignment.assPresiding;
                 const polling = assignment.polling;
                 const centreIndex = generatedData.findIndex(a => a.centre.vote_centre_code === centre.vote_centre_code);
-                
+
                 // Calculate gender statistics
                 const assPresidingMale = assPresiding.filter(a => a && (a.gender === 'Male' || a.gender === 'male')).length;
                 const assPresidingFemale = assPresiding.filter(a => a && (a.gender === 'Female' || a.gender === 'female')).length;
@@ -1509,7 +1522,7 @@
                 const pollingFemale = polling.filter(p => p && (p.gender === 'Female' || p.gender === 'female')).length;
                 const totalMale = assPresidingMale + pollingMale;
                 const totalFemale = assPresidingFemale + pollingFemale;
-                
+
                 const genderCard = `
                     <div class="gender-card">
                         <div>সহ-প্রিঃ: পুরুষ ${assPresidingMale}, নারী ${assPresidingFemale}</div>
@@ -1519,7 +1532,7 @@
                 `;
 
                 const inlineHTML = inlineMessage ? `<div class="inline-status ${inlineMessage.type}">${inlineMessage.message}</div>` : '';
-                
+
                 html += `
                     <div class="centre-card normal-mode" id="centre-${centreIndex}">
                         <div class="centre-header">
@@ -1546,15 +1559,15 @@
                             </thead>
                             <tbody>
                 `;
-                
+
                 const pollingRows = Math.max(1, Math.ceil(polling.length / 2));
                 const maxRows = Math.max(1, assPresiding.length, pollingRows);
-                
+
                 for (let i = 0; i < maxRows; i++) {
                     const assPres = assPresiding[i];
                     const poll1 = polling[i * 2];
                     const poll2 = polling[i * 2 + 1];
-                    
+
                     html += `
                         <tr>
                             ${i === 0 ? `<td rowspan="${maxRows}" style="text-align:center; vertical-align:middle; max-width:150px; width:150px;">
@@ -1612,17 +1625,17 @@
                         </tr>
                     `;
                 }
-                
+
                 html += `
                             </tbody>
                         </table>
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
-        
+
         // Function to open appointment letter with centre data
         function openAppointmentLetter(centreIndex) {
             const assignment = generatedData[centreIndex];
@@ -1630,7 +1643,7 @@
                 showStatus('❌ Centre data not found', 'error');
                 return;
             }
-            
+
             // Navigate to appointment letter page with centre code as URL parameter (open in new tab)
             const centreCode = assignment.centre.vote_centre_code;
             const win = window.open('1_apointment_letter.html?code=' + encodeURIComponent(centreCode), '_blank');
@@ -1671,15 +1684,15 @@
             document.getElementById('centresContainer').innerHTML = '';
             document.getElementById('statsGrid').style.display = 'none';
             showStatus('📂 Loading assignments from database...', 'info');
-            
+
             try {
                 console.log('🔍 Loading data from database...');
-                
+
                 // Check Supabase connection
                 if (!window.supabaseClient) {
                     throw new Error('Supabase client not initialized. Please check authentication.js');
                 }
-                
+
                 // Fetch all assignments from database with timeout
                 // Paginate centre_assignments to bypass 1000 row limit
                 console.log('📊 Fetching assignments with pagination...');
@@ -1712,7 +1725,7 @@
 
                 const assignments = await fetchAllAssignments();
                 console.log(`✅ Fetched ${assignments.length} assignment records (all pages)`);
-                
+
                 // Fetch requests to mark matching assignments
                 const requests = await fetchAllRequests();
                 const requestSet = new Set();
@@ -1724,7 +1737,7 @@
                     });
                 }
                 console.log(`✅ Fetched ${requests.length} request records`);
-                
+
                 if (!assignments || assignments.length === 0) {
                     console.log('⚠️ No saved assignments found in database');
                     showStatus('⚠️ No saved assignments in database. Generate and save first.', 'error');
@@ -1732,14 +1745,14 @@
                     setLoading(false);
                     return;
                 }
-                
+
                 console.log('📦 Processing centre data...');
                 // Group assignments by vote centre
                 const centreMap = new Map();
-                
+
                 for (const assignment of assignments) {
                     const centreCode = assignment.vote_centre_code;
-                    
+
                     if (!centreMap.has(centreCode)) {
                         centreMap.set(centreCode, {
                             centre: {
@@ -1753,19 +1766,20 @@
                             polling: []
                         });
                     }
-                    
+
                     // Check if this specific assignment was requested
                     const reqKey = `${assignment.officer_type}_${assignment.officer_iid}_${assignment.vote_centre_iid}`;
                     const isRequested = requestSet.has(reqKey);
-                    
+
                     const centreData = centreMap.get(centreCode);
-                    
+
                     if (assignment.officer_type === 'presiding') {
                         centreData.presiding = {
                             presiding_iid: assignment.officer_iid,
                             presiding_name: assignment.officer_name,
                             designation: assignment.officer_designation,
-                            isRequested: isRequested
+                            isRequested: isRequested,
+                            change_record: assignment.change_record || null
                         };
                     } else if (assignment.officer_type === 'ass_presiding') {
                         const boothNum = Number(assignment.booth_number) || 0;
@@ -1779,7 +1793,8 @@
                             designation: assignment.officer_designation,
                             gender: assignment.officer_gender,
                             booth_number: boothNum || assignment.booth_number,
-                            isRequested: isRequested
+                            isRequested: isRequested,
+                            change_record: assignment.change_record || null
                         };
                         if (boothNum) {
                             centreData.centre.voter_both_total = Math.max(
@@ -1803,7 +1818,8 @@
                             gender: assignment.officer_gender,
                             booth_number: boothNum || assignment.booth_number,
                             person_number: personNum || assignment.person_number,
-                            isRequested: isRequested
+                            isRequested: isRequested,
+                            change_record: assignment.change_record || null
                         };
                         if (boothNum) {
                             centreData.centre.voter_both_total = Math.max(
@@ -1813,19 +1829,19 @@
                         }
                     }
                 }
-                
+
                 // Convert map to array
                 generatedData = Array.from(centreMap.values());
-                
+
                 console.log(`✅ Processed ${generatedData.length} centres`);
-                
+
                 // Preserve booth/person positions (arrays may contain nulls for gaps)
                 generatedData.forEach(data => {
                     // ensure centre has area/name info if available later
                     data.centre.vote_centre_area = data.centre.vote_centre_area || null;
                     data.centre.vote_centre_name = data.centre.vote_centre_name || null;
                 });
-                
+
                 console.log('🎨 Displaying centres...');
                 await loadOfficerPools();
                 selectedCentreCode = '';
@@ -1870,15 +1886,15 @@
                         console.warn('enrichCentresWithArea failed:', err.message || err);
                     }
                 }
-                
+
                 console.log('✅ Load complete!');
-                
+
                 // Hide save button (already saved), show print button
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('printBtn').style.display = 'inline-block';
-                
+
                 showStatus(`✅ Loaded Centre Info for ${generatedData.length} centres`, 'success');
-                
+
             } catch (error) {
                 console.error('Load error:', error);
                 showStatus(`❌ Load error: ${error.message}`, 'error');
@@ -1886,63 +1902,63 @@
                 setLoading(false);
             }
         }
-        
+
         // Regenerate assignments (clear and generate again)
         async function regenerateAssignments() {
             if (!confirm('Are you sure you want to regenerate? Existing data will be cleared.')) {
                 return;
             }
-            
+
             setLoading(true);
             showStatus('🔄 Resetting old data...', 'info');
-            
+
             try {
                 // Delete all old assignments from database
                 console.log('🗑️ Deleting old assignments from database...');
-                
+
                 const { error: deleteError } = await window.supabaseClient
                     .from('centre_assignments')
                     .delete()
                     .neq('assignment_id', 0); // Delete all records
-                
+
                 if (deleteError) {
                     console.error('Delete error:', deleteError);
                     throw new Error(`Failed to delete old data: ${deleteError.message}`);
                 }
-                
+
                 console.log('✅ Old assignments deleted from database');
-                
+
                 // Reset assign_code in all officer tables
                 console.log('🔄 Resetting assign_code in officer tables...');
-                
+
                 await window.supabaseClient
                     .from('presiding_list')
                     .update({ assign_code: null })
                     .neq('presiding_iid', 0);
-                
+
                 await window.supabaseClient
                     .from('ass_presiding_list')
                     .update({ assign_code: null })
                     .neq('ass_presiding_iid', 0);
-                
+
                 await window.supabaseClient
                     .from('polling_list')
                     .update({ assign_code: null })
                     .neq('polling_iid', 0);
-                
+
                 console.log('✅ All assign_code reset in database');
-                
+
                 // Reset UI
                 document.getElementById('saveBtn').style.display = 'none';
                 document.getElementById('centresContainer').innerHTML = '';
                 document.getElementById('statsGrid').style.display = 'none';
                 generatedData = [];
-                
+
                 showStatus('✅ Data reset complete. Generating fresh assignments...', 'success');
-                
+
                 // Generate new assignments
                 await generateAssignments();
-                
+
             } catch (error) {
                 console.error('❌ Regenerate Error:', error);
                 showStatus(`❌ Regenerate error: ${error.message}`, 'error');
@@ -1950,7 +1966,7 @@
                 setLoading(false);
             }
         }
-        
+
         // Save assignments to database
         async function saveAssignments() {
             if (!window.supabaseClient) {
@@ -1961,63 +1977,66 @@
                 showStatus('⚠️ Nothing to save.', 'error');
                 return;
             }
-            
+
             if (!confirm('Save these assignments to database?')) {
                 return;
             }
-            
+
             setLoading(true);
             // Show inline saving message
             setInlineMessage('Saving assignments...', 'info', 10000);
-            
+
             try {
                 // Delete all old assignments first
                 console.log('🗑️ Deleting old assignments...');
-                
+
                 // Delete from centre_assignments table
                 const { error: deleteError } = await window.supabaseClient
                     .from('centre_assignments')
                     .delete()
                     .neq('assignment_id', 0); // Delete all records
-                
+
                 if (deleteError) {
                     console.error('Delete error:', deleteError);
                     throw new Error(`Failed to delete old data: ${deleteError.message}`);
                 }
-                
+
                 console.log('✅ Old assignments deleted');
-                
+
                 // Reset assign_code in all officer tables
                 console.log('🔄 Resetting assign_code in officer tables...');
-                
+
                 await window.supabaseClient
                     .from('presiding_list')
                     .update({ assign_code: null })
                     .neq('presiding_iid', 0);
-                
+
                 await window.supabaseClient
                     .from('ass_presiding_list')
                     .update({ assign_code: null })
                     .neq('ass_presiding_iid', 0);
-                
+
                 await window.supabaseClient
                     .from('polling_list')
                     .update({ assign_code: null })
                     .neq('polling_iid', 0);
-                
+
                 console.log('✅ All assign_code reset');
-                
+
                 console.log('📝 Building assignments to save...');
                 const assignmentsToSave = [];
-                
+
                 generatedData.forEach(assignment => {
                     const centreCode = assignment.centre.vote_centre_code;
                     const centreId = assignment.centre.vote_centre_iid;
-                    
+
                     // Presiding assignment (skip if none selected)
                     if (assignment.presiding && assignment.presiding.presiding_iid) {
                         const changeKey = `presiding-0`;
-                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey])
+                            || (assignment.presiding.change_record)
+                            || null;
+
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -2031,14 +2050,17 @@
                             created_at: new Date().toISOString()
                         });
                     }
-                    
+
                     // Assistant presiding assignments
                     for (let i = 0; i < assignment.assPresiding.length; i++) {
                         const assPres = assignment.assPresiding[i];
                         if (!assPres) continue;
                         const boothNum = i + 1;
                         const changeKey = `ass_presiding-${i}`;
-                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey])
+                            || (assPres.change_record)
+                            || null;
+
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -2053,7 +2075,7 @@
                             created_at: new Date().toISOString()
                         });
                     }
-                    
+
                     // Polling assignments
                     for (let i = 0; i < assignment.polling.length; i++) {
                         const poll = assignment.polling[i];
@@ -2061,7 +2083,10 @@
                         const boothNum = Math.floor(i / 2) + 1;
                         const personNum = (i % 2) + 1;
                         const changeKey = `polling-${i}`;
-                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey]) || null;
+                        const changeRecord = (assignment.changeRecords && assignment.changeRecords[changeKey])
+                            || (poll.change_record)
+                            || null;
+
                         assignmentsToSave.push({
                             vote_centre_iid: centreId,
                             vote_centre_code: centreCode,
@@ -2078,14 +2103,14 @@
                         });
                     }
                 });
-                
+
                 console.log(`📊 Total assignments to save: ${assignmentsToSave.length}`);
 
                 if (assignmentsToSave.length === 0) {
                     showStatus('⚠️ Nothing to save (no assignments built).', 'error');
                     return;
                 }
-                
+
                 // Save to centre_assignments table
                 console.log('💾 Saving to centre_assignments table...');
                 async function batchInsert(tableName, rows, chunkSize = 500) {
@@ -2103,30 +2128,30 @@
                 }
 
                 await batchInsert('centre_assignments', assignmentsToSave);
-                
+
                 console.log('✅ Saved to centre_assignments table');
-                
+
                 // Update assign_code in respective tables (batch upsert to reduce round trips)
                 console.log('🔄 Updating assign_code in officer tables (batch upsert)...');
-                
+
                 const presidingUpdates = [];
                 const assPresidingUpdates = [];
                 const pollingUpdates = [];
-                
+
                 for (const assignment of generatedData) {
                     const centreId = assignment.centre.vote_centre_iid;
-                    
+
                     if (assignment.presiding && assignment.presiding.presiding_iid) {
                         presidingUpdates.push({ presiding_iid: assignment.presiding.presiding_iid, assign_code: `${centreId}` });
                     }
-                    
+
                     for (let i = 0; i < assignment.assPresiding.length; i++) {
                         const ap = assignment.assPresiding[i];
                         if (ap && ap.ass_presiding_iid) {
                             assPresidingUpdates.push({ ass_presiding_iid: ap.ass_presiding_iid, assign_code: `${centreId}-${i + 1}` });
                         }
                     }
-                    
+
                     for (let i = 0; i < assignment.polling.length; i++) {
                         const poll = assignment.polling[i];
                         if (poll && poll.polling_iid) {
@@ -2151,11 +2176,11 @@
                 const presidingUnique = dedupeByKey(presidingUpdates, 'presiding_iid');
                 const assPresidingUnique = dedupeByKey(assPresidingUpdates, 'ass_presiding_iid');
                 const pollingUnique = dedupeByKey(pollingUpdates, 'polling_iid');
-                
+
                 console.log(`   Presiding updates: ${presidingUnique.length} (raw ${presidingUpdates.length})`);
                 console.log(`   Ass Presiding updates: ${assPresidingUnique.length} (raw ${assPresidingUpdates.length})`);
                 console.log(`   Polling updates: ${pollingUnique.length} (raw ${pollingUpdates.length})`);
-                
+
                 async function batchUpsert(tableName, key, rows, chunkSize = 300) {
                     for (let i = 0; i < rows.length; i += chunkSize) {
                         const chunk = rows.slice(i, i + chunkSize);
@@ -2169,28 +2194,29 @@
                         console.log(`   ✅ ${tableName} upsert ${i + chunk.length}/${rows.length}`);
                     }
                 }
-                
+
                 await batchUpsert('presiding_list', 'presiding_iid', presidingUnique);
                 await batchUpsert('ass_presiding_list', 'ass_presiding_iid', assPresidingUnique);
                 await batchUpsert('polling_list', 'polling_iid', pollingUnique);
-                
+
                 console.log('✅ All assign_code updated in officer tables');
 
                 // Show inline success message above tables
                 setInlineMessage('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success', 700);
-                
+
                 showStatus('✅ All assignments saved successfully. Regenerate if you need a new shuffle.', 'success');
                 document.getElementById('saveBtn').style.display = 'none';
                 renderAssignmentsAndStats();
-                
+
             } catch (error) {
                 console.error('Save error:', error);
                 showStatus(`❌ Save error: ${error.message}`, 'error');
-                try { setInlineMessage(`❌ Save error: ${error.message}`, 'error', 10000); } catch(e) {}
+                try { setInlineMessage(`❌ Save error: ${error.message}`, 'error', 10000); } catch (e) { }
             } finally {
                 setLoading(false);
             }
         }
         // Function to open appointment letter with centre data`r`n        function openAppointmentLetter() {`r`n            const centreSelect = document.getElementById('centreSelect');`r`n            const selectedValue = centreSelect.value;`r`n            `r`n            if (selectedValue === 'all' || !selectedValue) {`r`n                showStatus(' Please select a specific centre first', 'error');`r`n                return;`r`n            }`r`n            `r`n            // Find the selected centre data`r`n            const centreData = generatedData.find(c => c.vote_centre_code === selectedValue);`r`n            `r`n            if (!centreData) {`r`n                showStatus(' Centre data not found', 'error');`r`n                return;`r`n            }`r`n            `r`n            // Store centre data in sessionStorage to pass to appointment page`r`n            sessionStorage.setItem('selectedCentreData', JSON.stringify(centreData));`r`n            `r`n            // Navigate to appointment letter page`r`n            window.location.href = '1_apointment_copy.html';`r`n        }`r`n    </script>
 </body>
+
 </html>
