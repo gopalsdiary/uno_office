@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কাচা ভাউচার</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        @font-face {
+            font-family: 'NikoshBAN ';
+            src: local('Nikosh');
+        }
+
+        @font-face {
+            font-family: 'NikoshBAN';
+            src: local('NikoshBAN');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            line-height: 1.2;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header-text h1 {
+            font-size: 18pt;
+            margin-bottom: 2px;
+        }
+
+        .header-text h2 {
+            font-size: 14pt;
+            margin-bottom: 2px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        .signature-cell {
+            width: 3cm;
+            height: 2cm;
+            min-width: 3cm;
+            min-height: 2cm;
+        }
+
+        .revenue-cell {
+            width: 2.5cm;
+            height: 2cm;
+            min-width: 2.5cm;
+            min-height: 2cm;
+        }
+
+        .sl-cell {
+            width: 40px;
+        }
+
+        .amount-cell {
+            width: 80px;
+        }
+
+        .designation-cell {
+            width: 120px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+
+        @page {
+            size: A4;
+            margin: 0.2in;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: none;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            .voucher {
+                page-break-inside: avoid;
+            }
+        }
+
+        .separator {
+            border-top: 2px dashed #000;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .separator:after {
+            content: '✂';
+            position: absolute;
+            top: -12px;
+            left: 0;
+            font-size: 16pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+        <button class="btn btn-primary" onclick="window.history.back()">⬅ ফিরে যান</button>
+    </div>
+
+    <div class="container">
+        <div id="masterRollContent">
+            <div class="loading">
+                <h2>⏳ ডাটা লোড হচ্ছে...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load all data on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            try {
+                const data = await loadMasterRollData();
+                renderMasterRoll(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('masterRollContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ ত্রুটি দেখা দিয়েছে</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
+                    </div>
+                `;
+            }
+        });
+
+        async function loadMasterRollData() {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+
+            // Fetch all assignments
+            const { data: assignments, error: assignError } = await window.supabaseClient
+                .from('centre_assignments')
+                .select('*')
+                .order('vote_centre_code', { ascending: true });
+
+            if (assignError) throw assignError;
+            if (!assignments || assignments.length === 0) {
+                throw new Error('কোনো অ্যাসাইনমেন্ট পাওয়া যায়নি।');
+            }
+
+            // Fetch centre details
+            const { data: centres, error: centreError } = await window.supabaseClient
+                .from('vote_centre')
+                .select('*');
+
+            if (centreError) throw centreError;
+
+            const centreDetailsMap = new Map(centres.map(c => [String(c.vote_centre_code), c]));
+
+            // Fetch officer details for name, designation, workplace(address), mobile
+            const presidingIds = assignments.filter(a => a.officer_type === 'presiding').map(a => a.officer_iid);
+            const assPresidingIds = assignments.filter(a => a.officer_type === 'ass_presiding').map(a => a.officer_iid);
+            const pollingIds = assignments.filter(a => a.officer_type === 'polling').map(a => a.officer_iid);
+
+            const [pRes, apRes, poRes] = await Promise.all([
+                presidingIds.length ? window.supabaseClient.from('presiding_list').select('presiding_iid, presiding_name, mobile_number, address').in('presiding_iid', presidingIds) : { data: [] },
+                assPresidingIds.length ? window.supabaseClient.from('ass_presiding_list').select('ass_presiding_iid, ass_presiding_name, mobile_number, address').in('ass_presiding_iid', assPresidingIds) : { data: [] },
+                pollingIds.length ? window.supabaseClient.from('polling_list').select('polling_iid, polling_name, mobile_number, address').in('polling_iid', pollingIds) : { data: [] }
+            ]);
+
+            const officerDetails = {
+                presiding: new Map(pRes.data.map(o => [o.presiding_iid, o])),
+                ass_presiding: new Map(apRes.data.map(o => [o.ass_presiding_iid, o])),
+                polling: new Map(poRes.data.map(o => [o.polling_iid, o]))
+            };
+
+            // Debug counts
+            console.log('Loaded centres:', centres ? centres.length : 0, 'assignments:', assignments ? assignments.length : 0);
+
+            // Initialize groups from all centres so centres without assignments are also shown
+            const groups = new Map();
+            centres.forEach(c => {
+                const code = String(c.vote_centre_code);
+                groups.set(code, {
+                    centre: c,
+                    officers: []
+                });
+            });
+
+            // Add assignments into the appropriate centre group
+            assignments.forEach(a => {
+                const code = String(a.vote_centre_code || '');
+                if (!code) {
+                    console.warn('Assignment without vote_centre_code:', a);
+                    return;
+                }
+                if (!groups.has(code)) {
+                    // If centre isn't in centres list for some reason, create a fallback entry
+                    groups.set(code, {
+                        centre: centreDetailsMap.get(code) || { vote_centre_code: code, vote_centre_name: 'N/A' },
+                        officers: []
+                    });
+                }
+                const bundle = groups.get(code);
+                const details = officerDetails[a.officer_type].get(a.officer_iid);
+                bundle.officers.push({
+                    ...a,
+                    name: details ? (details.presiding_name || details.ass_presiding_name || details.polling_name) : a.officer_name,
+                    mobile: details ? details.mobile_number : '',
+                    workplace: details ? details.address : '',
+                    designation_original: a.officer_designation
+                });
+            });
+
+            // Log centres with no assignments (useful for debugging)
+            const centresWithNoAssignments = Array.from(groups.values()).filter(g => g.officers.length === 0).map(g => g.centre.vote_centre_code);
+            console.log('Centres with no assignments:', centresWithNoAssignments.length, centresWithNoAssignments.slice(0, 50));
+
+            // Sort officers in each centre: Presiding, then Assistant Presiding, then Polling
+            groups.forEach(bundle => {
+                bundle.officers.sort((a, b) => {
+                    const order = { 'presiding': 1, 'ass_presiding': 2, 'polling': 3 };
+                    if (order[a.officer_type] !== order[b.officer_type]) {
+                        return order[a.officer_type] - order[b.officer_type];
+                    }
+                    if (a.booth_number !== b.booth_number) {
+                        return (a.booth_number || 0) - (b.booth_number || 0);
+                    }
+                    return (a.person_number || 0) - (b.person_number || 0);
+                });
+            });
+
+            const groupsArray = Array.from(groups.values());
+            return groupsArray.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+        }
+
+        function toBengaliNumber(n) {
+            if (n === null || n === undefined) return '';
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        function renderMasterRoll(allData) {
+            const container = document.getElementById('masterRollContent');
+            let html = '';
+
+            allData.forEach((bundle, index) => {
+                const { centre } = bundle;
+
+                html += `
+                    <div class="page ${index < allData.length - 1 ? 'page-break' : ''}" style="padding: 10px; font-family: 'Nikosh', sans-serif; height: 280mm; box-sizing: border-box; display: block; position: relative;">
+                        <!-- Voucher 1: Transport Expenses -->
+                        <div class="voucher" style="height: 130mm; position: relative; box-sizing: border-box; padding-top: 10px;">
+                            <div style="text-align: right; margin-bottom: 2px; font-size: 10pt;">ভাউচার নং-........................................</div>
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="font-size: 15pt; text-decoration: underline; display: inline-block; margin: 0;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ২০২৬ উপলক্ষে অর্থ পরিশোধের জন্য ভাউচার</h1>
+                            </div>
+                            
+                            <div style="font-size: 13pt; line-height: 1.6;">
+                                <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
+                                <div style="font-weight: bold;">২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
+                                <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
+                                <div style="margin-top: 5px;">৪। অর্থের পরিমাণ: =৫০০০/- <span style="margin-left: 50px;">(পাঁচ হাজার টাকা মাত্র)</span></div>
+                                <div style="font-size: 10pt; margin-top: -2px; padding-left: 105px;">
+                                    <span>(অংকে)</span>
+                                    <span style="margin-left: 100px;">(কথায়)</span>
+                                </div>
+                                <div style="text-align: justify; margin-top: 10px;">
+                                    ৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ:  ব্যালট পেপার, বিভিন্ন প্রকার ফরম, প্যাকেট, ম্যানুয়েল এবং অন্যান্য নির্বাচনী দ্রব্যাদি ভোটকেন্দ্রে প্রেরণ এবং নির্বাচন সমাপ্তির পর রিটার্নিং অফিসার/সহকারি রিটার্নিং অফিসারের নিকট ফেরৎ আনয়ন বাবদ (পন্যের ভাড়া ও পরিবহন ব্যয়) : ৫০০০/-
+                                </div>
+                            </div>
+
+                            <div style="position: absolute; bottom: 20px; left: 0; right: 0; overflow: hidden; font-size: 11pt;">
+                                <div style="float: left; width: 45%; margin-top: 40px;">
+                                    <p style="border-top: 1px solid black; display: inline-block; padding-top: 5px;">অর্থ প্রদানকারীর স্বাক্ষর ও তারিখ<br>(নাম ও পদবী সম্বলিত স্বাক্ষর)</p>
+                                </div>
+                                <div style="float: right; width: 50%; text-align: left;">
+                                    <p style="margin-left: 20px; margin-bottom: 5px;">অর্থ গ্রহণকারীর স্বাক্ষর ও তারিখ:</p>
+                                    <p>নাম:................................................................</p>
+                                    <p>পিতার নাম:.........................................................</p>
+                                    <p>পদবী: ..............................................................</p>
+                                    <p>পূর্ণ ঠিকানা:...........................................................</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="separator" style="margin: 5mm 0;"></div>
+
+                        <!-- Voucher 2: Labor Expenses -->
+                        <div class="voucher" style="height: 130mm; position: relative; box-sizing: border-box; padding-top: 10px;">
+                            <div style="text-align: right; margin-bottom: 2px; font-size: 10pt;">ভাউচার নং-.......................................</div>
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <h1 style="font-size: 15pt; text-decoration: underline; display: inline-block; margin: 0;">ত্রয়োদশ জাতীয় সংসদ নির্বাচন ২০২৬ উপলক্ষে অর্থ পরিশোধের জন্য ভাউচার</h1>
+                            </div>
+                            
+                            <div style="font-size: 13pt; line-height: 1.6;">
+                                <div>১। নির্বাচনি এলাকার নম্বর ও নাম: নির্বাচনী এলাকা - ২৬৬ ফেনী-২</div>
+                                <div style="font-weight: bold;">২। ভোট কেন্দ্রের নাম: ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}</div>
+                                <div>৩। নির্বাচন অনুষ্ঠানের তারিখ: ১২/০২/২০২৬ খ্রি.</div>
+                                <div>৪। অর্থের পরিমাণ: ১২০০/- ( এক হাজার দুই শত টাকা মাত্র)</div>
+                                <div style="text-align: justify; margin-top: 10px;">
+                                    ৫। যে কাজের জন্য অর্থ বরাদ্দ করা হয়েছে তার বিবরণ: জেলা সদর হতে থানা/উপজেলা নির্বাচন অফিসে ব্যালট পেপার/ইভিএম, বিভিন্ন প্রকার ফরম, প্যাকেট, ম্যানুয়েল এবং মনিহারী দ্রব্যাদি ও অন্যান্য জিনিসপত্র নেয়ার জন্য এবং নির্বাচন সমাপ্তির পর জেলা সদরে ফেরৎ আনয়ন খরচ বাবদ (কেন্দ্র প্রতি ১,২০০/- টাকা হারে, লোড-৬০০/-, আনলোড-৬০০/-)  {শ্রমিক (অনিয়মিত) মুজুরী} : ১২০০/-
+                                </div>
+                            </div>
+
+                            <div style="position: absolute; bottom: 20px; left: 0; right: 0; overflow: hidden; font-size: 11pt;">
+                                <div style="float: left; width: 45%; margin-top: 40px;">
+                                    <p style="border-top: 1px solid black; display: inline-block; padding-top: 5px;">অর্থ প্রদানকারীর স্বাক্ষর ও তারিখ<br>(নাম ও পদবী সম্বলিত স্বাক্ষর)</p>
+                                </div>
+                                <div style="float: right; width: 50%; text-align: left;">
+                                    <p style="margin-left: 20px; margin-bottom: 5px;">অর্থ গ্রহণকারীর স্বাক্ষর ও তারিখ:</p>
+                                    <p>নাম:................................................................</p>
+                                    <p>পিতার নাম:.........................................................</p>
+                                    <p>পদবী: ..............................................................</p>
+                                    <p>পূর্ণ ঠিকানা:...........................................................</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function convertNumberToBanglaWords(amount) {
+            const words = {
+                0: '', 1: 'এক', 2: 'দুই', 3: 'তিন', 4: 'চার', 5: 'পাঁচ', 6: 'ছয়', 7: 'সাত', 8: 'আট', 9: 'নয়', 10: 'দশ',
+                11: 'এগারো', 12: 'বারো', 13: 'তেরো', 14: 'চৌদ্দ', 15: 'পনেরো', 16: 'ষোল', 17: 'সতেরো', 18: 'আঠারো', 19: 'ঊনিশ', 20: 'বিশ',
+                21: 'একুশ', 22: 'বাইশ', 23: 'তেইশ', 24: 'চব্বিশ', 25: 'পঁচিশ', 26: 'ছাব্বিশ', 27: 'াতাশ', 28: 'আঠাশ', 29: 'ঊনত্রিশ', 30: 'ত্রিশ',
+                31: 'একত্রিশ', 32: 'বত্রিশ', 33: 'তেত্রিশ', 34: 'চৌত্রিশ', 35: 'পয়ত্রিশ', 36: 'ছত্রিশ', 37: 'সাঁইত্রিশ', 38: 'আটত্রিশ', 39: 'ঊনচল্লিশ', 40: 'চল্লিশ',
+                41: 'একচল্লিশ', 42: 'বিয়াল্লিশ', 43: 'তেতাল্লিশ', 44: 'চুয়াল্লিশ', 45: 'পয়তাল্লিশ', 46: 'ছেচল্লিশ', 47: 'সাতচল্লিশ', 48: 'আটচল্লিশ', 49: 'ঊনপঞ্চাশ', 50: 'পঞ্চাশ',
+                51: 'একান্ন', 52: 'বায়ান্ন', 53: 'তিপ্পান্ন', 54: 'চুয়ান্ন', 55: 'পঞ্চান্ন', 56: 'ছাপ্পান্ন', 57: 'সাতান্ন', 58: 'আটান্ন', 59: 'ঊনষাট', 60: 'ষাট',
+                61: 'একষট্টি', 62: 'বাষট্টি', 63: 'তেষট্টি', 64: 'চৌষট্টি', 65: 'পয়ষট্টি', 66: 'ছেষট্টি', 67: 'সাতষট্টি', 68: 'আটষট্টি', 69: 'ঊনসত্তর', 70: 'সত্তর',
+                71: 'একাত্তর', 72: 'বাহাত্তর', 73: 'তিয়াত্তর', 74: 'চুয়াত্তর', 75: 'পঁচাত্তর', 76: 'ছিয়াত্তর', 77: 'সাতাত্তর', 78: 'আটাত্তর', 79: 'ঊনআশি', 80: 'আশি',
+                81: 'একাশি', 82: 'বিরাশি', 83: 'তিরাশি', 84: 'চুরাশি', 85: 'পঁচাশি', 86: 'ছিয়াশি', 87: 'সাতাশি', 88: 'আটাশি', 89: 'ঊননব্বই', 90: 'নব্বই',
+                91: 'একানব্বই', 92: 'বিরানব্বই', 93: 'তিরানব্বই', 94: 'চুরানব্বই', 95: 'পঁচানব্বই', 96: 'ছিয়ানব্বই', 97: 'সাতানব্বই', 98: 'আটানব্বই', 99: 'নিরানব্বই'
+            };
+
+            const convert = (n) => {
+                n = Number(n);
+                if (n === 0) return '';
+                if (n < 100) return words[n];
+                if (n < 1000) {
+                    const hundreds = Math.floor(n / 100);
+                    const remainder = n % 100;
+                    return (hundreds ? words[hundreds] + ' শত ' : '') + (remainder ? convert(remainder) : '');
+                }
+                if (n < 100000) {
+                    const thousands = Math.floor(n / 1000);
+                    const remainder = n % 1000;
+                    return (thousands ? convert(thousands) + ' হাজার ' : '') + (remainder ? convert(remainder) : '');
+                }
+                if (n < 10000000) {
+                    const lakhs = Math.floor(n / 100000);
+                    const remainder = n % 100000;
+                    return (lakhs ? convert(lakhs) + ' লক্ষ ' : '') + (remainder ? convert(remainder) : '');
+                }
+                const crores = Math.floor(n / 10000000);
+                const remainder = n % 10000000;
+                return (crores ? convert(crores) + ' কোটি ' : '') + (remainder ? convert(remainder) : '');
+            };
+            return convert(amount).trim();
+        }
+    </script>
+</body>
+
+</html>
