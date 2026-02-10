@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নির্বাচনি উপকরণ প্রাপ্তিস্বীকার</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../authentication.js"></script>
+    <style>
+        @font-face {
+            font-family: 'NikoshBAN';
+            src: local('Nikosh'), local('NikoshBAN');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'NikoshBAN', 'SolaimanLipi', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: red;
+        }
+
+        @page {
+            size: A4;
+            margin: 0.3in;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: none;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page {
+                height: 270mm;
+                /* Adjusted A4 height to prevent blank pages */
+                page-break-after: always;
+                position: relative;
+                padding-top: 5px;
+                overflow: hidden;
+            }
+
+            .page:last-child {
+                page-break-after: auto;
+            }
+        }
+
+        .item-container {
+            height: 48%;
+            position: relative;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 13pt;
+            font-weight: normal;
+            margin: 0;
+        }
+
+        .header h1 {
+            font-size: 15pt;
+            font-weight: bold;
+            margin: 3px 0;
+        }
+
+        .header h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-top: 5px;
+        }
+
+        .vote-centre-row {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 12pt;
+            margin-bottom: 15px;
+        }
+
+        .vote-centre-label {
+            font-weight: bold;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .vote-centre-box {
+            border: 1px solid black;
+            padding: 4px 8px;
+            flex-grow: 1;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .booth-label {
+            font-weight: bold;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .booth-box {
+            border: 1px solid black;
+            width: 80px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14pt;
+        }
+
+        .items-list {
+            margin-top: 15px;
+            font-size: 12pt;
+            line-height: 1.4;
+            margin-left: 5px;
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 12pt;
+            margin-left: 5px;
+        }
+
+        .signature-area {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 12pt;
+        }
+
+        .signature-line {
+            display: inline-block;
+            border-top: 1px solid black;
+            padding-top: 5px;
+            min-width: 200px;
+            text-align: center;
+            margin-right: 20px;
+        }
+
+        .separator {
+            border-top: 2px dashed black;
+            margin: 10px 0;
+            width: 100%;
+            position: relative;
+            height: 2px;
+        }
+
+        .separator::before {
+            content: '✂';
+            position: absolute;
+            left: 0;
+            top: -12px;
+            font-size: 14pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+        <button class="btn btn-primary" onclick="window.history.back()">⬅ ফিরে যান</button>
+    </div>
+
+    <div class="container">
+        <div id="masterRollContent">
+            <div class="loading">
+                <h2>⏳ ডাটা লোড হচ্ছে...</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load all data on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            try {
+                const data = await loadMasterRollData();
+                renderMasterRoll(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('masterRollContent').innerHTML = `
+                    <div class="error">
+                        <h2>❌ ত্রুটি দেখা দিয়েছে</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
+                    </div>
+                `;
+            }
+        });
+
+        async function loadMasterRollData() {
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+
+            // Fetch all assignments with batching
+            let allAssignments = [];
+            let lastId = 0;
+            const batchSize = 1000;
+
+            while (true) {
+                const { data, error } = await window.supabaseClient
+                    .from('centre_assignments')
+                    .select('*')
+                    .gt('assignment_id', lastId)
+                    .order('assignment_id', { ascending: true })
+                    .limit(batchSize);
+
+                if (error) throw error;
+                if (!data || data.length === 0) break;
+
+                allAssignments.push(...data);
+                lastId = data[data.length - 1].assignment_id;
+                if (data.length < batchSize) break;
+            }
+
+            const assignments = allAssignments;
+
+            // Fetch centre details
+            const { data: centres, error: centreError } = await window.supabaseClient
+                .from('vote_centre')
+                .select('*');
+
+            if (centreError) throw centreError;
+
+            // Initialize groups from all centres
+            const groups = new Map();
+            centres.forEach(c => {
+                const code = String(c.vote_centre_code);
+                groups.set(code, {
+                    centre: c,
+                    officers: []
+                });
+            });
+
+            if (assignments) {
+                assignments.forEach(a => {
+                    const code = String(a.vote_centre_code || '');
+                    if (!code || !groups.has(code)) return;
+
+                    const bundle = groups.get(code);
+                    bundle.officers.push(a);
+                });
+            }
+
+            const groupsArray = Array.from(groups.values());
+            return groupsArray.sort((a, b) => (Number(a.centre.vote_centre_code) || 0) - (Number(b.centre.vote_centre_code) || 0));
+        }
+
+        function toBengaliNumber(n) {
+            if (n === null || n === undefined) return '';
+            const bengaliDigits = '০১২৩৪৫৬৭৮৯';
+            return String(n).replace(/\d/g, d => bengaliDigits[Number(d)]);
+        }
+
+        function renderItem(bundle) {
+            if (!bundle) return '';
+            const { centre, officers } = bundle;
+
+            // Calculate booth count based on Assistant Presiding Officers
+            const boothCount = officers.filter(o => o.officer_type === 'ass_presiding').length;
+
+            return `
+                <div class="item-container">
+                    <div class="header">
+                        <h2>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h2>
+                        <h2>জেলা প্রশাসকের কার্যালয়</h2>
+                        <h2>ও</h2>
+                        <h2>রিটার্নিং অফিসারের কার্যালয়, ফেনী</h2>
+                        <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন - ২০২৬</h1>
+                        <h3>নির্বাচনি উপকরণ প্রাপ্তিস্বীকার</h3>
+                    </div>
+
+                    <div class="vote-centre-row">
+                        <span class="vote-centre-label">ভোট কেন্দ্রের নাম:</span>
+                        <div class="vote-centre-box">
+                            ${toBengaliNumber(centre.vote_centre_code)} - ${centre.vote_centre_name || ''}
+                        </div>
+                        <span class="booth-label">কক্ষ/বুথ</span>
+                        <div class="booth-box">
+                            ${toBengaliNumber(boothCount)}
+                        </div>
+                    </div>
+
+                    <div class="items-list">
+                        <div>১. ঢাকনাসহ ব্যালট বাক্স – বুথ সংখ্যা+২ টি (${toBengaliNumber(boothCount + 2)} টি)</div>
+                        <div>২. গনভোট বড় গানিব্যাগ- ০১ টি</div>
+                        <div>৩. জাতীয় সংসদ নির্বাচন বড় গানিব্যাগ-০১ টি</div>
+                        <div>৪. ছোট গানী ব্যাগ- ০১ টি</div>
+                        <div>৫. ব্রাশ সিল- ০১</div>
+                    </div>
+
+                    <div class="footer-text">
+                        বর্ণিত নির্বাচনি উপকরণ বুঝিয়া পাইলাম।
+                    </div>
+
+                    <div class="signature-area">
+                        <div class="signature-line">
+                            গ্রহণকারীর স্বাক্ষর ও সীল
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMasterRoll(allData) {
+            const container = document.getElementById('masterRollContent');
+            let html = '';
+
+            for (let i = 0; i < allData.length; i += 2) {
+                const item1 = allData[i];
+                const item2 = allData[i + 1]; // Can be undefined if odd number
+
+                html += `<div class="page">`;
+                html += renderItem(item1);
+
+                if (item2) {
+                    html += `<div class="separator"></div>`;
+                    html += renderItem(item2);
+                }
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>
