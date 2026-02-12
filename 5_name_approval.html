@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="bn">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Name Approval - centre_assignments Sync</title>
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 920px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 26px 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .title p { color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600; }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 13px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    }
+    .btn:active { transform: translateY(0); }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.primary { background: #111827; color: #fff; }
+    .btn.danger { background: rgba(239, 68, 68, 0.92); color: #fff; }
+    .btn.secondary { background: #fff; color: #111827; border: 2px solid #e5e7eb; box-shadow: none; }
+    .btn.secondary:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .main {
+      padding: 28px 34px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+    label { font-size: 13px; font-weight: 800; color: #0f172a; display: block; margin-bottom: 6px; }
+    input[type="password"] {
+      width: 260px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      font-weight: 700;
+      font-size: 14px;
+      outline: none;
+    }
+    input[type="password"]:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.16); }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .status {
+      display: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      font-size: 13px;
+      border: 1px solid;
+    }
+    .status.info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .status.success { background: #ecfdf5; border-color: #bbf7d0; color: #047857; }
+    .status.error { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+
+    .log {
+      margin-top: 10px;
+      width: 100%;
+      height: 220px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: #0f172a;
+      background: #0b1220;
+      color: #e5e7eb;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .footer {
+      padding: 14px 18px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #e2e8f0;
+      background: #fff;
+    }
+
+    /* Table Styles */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      padding: 0; /* Override card padding for edge-to-edge table */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #475569;
+      position: sticky;
+      top: 0;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #f8fafc; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge.presiding { background: #dbeafe; color: #1e40af; }
+    .badge.ass_presiding { background: #f3e8ff; color: #6b21a8; }
+    .badge.polling { background: #ffGs; background: #fff7ed; color: #9a3412; }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      padding: 24px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal h3 { margin-bottom: 4px; font-size: 18px; font-weight: 800; color: #1e293b; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">
+        <h1>✅ Name Approval (centre_assignments Sync)</h1>
+        <p>presiding / assistant presiding / polling লিস্ট থেকে অফিসারের নাম আপডেট</p>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="user">👤 <span id="username">Loading...</span></div>
+        <button class="btn secondary" onclick="location.href='dashboard.html'">⬅ Dashboard</button>
+        <button class="btn danger" data-logout>Logout</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <h2 style="font-size:18px; font-weight:800; color:#1e293b;">Data Discrepancies</h2>
+        <button id="btnLoad" class="btn primary" onclick="app.loadData()">🔄 Load Data</button>
+      </div>
+      
+      <div id="status" class="status info">Click "Load Data" to check for name mismatches.</div>
+
+      <div class="card table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th width="15%">Role</th>
+              <th width="35%">Source Name (List)</th>
+              <th width="35%">Currently Assigned (DB)</th>
+              <th width="15%" style="text-align:right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="4" style="text-align:center; color:#94a3b8; padding: 40px;">No data loaded</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Modal -->
+    <div id="passwordModal" class="modal-overlay">
+      <div class="modal">
+        <div>
+          <h3>Confirm Approval</h3>
+          <p id="modalText" style="color: #64748b; font-size: 14px; line-height: 1.5;">Enter password to update this name.</p>
+        </div>
+        <input id="modalPassword" type="password" placeholder="Password" style="width: 100%; border:2px solid #e2e8f0; padding:10px; border-radius:8px; outline:none;" autocomplete="off" />
+        <div class="modal-actions">
+           <button class="btn secondary" onclick="app.closeModal()">Cancel</button>
+           <button class="btn primary" onclick="app.confirmApproval()">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 Uno Feni Sadar Election Management System</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="authentication.js"></script>
+
+  <script>
+    const APPROVAL_PASSWORD = '11223';
+    const supabaseClient = window.supabaseClient;
+
+    // Helper: Chunk array
+    function chunkArray(arr, size) {
+      const out = [];
+      for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+      return out;
+    }
+
+    // Database access helpers
+    async function fetchAll(table, idCol, selectCols) {
+      const all = [];
+      let lastId = 0;
+      let safety = 0;
+      while (true) {
+        safety++;
+        if (safety > 200) throw new Error('Pagination limit reached');
+        const { data, error } = await supabaseClient
+          .from(table).select(selectCols).gt(idCol, lastId)
+          .order(idCol, { ascending: true }).limit(1000);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        lastId = data[data.length - 1][idCol];
+        if (data.length < 1000) break;
+      }
+      return all;
+    }
+
+    const OFFICER_SOURCES = {
+      presiding: { table: 'presiding_list', idCol: 'presiding_iid', nameCol: 'presiding_name' },
+      ass_presiding: { table: 'ass_presiding_list', idCol: 'ass_presiding_iid', nameCol: 'ass_presiding_name' },
+      polling: { table: 'polling_list', idCol: 'polling_iid', nameCol: 'polling_name' },
+    };
+
+    // Normalize names for reliable comparison (handles unicode, invisible chars, spacing and punctuation)
+    function normalizeName(input) {
+      if (!input && input !== '') return '';
+      try {
+        return String(input)
+          .normalize('NFKC')                        // canonical compatibility
+          .replace(/\u200B|\u200C|\u200D|\uFEFF/g, '') // remove zero-width / BOM
+          .replace(/[\u00A0\s]+/g, ' ')           // collapse spaces (including NBSP)
+          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()"'‘’“”]+/g, '') // strip common punctuation
+          .trim()
+          .toLowerCase();                           // case-insensitive compare (safe for latin + others)
+      } catch (err) {
+        return String(input).trim().toLowerCase();
+      }
+    }
+
+    async function fetchNameMap(officerType, ids) {
+      const cfg = OFFICER_SOURCES[officerType];
+      if (!cfg) return new Map();
+      const uniqueIds = [...new Set(ids)].filter(v => v != null);
+      const nameMap = new Map();
+      if (uniqueIds.length === 0) return nameMap;
+
+      const chunks = chunkArray(uniqueIds, 500);
+      for (const chunk of chunks) {
+        const { data, error } = await supabaseClient
+          .from(cfg.table).select(`${cfg.idCol},${cfg.nameCol}`)
+          .in(cfg.idCol, chunk);
+        if (error) throw error;
+        (data || []).forEach(r => nameMap.set(r[cfg.idCol], (r[cfg.nameCol] || '').trim()));
+      }
+      return nameMap;
+    }
+
+    // Main App Controller
+    window.app = {
+      state: {
+        discrepancies: [],
+        targetIdx: null
+      },
+
+      init() {
+        this.loadUser();
+        // Enter key in password modal
+        document.getElementById('modalPassword').addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') this.confirmApproval();
+        });
+      },
+
+      async loadUser() {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          document.getElementById('username').textContent = session?.user?.email || 'Unknown User';
+        } catch { /* ignore */ }
+      },
+
+      setStatus(msg, type = 'info') {
+        const el = document.getElementById('status');
+        el.className = `status ${type}`;
+        el.textContent = msg;
+        el.style.display = 'block';
+      },
+
+      async loadData() {
+        const btn = document.getElementById('btnLoad');
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+        this.setStatus('⏳ Loading assignment data...', 'info');
+        document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px;">Loading data...</td></tr>`;
+
+        try {
+          // 1. Fetch assignments
+          const assignments = await fetchAll('centre_assignments', 'assignment_id', 'assignment_id, officer_type, officer_iid, officer_name');
+          
+          if (assignments.length === 0) {
+            this.setStatus('ℹ️ No assignments found in database.', 'info');
+            this.renderTable([]);
+            return;
+          }
+
+          // 2. Fetch Source Names
+          const byType = { presiding: [], ass_presiding: [], polling: [] };
+          assignments.forEach(a => { if(byType[a.officer_type]) byType[a.officer_type].push(a); });
+
+          this.setStatus('⏳ Fetching officer names...', 'info');
+          const [pMap, apMap, poMap] = await Promise.all([
+            fetchNameMap('presiding', byType.presiding.map(a => a.officer_iid)),
+            fetchNameMap('ass_presiding', byType.ass_presiding.map(a => a.officer_iid)),
+            fetchNameMap('polling', byType.polling.map(a => a.officer_iid)),
+          ]);
+
+          // 3. Compare
+          const discrepancies = [];
+          for (const a of assignments) {
+            const currentName = (a.officer_name || '').trim();
+            let sourceName = '';
+            
+            if (a.officer_type === 'presiding') sourceName = (pMap.get(a.officer_iid) || '').trim();
+            else if (a.officer_type === 'ass_presiding') sourceName = (apMap.get(a.officer_iid) || '').trim();
+            else if (a.officer_type === 'polling') sourceName = (poMap.get(a.officer_iid) || '').trim();
+
+            if (sourceName) {
+              const normCurrent = normalizeName(currentName);
+              const normSource = normalizeName(sourceName);
+
+              // If normalized names differ, treat as discrepancy
+              if (normSource !== normCurrent) {
+                discrepancies.push({
+                  assignment_id: a.assignment_id,
+                  officer_type: a.officer_type,
+                  current_name: currentName,
+                  source_name: sourceName
+                });
+              } else if (sourceName !== currentName) {
+                // raw strings differ but normalize-equal — log for visibility and do NOT mark as discrepancy
+                console.debug(`Normalized-equal (ignored): assignment_id=${a.assignment_id}`, { currentName, sourceName });
+              }
+            }
+          }
+
+          this.state.discrepancies = discrepancies;
+          this.renderTable(discrepancies);
+          
+          if (discrepancies.length === 0) {
+            this.setStatus('✅ All names are up to date! No actions needed.', 'success');
+          } else {
+            this.setStatus(`⚠️ Found ${discrepancies.length} name mismatches. Please approve updates below.`, 'info');
+          }
+
+        } catch (err) {
+          console.error(err);
+          this.setStatus('❌ Error loading data: ' + err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '🔄 Load Data';
+        }
+      },
+
+      renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#94a3b8;">No discrepancies found. All good!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.map((item, idx) => `
+          <tr id="row-${idx}">
+            <td><span class="badge ${item.officer_type}">${item.officer_type.replace('_', ' ')}</span></td>
+            <td><b>${item.source_name}</b></td>
+            <td style="color:#64748b;">${item.current_name || '<em>(Empty)</em>'}</td>
+            <td style="text-align:right;">
+              <button class="btn primary" style="padding:6px 12px; font-size:12px;" onclick="app.openModal(${idx})">Approve</button>
+            </td>
+          </tr>
+        `).join('');
+      },
+
+      openModal(idx) {
+        this.state.targetIdx = idx;
+        const item = this.state.discrepancies[idx];
+        document.getElementById('modalText').innerHTML = `
+          Update <b>${item.officer_type}</b> name from <br/>
+          <s style="color:#ef4444">${item.current_name || '(Empty)'}</s> &rarr; <b style="color:#22c55e">${item.source_name}</b>?
+        `;
+        document.getElementById('modalPassword').value = '';
+        document.getElementById('passwordModal').classList.add('active');
+        document.getElementById('modalPassword').focus();
+      },
+
+      closeModal() {
+        document.getElementById('passwordModal').classList.remove('active');
+        this.state.targetIdx = null;
+      },
+
+      async confirmApproval() {
+        const pwd = document.getElementById('modalPassword').value;
+        if (pwd !== APPROVAL_PASSWORD) {
+          alert('❌ Incorrect Password!');
+          return;
+        }
+
+        const idx = this.state.targetIdx;
+        const item = this.state.discrepancies[idx];
+
+        // 1. Update Database
+        try {
+          const { error } = await supabaseClient
+            .from('centre_assignments')
+            .update({ officer_name: item.source_name })
+            .eq('assignment_id', item.assignment_id);
+
+          if (error) throw error;
+
+          // 2. UI Update
+          const row = document.getElementById(`row-${idx}`);
+          if (row) {
+            row.style.background = '#ecfdf5';
+            row.innerHTML = `<td colspan="4" style="text-align:center; color:#059669; font-weight:bold;">✅ Approved & Updated</td>`;
+            setTimeout(() => row.remove(), 1500); // Remove after delay
+          }
+
+          this.closeModal();
+          
+          // Check if any left
+          const remaining = document.querySelectorAll('#tableBody tr').length - 1; // -1 because current one is fading out
+          if (remaining <= 0) {
+             this.setStatus('✅ All items processed!', 'success');
+          }
+
+        } catch (err) {
+          alert('Database Error: ' + err.message);
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+
+  <!--
+  Schema notes (previous content of this file) were moved here to keep the page functional.
+  - vote_centre
+  - presiding_list
+  - ass_presiding_list
+  - polling_list
+  - centre_assignments
+  -->
+</body>
+
+</html>
