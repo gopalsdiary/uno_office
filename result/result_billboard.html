@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,51 +26,60 @@
         }
 
         .header {
-            background: #fff;
-            padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
             text-align: center;
+            border-bottom: 4px solid #3b82f6;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 1.8em;
             color: #0b1220;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .header .subtitle {
-            font-size: 1.2em;
+            font-size: 0.9em;
             color: #64748b;
             margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
         .header .election-info {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
 
         .info-item {
-            background: #f0f9ff;
-            padding: 10px 25px;
+            background: #f8fafc;
+            padding: 8px 20px;
             border-radius: 8px;
-            border: 2px solid #3b82f6;
+            border: 1px solid #e2e8f0;
+            min-width: 150px;
+            transition: all 0.2s;
         }
 
         .info-item label {
             display: block;
-            font-size: 0.85em;
+            font-size: 0.75em;
             color: #64748b;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+            font-weight: 600;
         }
 
         .info-item .value {
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: 700;
             color: #0b1220;
         }
@@ -116,31 +126,35 @@
         }
 
         .auto-refresh {
+            position: absolute;
+            top: 15px;
+            right: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #f0f9ff;
-            border-radius: 8px;
-            border: 2px solid #3b82f6;
+            gap: 8px;
+            padding: 5px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            font-size: 0.8em;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
         }
 
         .auto-refresh label {
             font-weight: 600;
-            color: #0b1220;
+            color: #475569;
         }
 
         .auto-refresh input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
         }
 
         .auto-refresh span {
             color: #3b82f6;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .loading {
@@ -152,176 +166,204 @@
 
         .candidates-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
             margin-bottom: 30px;
         }
 
         .candidate-card {
-            background: #fff;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .candidate-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        }
-
-        .candidate-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
         .rank-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            width: 35px;
+            height: 35px;
+            border-bottom-right-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 1.2em;
+            font-weight: 800;
+            font-size: 0.85em;
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 2;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
         }
 
-        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
-        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #000; }
-        .rank-3 { background: linear-gradient(135deg, #cd7f32, #e8a87c); color: #fff; }
-        .rank-other { background: linear-gradient(135deg, #64748b, #94a3b8); }
+        .rank-1 {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #b45309, #d97706);
+        }
+
+        .rank-other {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+        }
 
         .candidate-header {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .candidate-symbol {
-            width: 100px;
-            height: 100px;
-            border-radius: 12px;
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
             object-fit: contain;
-            border: 3px solid #e2e8f0;
-            background: #f8fafc;
-            padding: 5px;
+            border: 2px solid #f1f5f9;
+            background: #fff;
+            padding: 4px;
+            flex-shrink: 0;
         }
 
         .candidate-info {
             flex: 1;
+            min-width: 0;
         }
 
         .candidate-info h3 {
-            font-size: 1.4em;
-            color: #0b1220;
-            margin-bottom: 5px;
+            font-size: 1.05em;
+            color: #1e293b;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
         }
 
         .candidate-info .party {
             color: #64748b;
-            font-size: 0.95em;
-            margin-bottom: 5px;
+            font-size: 0.75em;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .candidate-info .symbol-name {
             color: #3b82f6;
-            font-size: 0.9em;
+            font-size: 0.7em;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
         }
 
         .vote-display {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            border: 3px solid #3b82f6;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .vote-display label {
             display: block;
-            font-size: 0.9em;
+            font-size: 0.65em;
             color: #64748b;
-            margin-bottom: 8px;
+            margin-bottom: 2px;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.05em;
         }
 
         .vote-display .vote-count {
-            font-size: 3em;
-            font-weight: 700;
-            color: #0b1220;
+            font-size: 1.6em;
+            font-weight: 800;
+            color: #0f172a;
             line-height: 1;
         }
 
         .vote-display .bengali-count {
-            font-size: 1.2em;
+            font-size: 0.85em;
             color: #3b82f6;
-            margin-top: 5px;
+            font-weight: 600;
         }
 
         .summary-section {
-            background: #fff;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .summary-section h2 {
-            font-size: 1.8em;
-            color: #0b1220;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #3b82f6;
-            padding-bottom: 10px;
+            font-size: 1.4em;
+            color: #1e293b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
         }
 
         .summary-card {
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #cbd5e1;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
             text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: scale(1.02);
         }
 
         .summary-card.highlight {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
             border-color: #fbbf24;
         }
 
         .summary-card label {
             display: block;
-            font-size: 0.85em;
+            font-size: 0.75em;
             color: #64748b;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             font-weight: 600;
         }
 
         .summary-card .count {
-            font-size: 2.2em;
-            font-weight: 700;
-            color: #0b1220;
+            font-size: 1.6em;
+            font-weight: 800;
+            color: #0f172a;
         }
 
         .no-data {
@@ -337,7 +379,9 @@
                 background: #fff;
                 padding: 0;
             }
-            .controls, .btn {
+
+            .controls,
+            .btn {
                 display: none !important;
             }
         }
@@ -358,9 +402,11 @@
             .header h1 {
                 font-size: 1.8em;
             }
+
             .candidates-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
             .header .election-info {
                 gap: 15px;
             }
@@ -373,6 +419,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -421,11 +468,13 @@
                         <label>টেন্ডার্ড ভোট</label>
                         <div class="count" id="totalTenderedVotes">0</div>
                     </div>
-                    <div class="summary-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #059669;">
+                    <div class="summary-card"
+                        style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #059669;">
                         <label>গণভোট - হ্যাঁ ✓</label>
                         <div class="count" style="color: #059669;" id="totalYesVotes">0</div>
                     </div>
-                    <div class="summary-card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: #dc2626;">
+                    <div class="summary-card"
+                        style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: #dc2626;">
                         <label>গণভোট - না ✗</label>
                         <div class="count" style="color: #dc2626;" id="totalNoVotes">0</div>
                     </div>
@@ -494,7 +543,7 @@
             updateLastUpdate();
         });
 
-        window.loadResults = async function() {
+        window.loadResults = async function () {
             if (!supabase) {
                 document.getElementById('loadingState').innerHTML = `
                     <div style="color: #ef4444; background: white; padding: 20px; border-radius: 10px;">
@@ -517,10 +566,10 @@
                     .from('candidate_db')
                     .select('*')
                     .order('candidate_identity');
-                
+
                 const { data: candidates, error: candidateError } = await Promise.race([
                     candidatesPromise,
-                    new Promise((_, reject) => 
+                    new Promise((_, reject) =>
                         setTimeout(() => reject(new Error('Request timeout - please check your internet connection')), 15000)
                     )
                 ]);
@@ -534,10 +583,10 @@
                 const resultsPromise = supabase
                     .from('election_result')
                     .select('*');
-                
+
                 const { data: results, error: resultsError } = await Promise.race([
                     resultsPromise,
-                    new Promise((_, reject) => 
+                    new Promise((_, reject) =>
                         setTimeout(() => reject(new Error('Request timeout - please check your internet connection')), 15000)
                     )
                 ]);
@@ -592,10 +641,10 @@
 
             } catch (error) {
                 console.error('❌ Error loading results:', error);
-                
+
                 let errorMessage = error.message;
                 let errorHelp = '';
-                
+
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                     errorHelp = `
                         <p style="margin-top: 10px;"><strong>Possible solutions:</strong></p>
@@ -610,7 +659,7 @@
                 } else if (error.message.includes('timeout')) {
                     errorHelp = '<p style="margin-top: 10px;">The request took too long. Please try again.</p>';
                 }
-                
+
                 document.getElementById('loadingState').innerHTML = `
                     <div style="color: #ef4444; background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: 20px auto;">
                         <h3>❌ Error Loading Data</h3>
@@ -653,7 +702,7 @@
                 const card = document.createElement('div');
                 card.className = 'candidate-card';
                 card.innerHTML = `
-                    <div class="rank-badge ${rankClass}">#${rank}</div>
+                    <div class="rank-badge ${rankClass}">#${toBengaliNumber(rank)}</div>
                     <div class="candidate-header">
                         <img src="${candidate.candidate_sign_url || 'https://via.placeholder.com/100?text=No+Image'}" 
                              alt="${candidate.candidate_sign_name || 'Symbol'}" 
@@ -684,7 +733,7 @@
             document.getElementById('lastUpdate').textContent = timeStr;
         }
 
-        window.toggleAutoRefresh = function() {
+        window.toggleAutoRefresh = function () {
             const checkbox = document.getElementById('autoRefresh');
             if (checkbox.checked) {
                 startAutoRefresh();
@@ -696,11 +745,11 @@
         function startAutoRefresh() {
             refreshCountdown = 30;
             updateRefreshTimer();
-            
+
             autoRefreshInterval = setInterval(() => {
                 refreshCountdown--;
                 updateRefreshTimer();
-                
+
                 if (refreshCountdown <= 0) {
                     loadResults();
                     refreshCountdown = 30;
@@ -726,5 +775,6 @@
         }
     </script>
 </body>
+
 </html>
 ) TABLESPACE pg_default;
