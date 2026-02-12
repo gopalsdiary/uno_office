@@ -468,6 +468,11 @@
                         <label>টেন্ডার্ড ভোট</label>
                         <div class="count" id="totalTenderedVotes">0</div>
                     </div>
+                    <div class="summary-card highlight"
+                        style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border-color: #0ea5e9;">
+                        <label>ফলাফল প্রাপ্ত কেন্দ্র</label>
+                        <div class="count" style="color: #0369a1;" id="countedCentres">0</div>
+                    </div>
                     <div class="summary-card"
                         style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #059669;">
                         <label>গণভোট - হ্যাঁ ✓</label>
@@ -601,7 +606,9 @@
                 let totalTendered = 0;
                 let totalYes = 0;
                 let totalNo = 0;
-                let totalCentres = results.length;
+
+                // Count centers where results have been entered (valid_counted_vote > 0)
+                let receivedCentresCount = results.filter(r => (parseFloat(r.valid_counted_vote) || 0) > 0).length;
 
                 candidates.forEach((candidate, index) => {
                     const candidateNum = index + 1;
@@ -631,7 +638,7 @@
                 candidateTotals.sort((a, b) => b.totalVotes - a.totalVotes);
 
                 // Display results
-                displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres, totalYes, totalNo);
+                displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, receivedCentresCount, totalYes, totalNo);
 
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('summarySection').style.display = 'block';
@@ -675,13 +682,14 @@
             }
         };
 
-        function displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres, totalYes, totalNo) {
+        function displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, receivedCentresCount, totalYes, totalNo) {
             // Update summary
-            document.getElementById('totalCentres').textContent = toBengaliNumber(totalCentres);
+            document.getElementById('totalCentres').textContent = toBengaliNumber(receivedCentresCount);
             document.getElementById('totalValidVotes').textContent = totalValid.toLocaleString();
             document.getElementById('totalInvalidVotes').textContent = totalInvalid.toLocaleString();
             document.getElementById('grandTotalVotes').textContent = (totalValid + totalInvalid).toLocaleString();
             document.getElementById('totalTenderedVotes').textContent = totalTendered.toLocaleString();
+            document.getElementById('countedCentres').textContent = toBengaliNumber(receivedCentresCount);
             document.getElementById('totalYesVotes').textContent = totalYes.toLocaleString();
             document.getElementById('totalNoVotes').textContent = totalNo.toLocaleString();
 

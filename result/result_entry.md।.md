@@ -25,7 +25,7 @@ create table public.election_result (
   candidate_9 numeric null,
   candidate_10 numeric null,
   candidate_11 numeric null,
-  valid_counted_vote numeric null,
+ " valid_counted_vote" numeric null,
   invalid_counted_vote numeric null,
   tenderd_counted_vote text null,
   s_comment numeric null,
