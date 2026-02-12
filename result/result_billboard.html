@@ -381,7 +381,7 @@
             <div class="election-info">
                 <div class="info-item">
                     <label>নির্বাচনী এলাকা</label>
-                    <div class="value">২৬৬, ফেনী-০২</div>
+                    <div class="value">২৬৬ ফেনী-০২</div>
                 </div>
                 <div class="info-item">
                     <label>মোট ভোট কেন্দ্র</label>
@@ -420,6 +420,14 @@
                     <div class="summary-card">
                         <label>টেন্ডার্ড ভোট</label>
                         <div class="count" id="totalTenderedVotes">0</div>
+                    </div>
+                    <div class="summary-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-color: #059669;">
+                        <label>গণভোট - হ্যাঁ ✓</label>
+                        <div class="count" style="color: #059669;" id="totalYesVotes">0</div>
+                    </div>
+                    <div class="summary-card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: #dc2626;">
+                        <label>গণভোট - না ✗</label>
+                        <div class="count" style="color: #dc2626;" id="totalNoVotes">0</div>
                     </div>
                 </div>
             </div>
@@ -542,6 +550,8 @@
                 let totalValid = 0;
                 let totalInvalid = 0;
                 let totalTendered = 0;
+                let totalYes = 0;
+                let totalNo = 0;
                 let totalCentres = results.length;
 
                 candidates.forEach((candidate, index) => {
@@ -564,13 +574,15 @@
                     totalValid += parseFloat(result.valid_counted_vote || 0);
                     totalInvalid += parseFloat(result.invalid_counted_vote || 0);
                     totalTendered += parseFloat(result.tenderd_counted_vote || 0);
+                    totalYes += parseFloat(result.yes_vote || 0);
+                    totalNo += parseFloat(result.no_vote || 0);
                 });
 
                 // Sort by votes (descending)
                 candidateTotals.sort((a, b) => b.totalVotes - a.totalVotes);
 
                 // Display results
-                displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres);
+                displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres, totalYes, totalNo);
 
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('summarySection').style.display = 'block';
@@ -614,13 +626,15 @@
             }
         };
 
-        function displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres) {
+        function displayResults(candidateTotals, totalValid, totalInvalid, totalTendered, totalCentres, totalYes, totalNo) {
             // Update summary
             document.getElementById('totalCentres').textContent = toBengaliNumber(totalCentres);
             document.getElementById('totalValidVotes').textContent = totalValid.toLocaleString();
             document.getElementById('totalInvalidVotes').textContent = totalInvalid.toLocaleString();
             document.getElementById('grandTotalVotes').textContent = (totalValid + totalInvalid).toLocaleString();
             document.getElementById('totalTenderedVotes').textContent = totalTendered.toLocaleString();
+            document.getElementById('totalYesVotes').textContent = totalYes.toLocaleString();
+            document.getElementById('totalNoVotes').textContent = totalNo.toLocaleString();
 
             // Display candidates
             const grid = document.getElementById('candidatesGrid');
