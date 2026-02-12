@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
             margin: 0 auto;
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+            box-shadow: 0 6px 20px rgba(2, 6, 23, 0.08);
             overflow: hidden;
             border: 1px solid #eef2f7;
         }
@@ -140,7 +141,7 @@
 
         .candidate-item:hover {
             border-color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.08);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
         }
 
         .candidate-symbol {
@@ -267,7 +268,7 @@
 
         .btn-primary:hover {
             background: #2563eb;
-            box-shadow: 0 8px 20px rgba(59,130,246,0.12);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
         }
 
         .btn-secondary {
@@ -312,6 +313,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -381,7 +383,8 @@
                 </div>
 
                 <!-- Referendum Votes -->
-                <div class="form-section" style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 2px solid #fbbf24;">
+                <div class="form-section"
+                    style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 2px solid #fbbf24;">
                     <h3>🗳️ Referendum Votes (গণভোট)</h3>
                     <div class="votes-grid">
                         <div class="form-group">
@@ -403,13 +406,15 @@
                 <div class="form-section">
                     <div class="form-group">
                         <label for="s_comment">Comments (Optional)</label>
-                        <textarea id="s_comment" name="s_comment" rows="3" placeholder="Enter any comments..."></textarea>
+                        <textarea id="s_comment" name="s_comment" rows="3"
+                            placeholder="Enter any comments..."></textarea>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='result_entry.html'">Cancel</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="window.location.href='result_entry.html'">Cancel</button>
                     <button type="submit" class="btn btn-primary">💾 Save Changes</button>
                 </div>
             </form>
@@ -490,11 +495,16 @@
                 // Fetch candidates
                 const { data: candidateData, error: candidateError } = await supabase
                     .from('candidate_db')
-                    .select('*')
-                    .order('candidate_identity');
+                    .select('*');
 
                 if (candidateError) throw candidateError;
-                candidates = candidateData || [];
+
+                // Sort numerically by candidate_identity (extracting number from strings like 'candidate_1')
+                candidates = (candidateData || []).sort((a, b) => {
+                    const idA = parseInt(String(a.candidate_identity).replace(/\D/g, '')) || 0;
+                    const idB = parseInt(String(b.candidate_identity).replace(/\D/g, '')) || 0;
+                    return idA - idB;
+                });
 
                 // Display data
                 document.getElementById('displayCentreCode').textContent = centreCode;
@@ -523,22 +533,20 @@
                 const voteValue = result[`candidate_${candidateNum}`] || 0;
 
                 const candidateHtml = `
-                    <div class="candidate-item">
-                        <img src="${candidate.candidate_sign_url || 'https://via.placeholder.com/80?text=No+Image'}" 
-                             alt="${candidate.candidate_sign_name || 'Symbol'}" 
-                             class="candidate-symbol"
-                             onerror="this.src='https://via.placeholder.com/80?text=No+Image'">
+                    <div class="candidate-item" style="grid-template-columns: 1fr 120px; padding: 8px 15px; gap: 10px; border-width: 1px;">
                         <div class="candidate-info-text">
-                            <h4>${candidate.candidate_name || 'Candidate ' + candidateNum}</h4>
-                            <div class="party">${candidate.candidate_party || '-'}</div>
-                            <div class="symbol-name">🔰 ${candidate.candidate_sign_name || '-'}</div>
+                            <h4 style="margin: 0; font-size: 1.05em; color: #0f172a;">
+                                ${candidate.candidate_name || 'Candidate ' + candidateNum} | 
+                                <span style="font-size: 0.85em; color: #64748b; font-weight: normal;">${candidate.candidate_sign_name || '-'}</span>
+                            </h4>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="candidate_${candidateNum}">Votes</label>
+                        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+                            <label style="margin: 0; font-size: 0.9em; font-weight: bold; color: #475569;">ভোট:</label>
                             <input type="number" 
                                    id="candidate_${candidateNum}" 
                                    name="candidate_${candidateNum}" 
                                    class="vote-input" 
+                                   style="width: 80px; padding: 4px 8px; border: 1px solid #cbd5e1;"
                                    min="0" 
                                    value="${voteValue}"
                                    placeholder="0">
@@ -603,11 +611,12 @@
             const formData = new FormData(e.target);
             const updateData = {};
 
-            // Collect all candidate votes
-            for (let i = 1; i <= 11; i++) {
+            // Collect all candidate votes dynamically based on loaded candidates
+            candidates.forEach((_, index) => {
+                const i = index + 1;
                 const value = formData.get(`candidate_${i}`);
-                updateData[`candidate_${i}`] = value ? parseFloat(value) : null;
-            }
+                updateData[`candidate_${i}`] = value !== "" && value !== null ? parseFloat(value) : 0;
+            });
 
             // Add other fields
             updateData.valid_counted_vote = parseFloat(formData.get('valid_counted_vote')) || 0;
@@ -643,4 +652,5 @@
         }
     </script>
 </body>
+
 </html>
