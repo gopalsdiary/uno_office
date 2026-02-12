@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referendum Vote Entry - গণভোট এন্ট্রি</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nikosh', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+            overflow: hidden;
+            border: 1px solid #eef2f7;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #0b1220;
+            padding: 24px 30px;
+            text-align: left;
+            border-bottom: 2px solid #fbbf24;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 6px;
+            text-shadow: none;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #475569;
+            margin: 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .search-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,0.12);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16,185,129,0.12);
+        }
+
+        .btn-info {
+            background: #06b6d4;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(6,182,212,0.12);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(245,158,11,0.12);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #f8fafc;
+            color: #0b1220;
+        }
+
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+            color: #374151;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eef2f7;
+            transition: background 0.15s ease;
+            cursor: pointer;
+        }
+
+        tbody tr:hover {
+            background: #fffbeb;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+            color: #0f172a;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            background: #fff;
+            color: #0b1220;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #eef2f7;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+        }
+
+        .stat-item h3 {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+        }
+
+        .stat-item p {
+            opacity: 0.9;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .candidate-symbol {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3b82f6;
+            font-size: 1.1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            background: #fff;
+            border: 1px dashed #e6eef7;
+            border-radius: 8px;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 20px;
+            border-bottom: 2px solid #fbbf24;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #78350f;
+            font-size: 1.5em;
+        }
+
+        .modal-header p {
+            margin: 5px 0 0 0;
+            color: #92400e;
+            font-size: 0.9em;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .close {
+            color: #78350f;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #92400e;
+        }
+
+        .referendum-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 0.95em;
+        }
+
+        .form-field input {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #eef2f7;
+            text-align: right;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #475569;
+        }
+
+        .btn-save {
+            background: #fbbf24;
+            color: #78350f;
+        }
+
+        .btn-save:hover {
+            background: #f59e0b;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .table-container {
+                font-size: 0.85em;
+            }
+
+            thead th,
+            tbody td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ Referendum Vote Entry - গণভোট এন্ট্রি</h1>
+            <p>Click on any centre to enter referendum votes</p>
+        </div>
+
+        <div class="content">
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="form-group">
+                    <label for="searchCentre">Search Centre</label>
+                    <input type="text" id="searchCentre" placeholder="Enter centre code or name..." onkeyup="filterCentres()">
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="table-container">
+                <table id="centresTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Centre Code</th>
+                            <th>Centre Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="centresTableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loadingState" class="loading" style="display: none;">
+                ⏳ Loading centres...
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No centres found</h3>
+                <p>No vote centres found in the database.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Referendum Vote Entry -->
+    <div id="referendumModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>🗳️ Referendum Votes (গণভোট)</h2>
+                <p id="modalCentreInfo">Centre: -</p>
+            </div>
+            <div class="modal-body">
+                <form id="referendumForm" class="referendum-form">
+                    <div class="form-field">
+                        <label for="yes_vote">Yes Vote (হ্যাঁ) <span style="color: red;">*</span></label>
+                        <input type="number" id="yes_vote" name="yes_vote" min="0" value="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="no_vote">No Vote (না) <span style="color: red;">*</span></label>
+                        <input type="number" id="no_vote" name="no_vote" min="0" value="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="rejected_gonovote">Rejected Gonovote (বাতিল গণভোট)</label>
+                        <input type="number" id="rejected_gonovote" name="rejected_gonovote" min="0" value="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-save" onclick="saveReferendumVotes()">💾 Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        let supabase = null;
+        let allCentres = [];
+        let currentCentre = null;
+
+        if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase;
+            } catch (err) {
+                console.error('Supabase init error:', err);
+            }
+        }
+
+        // Load centres on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCentres();
+        });
+
+        // Load all centres
+        async function loadCentres() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('centresTableBody');
+
+            loadingState.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            if (!supabase) {
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h3').textContent = 'Supabase not configured';
+                return;
+            }
+
+            try {
+                // Fetch all centres
+                const { data: centres, error: centreError } = await supabase
+                    .from('vote_centre')
+                    .select('*')
+                    .order('vote_centre_code', { ascending: true });
+
+                if (centreError) throw centreError;
+
+                // Fetch existing referendum votes from election_result
+                const { data: results, error: resultError } = await supabase
+                    .from('election_result')
+                    .select('vote_centre_iid, yes_vote, no_vote, rejected_gonovote, result_iid');
+
+                if (resultError) throw resultError;
+
+                // Map results by centre ID
+                const resultsMap = new Map();
+                (results || []).forEach(r => {
+                    resultsMap.set(r.vote_centre_iid, r);
+                });
+
+                // Merge data
+                allCentres = (centres || []).map(centre => ({
+                    ...centre,
+                    referendum_data: resultsMap.get(centre.vote_centre_iid) || null
+                }));
+
+                loadingState.style.display = 'none';
+
+                if (!allCentres || allCentres.length === 0) {
+                    emptyState.style.display = 'block';
+                    tableBody.innerHTML = '';
+                    return;
+                }
+
+                renderCentres(allCentres);
+
+            } catch (error) {
+                console.error('Error loading centres:', error);
+                loadingState.style.display = 'none';
+                alert('Error loading data: ' + error.message);
+            }
+        }
+
+        // Render centres table
+        function renderCentres(centres) {
+            const tableBody = document.getElementById('centresTableBody');
+            tableBody.innerHTML = '';
+
+            centres.forEach((centre, index) => {
+                const hasData = centre.referendum_data && (
+                    centre.referendum_data.yes_vote || 
+                    centre.referendum_data.no_vote || 
+                    centre.referendum_data.rejected_gonovote
+                );
+                const status = hasData ? 'completed' : 'pending';
+
+                const row = document.createElement('tr');
+                row.onclick = () => openModal(centre);
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${centre.vote_centre_code || 'N/A'}</strong></td>
+                    <td>${centre.vote_centre_name || 'N/A'}</td>
+                    <td>
+                        <span class="badge ${status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                            ${status === 'completed' ? '✓ Completed' : '⏳ Pending'}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Filter centres by search
+        window.filterCentres = function() {
+            const searchValue = document.getElementById('searchCentre').value.toLowerCase();
+            const filtered = allCentres.filter(centre => {
+                const code = (centre.vote_centre_code || '').toString().toLowerCase();
+                const name = (centre.vote_centre_name || '').toLowerCase();
+                return code.includes(searchValue) || name.includes(searchValue);
+            });
+            renderCentres(filtered);
+        };
+
+        // Open modal for a centre
+        window.openModal = function(centre) {
+            currentCentre = centre;
+            const modal = document.getElementById('referendumModal');
+            const modalInfo = document.getElementById('modalCentreInfo');
+
+            modalInfo.textContent = `Centre: ${centre.vote_centre_code} - ${centre.vote_centre_name}`;
+
+            // Load existing data if available
+            if (centre.referendum_data) {
+                document.getElementById('yes_vote').value = centre.referendum_data.yes_vote || 0;
+                document.getElementById('no_vote').value = centre.referendum_data.no_vote || 0;
+                document.getElementById('rejected_gonovote').value = centre.referendum_data.rejected_gonovote || 0;
+            } else {
+                document.getElementById('yes_vote').value = 0;
+                document.getElementById('no_vote').value = 0;
+                document.getElementById('rejected_gonovote').value = 0;
+            }
+
+            modal.style.display = 'block';
+        };
+
+        // Close modal
+        window.closeModal = function() {
+            const modal = document.getElementById('referendumModal');
+            modal.style.display = 'none';
+            currentCentre = null;
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('referendumModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+        // Save referendum votes
+        window.saveReferendumVotes = async function() {
+            if (!currentCentre || !supabase) {
+                alert('Error: Centre not selected or Supabase not configured');
+                return;
+            }
+
+            const yesVote = parseFloat(document.getElementById('yes_vote').value) || 0;
+            const noVote = parseFloat(document.getElementById('no_vote').value) || 0;
+            const rejectedVote = parseFloat(document.getElementById('rejected_gonovote').value) || 0;
+
+            try {
+                // Check if result entry exists for this centre
+                const { data: existingResult, error: fetchError } = await supabase
+                    .from('election_result')
+                    .select('*')
+                    .eq('vote_centre_iid', currentCentre.vote_centre_iid)
+                    .maybeSingle();
+
+                if (fetchError) throw fetchError;
+
+                if (existingResult) {
+                    // Update existing record
+                    const { error: updateError } = await supabase
+                        .from('election_result')
+                        .update({
+                            yes_vote: yesVote,
+                            no_vote: noVote,
+                            rejected_gonovote: rejectedVote
+                        })
+                        .eq('result_iid', existingResult.result_iid);
+
+                    if (updateError) throw updateError;
+
+                } else {
+                    // Insert new record
+                    const { error: insertError } = await supabase
+                        .from('election_result')
+                        .insert({
+                            vote_centre_iid: currentCentre.vote_centre_iid,
+                            vote_centre_code: currentCentre.vote_centre_code,
+                            yes_vote: yesVote,
+                            no_vote: noVote,
+                            rejected_gonovote: rejectedVote,
+                            valid_counted_vote: 0,
+                            invalid_counted_vote: 0
+                        });
+
+                    if (insertError) throw insertError;
+                }
+
+                alert('✅ Referendum votes saved successfully!');
+                closeModal();
+                loadCentres(); // Reload to update status
+
+            } catch (error) {
+                console.error('Error saving referendum votes:', error);
+                alert('❌ Failed to save: ' + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
