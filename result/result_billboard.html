@@ -437,6 +437,24 @@
     </div>
 
     <script type="module">
+        // Check if file is opened directly (file:// protocol)
+        if (window.location.protocol === 'file:') {
+            document.getElementById('loadingState').innerHTML = `
+                <div style="color: #ef4444; background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: 20px auto;">
+                    <h3>❌ Error: Cannot load from file://</h3>
+                    <p>This page needs to be served through a web server.</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ol style="text-align: left; margin: 10px 0;">
+                        <li>Use Live Server extension in VS Code</li>
+                        <li>Run: <code>python -m http.server 8000</code></li>
+                        <li>Run: <code>npx serve .</code></li>
+                        <li>Deploy to Netlify or similar hosting</li>
+                    </ol>
+                </div>
+            `;
+            throw new Error('File protocol not supported');
+        }
+
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
         const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
@@ -447,8 +465,10 @@
             try {
                 supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
                 window.supabaseClient = supabase;
+                console.log('✅ Supabase client initialized successfully');
             } catch (err) {
-                console.error('Supabase init error:', err);
+                console.error('❌ Supabase init error:', err);
+                document.getElementById('loadingState').innerHTML = `<div style="color: #ef4444;">❌ Error initializing database: ${err.message}</div>`;
             }
         }
 
@@ -468,30 +488,54 @@
 
         window.loadResults = async function() {
             if (!supabase) {
-                alert('Supabase not configured');
+                document.getElementById('loadingState').innerHTML = `
+                    <div style="color: #ef4444; background: white; padding: 20px; border-radius: 10px;">
+                        ❌ Database not configured. Please check Supabase credentials.
+                    </div>
+                `;
                 return;
             }
 
             document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('loadingState').innerHTML = '⏳ ডেটা লোড হচ্ছে...';
             document.getElementById('summarySection').style.display = 'none';
             document.getElementById('candidatesSection').style.display = 'none';
             document.getElementById('noDataSection').style.display = 'none';
 
             try {
-                // Fetch candidates
-                const { data: candidates, error: candidateError } = await supabase
+                console.log('📡 Fetching candidates...');
+                // Fetch candidates with timeout
+                const candidatesPromise = supabase
                     .from('candidate_db')
                     .select('*')
                     .order('candidate_identity');
+                
+                const { data: candidates, error: candidateError } = await Promise.race([
+                    candidatesPromise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Request timeout - please check your internet connection')), 15000)
+                    )
+                ]);
 
-                if (candidateError) throw candidateError;
+                if (candidateError) throw new Error(`Candidate fetch error: ${candidateError.message}`);
+                if (!candidates || candidates.length === 0) throw new Error('No candidates found in database');
+                console.log(`✅ Loaded ${candidates.length} candidates`);
 
-                // Fetch all results
-                const { data: results, error: resultsError } = await supabase
+                console.log('📡 Fetching results...');
+                // Fetch all results with timeout
+                const resultsPromise = supabase
                     .from('election_result')
                     .select('*');
+                
+                const { data: results, error: resultsError } = await Promise.race([
+                    resultsPromise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Request timeout - please check your internet connection')), 15000)
+                    )
+                ]);
 
-                if (resultsError) throw resultsError;
+                if (resultsError) throw new Error(`Results fetch error: ${resultsError.message}`);
+                console.log(`✅ Loaded ${results ? results.length : 0} result entries`);
 
                 // Calculate totals for each candidate
                 const candidateTotals = [];
@@ -535,8 +579,38 @@
                 updateLastUpdate();
 
             } catch (error) {
-                console.error('Error loading results:', error);
-                document.getElementById('loadingState').innerHTML = `<div style="color: #ef4444;">❌ Error: ${error.message}</div>`;
+                console.error('❌ Error loading results:', error);
+                
+                let errorMessage = error.message;
+                let errorHelp = '';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorHelp = `
+                        <p style="margin-top: 10px;"><strong>Possible solutions:</strong></p>
+                        <ul style="text-align: left; margin: 10px 20px;">
+                            <li>Check your internet connection</li>
+                            <li>Verify Supabase URL is correct</li>
+                            <li>Check if Supabase project is active</li>
+                            <li>Disable any VPN or proxy</li>
+                            <li>Check browser console for CORS errors</li>
+                        </ul>
+                    `;
+                } else if (error.message.includes('timeout')) {
+                    errorHelp = '<p style="margin-top: 10px;">The request took too long. Please try again.</p>';
+                }
+                
+                document.getElementById('loadingState').innerHTML = `
+                    <div style="color: #ef4444; background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: 20px auto;">
+                        <h3>❌ Error Loading Data</h3>
+                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        ${errorHelp}
+                        <button onclick="loadResults()" class="btn btn-primary" style="margin-top: 15px;">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+                document.getElementById('summarySection').style.display = 'none';
+                document.getElementById('candidatesSection').style.display = 'none';
             }
         };
 
