@@ -495,16 +495,12 @@
                 // Fetch candidates
                 const { data: candidateData, error: candidateError } = await supabase
                     .from('candidate_db')
-                    .select('*');
+                    .select('*')
+                    .order('candidate_identity');
 
                 if (candidateError) throw candidateError;
 
-                // Sort numerically by candidate_identity (extracting number from strings like 'candidate_1')
-                candidates = (candidateData || []).sort((a, b) => {
-                    const idA = parseInt(String(a.candidate_identity).replace(/\D/g, '')) || 0;
-                    const idB = parseInt(String(b.candidate_identity).replace(/\D/g, '')) || 0;
-                    return idA - idB;
-                });
+                candidates = candidateData || [];
 
                 // Display data
                 document.getElementById('displayCentreCode').textContent = centreCode;
