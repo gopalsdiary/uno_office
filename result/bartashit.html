@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="utf-8">
+    <title>বার্তা প্রেরণ শিট - ত্রয়োদশ জাতীয় সংসদ নির্বাচন</title>
+    <style>
+        @font-face {
+            font-family: 'Nikosh';
+            src: url('https://cdn.jsdelivr.net/gh/cdnfonts/nikosh@master/Nikosh.ttf') format('truetype');
+        }
+
+        @page {
+            size: A4;
+            margin: 0.5in;
+        }
+
+        body {
+            width: 7.5in;
+            margin: 0 auto;
+            padding: 0;
+            background: white;
+            font-family: 'Nikosh', 'Arial Unicode MS', sans-serif;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .no-print {
+            padding: 20px;
+            background: #f8fafc;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 22pt;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .header h2 {
+            font-size: 18pt;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .header h3 {
+            font-size: 16pt;
+            margin: 5px 0;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .info-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13pt;
+        }
+
+        .info-right {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+            font-size: 12pt;
+        }
+
+        .info-box {
+            border: 1px solid #000;
+            padding: 2px 15px;
+            min-width: 120px;
+            text-align: center;
+            display: inline-block;
+            height: 25px;
+            line-height: 25px;
+        }
+
+        .msg-no-box {
+            border: 1px solid #000;
+            width: 40px;
+            height: 25px;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 4px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        thead th {
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .gray-row td {
+            background-color: #e5e5e5;
+            font-size: 10pt;
+            height: 20px;
+            padding: 0;
+        }
+
+        .candidate-name-cell {
+            text-align: left;
+            width: 25%;
+        }
+
+        .party-cell {
+            text-align: left;
+            width: 25%;
+        }
+
+        .summary-table {
+            width: 45%;
+            margin-top: 10px;
+        }
+
+        .summary-table td {
+            text-align: right;
+            font-size: 13pt;
+            border: 1px solid #000;
+        }
+
+        .summary-table td:first-child {
+            text-align: right;
+            border: none;
+            padding-right: 15px;
+        }
+
+        .summary-table td:last-child {
+            width: 120px;
+            text-align: center;
+        }
+
+        .closed-info {
+            margin-top: 15px;
+            font-size: 13pt;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .signature-section {
+            width: 60%;
+            font-size: 13pt;
+            line-height: 1.5;
+        }
+
+        .signature-section p {
+            margin: 0;
+        }
+
+        .signature-section .header-text {
+            display: block;
+            text-align: center;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                margin: 0;
+                width: 100%;
+            }
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+        <button class="btn btn-secondary" onclick="window.location.href='result_entry.html'">← ফিরে যান</button>
+    </div>
+
+    <div class="header">
+        <h1>ত্রয়োদশ জাতীয় সংসদ নির্বাচন</h1>
+        <h2>প্রাথমিক বেসরকারি ফলাফল</h2>
+        <h3>বার্তা প্রেরণ শিট</h3>
+    </div>
+
+    <div class="info-container">
+        <div class="info-left">
+            <span>নির্বাচনি এলাকার নম্বর ও নাম:</span>
+            <div class="info-box bold">২৬৬ ফেনী-২</div>
+        </div>
+        <div class="info-right">
+            <div>
+                <span>মোট ভোটারের সংখ্যা:</span>
+                <div class="info-box" id="totalVoters">৪৩৭০৭৮</div>
+            </div>
+            <div>
+                <span>মোট ভোটকেন্দ্রের সংখ্যা:</span>
+                <div class="info-box" id="totalCentres">১৪৬</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span>বার্তা নম্বর:</span>
+                <div class="msg-no-box"></div>
+                <span>ফলাফল প্রাপ্ত ভোটকেন্দ্রের সংখ্যা:</span>
+                <div class="info-box" id="centresAvailable">০</div>
+            </div>
+        </div>
+    </div>
+
+    <table id="candidateTable">
+        <thead>
+            <tr>
+                <th style="width: 50px;">ক্রমিক</th>
+                <th>প্রতিদ্বন্দ্বীর নাম</th>
+                <th>রাজনৈতিক দল/জোট এর নাম ও স্বতন্ত্র</th>
+                <th>বরাদ্দকৃত প্রতীক</th>
+                <th>এ পর্যন্ত প্রাপ্ত ভোটের সংখ্যা</th>
+                <th>মন্তব্য</th>
+            </tr>
+            <tr class="gray-row">
+                <td>১</td>
+                <td>২</td>
+                <td>৩</td>
+                <td>৪</td>
+                <td>৫</td>
+                <td>৬</td>
+            </tr>
+        </thead>
+        <tbody id="candidateBody">
+            <!-- Candidates will be loaded here -->
+            <tr>
+                <td colspan="6">অপেক্ষ করুন...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="summary-table">
+        <tr>
+            <td>মোট বৈধ ভোটের সংখ্যাঃ</td>
+            <td id="totalValidVotes">০</td>
+        </tr>
+        <tr>
+            <td>বাতিলকৃত ভোটের সংখ্যাঃ</td>
+            <td id="totalInvalidVotes">০</td>
+        </tr>
+        <tr>
+            <td>সর্বমোট প্রদত্ত ভোটের সংখ্যাঃ</td>
+            <td id="totalCountedVotes">০</td>
+        </tr>
+    </table>
+
+    <div class="closed-info">
+        <p>বন্ধঘোষিত ভোটকেন্দ্রের সংখ্যাঃ <span id="closedCount"></span></p>
+        <p>বন্ধঘোষিত ভোটকেন্দ্রে ভোটার সংখ্যাঃ <span id="closedVoterCount"></span></p>
+    </div>
+
+    <div class="footer">
+        <div class="signature-section">
+            <span class="header-text">রিটার্নিং অফিসারের ফলাফল সংগ্রহ ও পরিবেশন<br>কেন্দ্রে থেকে ফলাফল প্রদানকারীর নাম ও
+                পদবী</span>
+            <p>নামঃ <strong>সুলতানা নাসরিন কান্তা</strong></p>
+            <p>পদবীঃ <strong>উপজেলা নির্বাহী অফিসার ও সহকারী রিটার্নিং অফিসার,<br>২৬৬ ফেনী-২</strong></p>
+            <p style="margin-top: 5px;">স্বাক্ষরঃ ............................................................</p>
+            <p>তারিখঃ .............................................................</p>
+            <p>সময়ঃ ..............................................................</p>
+            <p>কোড নম্বরঃ .........................................................</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://tschsyozvlneslqylqii.supabase.co';
+        const SUPABASE_KEY = window.SUPABASE_KEY || window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzY2hzeW96dmxuZXNscXlscWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcyNjgsImV4cCI6MjA4MjMxMzI2OH0.7kfq7K-jbFmgnin2zkLJf7GIulGXvfQzBkzjs0iAO14';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        function toBn(num) {
+            if (num === null || num === undefined) return '';
+            return String(num).split('').map(d => bnNumbers[parseInt(d)] || d).join('');
+        }
+
+        async function loadData() {
+            try {
+                // Fetch candidates
+                const { data: candidates, error: cErr } = await supabase
+                    .from('candidate_db')
+                    .select('*')
+                    .order('candidate_sl');
+
+                if (cErr) throw cErr;
+
+                // Fetch results
+                const { data: results, error: rErr } = await supabase
+                    .from('election_result')
+                    .select('*');
+
+                if (rErr) throw rErr;
+
+                // Aggregate totals
+                const candidateTotals = new Array(candidates.length).fill(0);
+                let totalValid = 0;
+                let totalInvalid = 0;
+                let processedCentres = new Set();
+
+                results.forEach(res => {
+                    totalValid += parseFloat(res.valid_counted_vote || 0);
+                    totalInvalid += parseFloat(res.invalid_counted_vote || 0);
+                    processedCentres.add(res.vote_centre_iid);
+
+                    candidates.forEach((c, idx) => {
+                        candidateTotals[idx] += parseFloat(res[`candidate_${idx + 1}`] || 0);
+                    });
+                });
+
+                // Update info
+                document.getElementById('centresAvailable').textContent = toBn(processedCentres.size);
+                document.getElementById('totalValidVotes').textContent = toBn(totalValid);
+                document.getElementById('totalInvalidVotes').textContent = toBn(totalInvalid);
+                document.getElementById('totalCountedVotes').textContent = toBn(totalValid + totalInvalid);
+
+                // Render candidates table
+                const tbody = document.getElementById('candidateBody');
+                tbody.innerHTML = '';
+
+                candidates.forEach((c, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+						<td>${toBn(c.candidate_sl)}</td>
+						<td class="candidate-name-cell">${c.candidate_name || ''}</td>
+						<td class="party-cell">${c.candidate_party || ''}</td>
+						<td>${c.candidate_sign_name || ''}</td>
+						<td>${toBn(candidateTotals[i])}</td>
+						<td></td>
+					`;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+
+</html>
